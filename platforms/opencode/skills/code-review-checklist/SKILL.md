@@ -3,9 +3,18 @@ name: code-review-checklist
 description: Structured code review rubric covering correctness, security, performance, maintainability, error handling, and testing
 ---
 
-## Code Review Checklist
+# Code Review Checklist
 
 Work through each section systematically. Not every item applies to every review — focus on what's relevant to the changes at hand.
+
+### 0. Scope & Diff Discipline
+
+- [ ] Do the changed lines trace directly to the user's request or approved spec?
+- [ ] Did the implementation make assumptions that should have been clarified or documented?
+- [ ] Is there a materially simpler approach that would meet the requirement?
+- [ ] Does the change add speculative abstraction, configurability, or future-proofing without a present need?
+- [ ] Did the author avoid drive-by refactors, style churn, and unrelated cleanup?
+- [ ] Are verification steps and tests proportional to the risk and clearly tied to the goal?
 
 ### 1. Correctness
 
@@ -77,14 +86,24 @@ Work through each section systematically. Not every item applies to every review
 
 ## Review Output Format
 
+Use this default review shape:
+
+- `## Summary` - one-paragraph overall assessment.
+- `## Findings` - split by severity using `### CRITICAL`, `### WARNING`, and `### INFO` subsections.
+- Under each populated severity subsection, use a markdown table with columns `Location | Issue | Impact | Suggestion`.
+- `## Recommendations` - prioritized follow-up list.
+- Omit empty severity sections. If there are no findings, say so plainly under `## Findings`.
+- Keep rows concise. If a finding needs extra nuance, add a short note below the relevant severity table instead of widening the columns.
+- Example: `reference/review-table.md`
+
 Categorize findings by severity:
 
 - **CRITICAL**: Must fix before merge. Security vulnerabilities, data corruption risks, correctness bugs in critical paths.
 - **WARNING**: Should fix before merge. Performance issues, missing error handling, maintainability problems.
 - **INFO**: Consider addressing. Style suggestions, minor improvements, optional optimizations.
 
-For each finding, include:
-1. **Location**: File path and line number(s)
-2. **Issue**: Clear description of the problem
-3. **Impact**: What could go wrong if this isn't fixed
-4. **Suggestion**: Concrete recommendation for how to fix it
+Each table row should include:
+1. **Location**
+2. **Issue**
+3. **Impact**
+4. **Suggestion**

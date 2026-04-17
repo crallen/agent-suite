@@ -217,6 +217,13 @@ Key conventions:
 - **Self-contained**. A skill should provide everything an agent needs without requiring additional context lookups.
 - Skills typically range from 90-250 lines.
 
+## Cross-Cutting Skill Expectations
+
+Some skills are domain-specific (`docker-best-practices`, `frontend-patterns`). Others should be reused across multiple agents rather than re-explained in every file.
+
+- **`coding-guardrails`** - Default cross-cutting skill for agents that write, refactor, fix, or review code/configuration. Covers assumption management, simplicity, surgical diffs, and verification-driven execution.
+- **`spec-writing`** - Default cross-cutting skill for design-first planning agents.
+
 ## Command Definition Schema
 
 ### Frontmatter
@@ -287,6 +294,7 @@ After creating or modifying an agent, skill, or command, verify:
 - [ ] **Permission model is appropriate**: Read-only agents deny edit and restrict bash. Analysis agents don't need write access. File-reading commands are scoped to safe paths.
 - [ ] **Frontmatter is complete**: All required keys are present with valid values.
 - [ ] **Body follows conventions**: Opening persona line (agents), no persona (skills), `$ARGUMENTS` at end (commands).
+- [ ] **Cross-cutting guidance is wired in**: Implementation-oriented agents reference `coding-guardrails` (or clearly include equivalent guardrails) alongside any domain skill.
 - [ ] **AGENTS.md is updated**: New agents appear in the subagent table, new skills in the skills table, new commands in the commands table.
 - [ ] **User-facing docs are updated if present**: README or other suite docs are kept in sync when this repo actually includes them.
 

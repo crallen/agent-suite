@@ -162,3 +162,20 @@ Use a simplified CVSS-like approach:
 | **Exploitability** | Remote, unauthenticated, trivial | Remote, authenticated or needs specific conditions | Requires local access or social engineering | Requires physical access or insider |
 | **Impact** | RCE, full data breach, auth bypass | Significant data access, privilege escalation | Limited data access, account takeover (single user) | Information disclosure, DoS |
 | **Affected users** | All users | Subset of users | Individual user | Admin only |
+
+Use `INFO` for defense-in-depth or hardening suggestions that do not represent a material exploitable vulnerability on their own.
+
+## Report Format
+
+Use this default report shape:
+
+- `## Security Assessment Summary` - one-paragraph posture and overall risk level.
+- `## Attack Surface` - brief trust-boundary and entry-point summary.
+- `## Findings` - split by severity using `### CRITICAL`, `### HIGH`, `### MEDIUM`, `### LOW`, and `### INFO` subsections.
+- Under each populated severity subsection, use a markdown table with columns `Category | Location | Exploitability | Impact | Remediation`.
+- `## Dependency Audit` - markdown table with columns `Tool | Result | Notes` when applicable.
+- `## Recommendations` - prioritized remediation plan.
+- Omit empty severity sections. If there are no findings, say so plainly under `## Findings`.
+- Keep table rows concise. If a finding needs references, exploit-path detail, defense-in-depth notes, prevention guidance, or code snippets, add a short `### Detail:` section below the relevant severity table.
+- Put remediation ordering and priority in `## Recommendations`; use `### Detail:` blocks for anything too long for the findings table.
+- Example: `reference/security-table.md`

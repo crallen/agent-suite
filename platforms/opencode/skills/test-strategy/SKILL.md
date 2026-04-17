@@ -3,6 +3,18 @@ name: test-strategy
 description: Guidelines for choosing test types, setting coverage targets, mocking strategies, and structuring test suites effectively
 ---
 
+# Test Strategy
+
+Use this skill when deciding how correctness will be proven. Tests are not just coverage artifacts — they are the primary way to turn vague requests into verifiable outcomes.
+
+## Goal-Driven Verification Loops
+
+- **Bug fixes** - Prefer a failing regression test or another repeatable reproduction before implementing the fix.
+- **New features** - Decide up front which unit, integration, end-to-end, or manual checks will prove success.
+- **Refactors** - Establish a behavior baseline before changing structure, then confirm the same behavior afterward.
+- **Multi-step work** - Pair each implementation step with a `verify:` check so progress is observable.
+- **Avoid speculative matrices** - Do not add large suites for hypothetical future behaviors that the code does not implement.
+
 ## Test Pyramid
 
 Prioritize tests from bottom to top — more unit tests, fewer E2E tests:

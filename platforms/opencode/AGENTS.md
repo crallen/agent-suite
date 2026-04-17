@@ -46,10 +46,11 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 
 | Skill | Description | Primary users |
 |---|---|---|
+| `coding-guardrails` | Cross-cutting execution guardrails for implementation work: assumptions, simplicity, surgical diffs, and verification | tech-lead, code-reviewer, tester, debugger, frontend, devops |
 | `spec-writing` | Scope decomposition, clarifying dialogue, approach exploration, staged design presentation, and spec self-review | architect |
 | `git-conventions` | Conventional Commits format, branching model, commit hygiene | git-manager, tech-lead |
 | `test-strategy` | Test type selection, coverage targets, mocking guidelines | tester, tech-lead |
-| `code-review-checklist` | Structured review rubric across 7 categories with severity levels | code-reviewer |
+| `code-review-checklist` | Structured review rubric across core review categories with severity levels | code-reviewer |
 | `security-analysis` | Vulnerability taxonomy, data flow analysis, dependency auditing, remediation patterns | security-analyst |
 | `debugging-methodology` | 5-phase debugging workflow: reproduce, gather, hypothesize, test, fix | debugger |
 | `doc-templates` | Templates for READMEs, API docs, ADRs, changelogs, code comments | documenter |
@@ -78,11 +79,10 @@ Quick-access commands for common workflows:
 
 ## General Guidelines
 
-- **Language-agnostic**: Agents detect and adapt to whatever tech stack is in the workspace. Read project config files (package.json, go.mod, Cargo.toml, etc.) to understand conventions before making changes.
-- **Conventional Commits**: All commits follow the Conventional Commits specification. Use `/commit` or `@git-manager` for well-formed commits.
-- **Review before merge**: Use `/review` to check code quality and `/security` to assess security posture before committing significant changes.
-- **Test with changes**: New functionality should include tests. Use `/test` to verify the test suite passes.
-- **Keep docs current**: When making significant changes, update relevant documentation. Use `/docs` to assess and fill documentation gaps.
-- **Use skills lazily**: Load skills via the `skill` tool only when you need the detailed procedural knowledge. Don't preload everything.
-- **Existing conventions first**: Always read existing code before writing new code. Match the project's style, patterns, and file organization.
-- **Never read `.env` files**: Agents must avoid reading `.env` files via any method (`cat`, `grep`, `source`, etc.). Treat `.env` files as off-limits regardless of access method.
+- Read project config and nearby code before changing anything.
+- For ambiguous or cross-cutting work, use `/spec` or `@architect` first.
+- Skills are the canonical long-form guidance. Keep agent bodies and commands short; load only what you need. For implementation work, start with `coding-guardrails` plus the domain skill.
+- For implementation work, surface assumptions, keep changes simple and scoped, and verify with explicit checks.
+- Match existing conventions and prefer the smallest change that satisfies the request.
+- Use `/review`, `/security`, `/test`, `/docs`, and `/commit` as appropriate to keep quality, docs, and history clean.
+- Never read `.env` files via any method.
