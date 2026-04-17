@@ -273,9 +273,9 @@ The existing palette follows the One Dark theme. Colors are semantically chosen.
 | Green | `#98c379` | tester | Pass/fail, testing |
 | Yellow/amber | `#e5c07b` | debugger | Warnings, investigation |
 | Blue | `#61afef` | documenter | Informational |
-| Purple | `#c678dd` | devops | Infrastructure |
+| Purple | `#c678dd` | devops-engineer | Infrastructure |
 | Orange/tan | `#d19a66` | git-manager | Version control |
-| Cyan/teal | `#56b6c2` | frontend | UI/interface |
+| Cyan/teal | `#56b6c2` | frontend-engineer | UI/interface |
 | Silver/gray | `#abb2bf` | agent-builder | Meta/tooling |
 | Sage/green-blue | `#83a598` | architect | Planning, structure, design |
 

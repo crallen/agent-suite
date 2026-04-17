@@ -28,11 +28,11 @@ These are invoked automatically by the tech-lead or manually via `@mention`:
 | `@tester` | Test generation, coverage analysis, test strategy | Full access. Writes test files, runs test suites. |
 | `@debugger` | Root cause analysis and systematic debugging | Full access. Reads logs, traces code, applies fixes. |
 | `@documenter` | Technical documentation and API docs | Write access. Bash limited to read-only commands. |
-| `@devops` | Docker, CI/CD, infrastructure configuration | Full access. Writes configs, runs build commands. |
+| `@devops-engineer` | Docker, CI/CD, infrastructure configuration | Full access. Writes configs, runs build commands. |
 | `@backend-engineer` | Backend application work: API handlers, services, auth/authz, validation, integrations, app-layer refactors | Full access. Writes code, runs app and test commands. |
 | `@database-specialist` | Schema design, migrations, indexes, query tuning, constraints, transactions, ORM/query-builder work where database behavior matters | Full access. Writes migrations and query code, runs database verification commands. |
 | `@git-manager` | Commits, branches, releases, changelogs | Write access. Bash limited to git and read commands. |
-| `@frontend` | UI components, styling, accessibility, responsive design | Full access. Builds and tests frontend code. |
+| `@frontend-engineer` | UI components, styling, accessibility, responsive design | Full access. Builds and tests frontend code. |
 | `@agent-builder` | Creates, modifies, and reviews agents, skills, and slash commands | Write access. Bash limited to read-only commands. |
 
 Plus the built-in subagents:
@@ -48,7 +48,7 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 
 | Skill | Description | Primary users |
 |---|---|---|
-| `coding-guardrails` | Cross-cutting execution guardrails for implementation work: assumptions, simplicity, surgical diffs, and verification | tech-lead, code-reviewer, tester, debugger, devops, frontend, backend-engineer, database-specialist |
+| `coding-guardrails` | Cross-cutting execution guardrails for implementation work: assumptions, simplicity, surgical diffs, and verification | tech-lead, code-reviewer, tester, debugger, devops-engineer, frontend-engineer, backend-engineer, database-specialist |
 | `spec-writing` | Scope decomposition, clarifying dialogue, approach exploration, staged design presentation, and spec self-review | architect |
 | `git-conventions` | Conventional Commits format, branching model, commit hygiene | git-manager, tech-lead |
 | `test-strategy` | Test type selection, coverage targets, mocking guidelines | tester, tech-lead |
@@ -56,11 +56,11 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 | `security-analysis` | Vulnerability taxonomy, data flow analysis, dependency auditing, remediation patterns | security-analyst |
 | `debugging-methodology` | 5-phase debugging workflow: reproduce, gather, hypothesize, test, fix | debugger |
 | `doc-templates` | Templates for READMEs, API docs, ADRs, changelogs, code comments | documenter |
-| `docker-best-practices` | Multi-stage builds, security hardening, layer caching, Compose patterns | devops |
-| `ci-pipeline` | CI/CD patterns for GitHub Actions and GitLab CI with caching strategies | devops |
+| `docker-best-practices` | Multi-stage builds, security hardening, layer caching, Compose patterns | devops-engineer |
+| `ci-pipeline` | CI/CD patterns for GitHub Actions and GitLab CI with caching strategies | devops-engineer |
 | `backend-patterns` | Backend application patterns for handlers, services, validation, auth/authz, integrations, and app-layer refactors | backend-engineer, tech-lead |
 | `database-patterns` | Database design and performance patterns for schemas, migrations, indexes, constraints, transactions, and query behavior | database-specialist, tech-lead |
-| `frontend-patterns` | Frontend router for product context gathering, work-mode selection, escalation, and targeted reference selection | frontend |
+| `frontend-patterns` | Frontend router for product context gathering, work-mode selection, escalation, and targeted reference selection | frontend-engineer |
 | `agent-authoring` | Schemas, templates, and conventions for creating agents, skills, and commands | agent-builder |
 
 ### Slash Commands
@@ -78,10 +78,10 @@ Quick-access commands for common workflows:
 | `/release` | Prepare release notes, changelog, and version bump | git-manager |
 | `/backend-engineer` | Implement or modify backend application code | backend-engineer |
 | `/database-specialist` | Design or modify database schemas, migrations, queries, and indexes | database-specialist |
-| `/frontend` | Build, update, or fix frontend UI components and pages | frontend |
-| `/frontend-audit` | Audit frontend quality, states, responsiveness, and anti-patterns without editing files | frontend |
-| `/frontend-critique` | Critique frontend UX and visual direction, then suggest targeted improvements | frontend |
-| `/frontend-polish` | Apply focused frontend polish before handoff with verification and restraint | frontend |
+| `/frontend` | Build, update, or fix frontend UI components and pages | frontend-engineer |
+| `/frontend-audit` | Audit frontend quality, states, responsiveness, and anti-patterns without editing files | frontend-engineer |
+| `/frontend-critique` | Critique frontend UX and visual direction, then suggest targeted improvements | frontend-engineer |
+| `/frontend-polish` | Apply focused frontend polish before handoff with verification and restraint | frontend-engineer |
 | `/agent-builder` | Create or modify an agent, skill, or command | agent-builder |
 | `/agent-review` | Review agents, skills, and commands for correctness and consistency | agent-builder |
 | `/spec` | Research a goal and produce a design spec with task checklist | architect |

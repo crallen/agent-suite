@@ -1,6 +1,6 @@
 ---
 description: Build, update, or fix frontend UI components and pages
-agent: frontend
+agent: frontend-engineer
 subtask: true
 ---
 

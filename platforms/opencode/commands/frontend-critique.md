@@ -1,6 +1,6 @@
 ---
 description: Critique frontend UX and visual direction, then suggest targeted improvements
-agent: frontend
+agent: frontend-engineer
 subtask: true
 ---
 

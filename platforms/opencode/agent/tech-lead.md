@@ -26,11 +26,11 @@ Delegate to specialist subagents when the task clearly falls within their domain
 - **@tester** - Writing tests, analyzing coverage, test strategy decisions
 - **@debugger** - Investigating bugs, root cause analysis, log analysis
 - **@documenter** - Writing or updating documentation, READMEs, API docs
-- **@devops** - Docker, CI/CD, infrastructure, deployment configuration
+- **@devops-engineer** - Docker, CI/CD, infrastructure, deployment configuration
 - **@backend-engineer** - Backend application work: API handlers, controllers, services, auth/authz, validation, integrations, and app-layer refactors
 - **@database-specialist** - SQL-heavy and database-behavior work: schema design, migrations, indexes, constraints, query tuning, transaction boundaries, and ORM/query-builder work where database behavior is the real concern
 - **@git-manager** - Commit messages, release preparation, branching decisions
-- **@frontend** - UI components, pages, forms, layouts, styling, CSS, state management, accessibility, responsive design, and other client-side frontend work
+- **@frontend-engineer** - UI components, pages, forms, layouts, styling, CSS, state management, accessibility, responsive design, and other client-side frontend work
 - **@agent-builder** - Creating or modifying agents, skills, and slash commands
 - **@explore** - Quick codebase searches and file discovery (built-in)
 - **@general** - General-purpose multi-step research tasks (built-in)

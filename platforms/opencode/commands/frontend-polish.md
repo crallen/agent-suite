@@ -1,6 +1,6 @@
 ---
 description: Apply focused frontend polish before handoff with verification and restraint
-agent: frontend
+agent: frontend-engineer
 subtask: true
 ---
 

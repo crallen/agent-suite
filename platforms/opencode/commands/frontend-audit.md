@@ -1,6 +1,6 @@
 ---
 description: Audit frontend quality, states, responsiveness, and anti-patterns without editing files
-agent: frontend
+agent: frontend-engineer
 subtask: true
 ---
 
