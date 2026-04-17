@@ -29,6 +29,8 @@ These are invoked automatically by the tech-lead or manually via `@mention`:
 | `@debugger` | Root cause analysis and systematic debugging | Full access. Reads logs, traces code, applies fixes. |
 | `@documenter` | Technical documentation and API docs | Write access. Bash limited to read-only commands. |
 | `@devops` | Docker, CI/CD, infrastructure configuration | Full access. Writes configs, runs build commands. |
+| `@backend-engineer` | Backend application work: API handlers, services, auth/authz, validation, integrations, app-layer refactors | Full access. Writes code, runs app and test commands. |
+| `@database-specialist` | Schema design, migrations, indexes, query tuning, constraints, transactions, ORM/query-builder work where database behavior matters | Full access. Writes migrations and query code, runs database verification commands. |
 | `@git-manager` | Commits, branches, releases, changelogs | Write access. Bash limited to git and read commands. |
 | `@frontend` | UI components, styling, accessibility, responsive design | Full access. Builds and tests frontend code. |
 | `@agent-builder` | Creates, modifies, and reviews agents, skills, and slash commands | Write access. Bash limited to read-only commands. |
@@ -46,7 +48,7 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 
 | Skill | Description | Primary users |
 |---|---|---|
-| `coding-guardrails` | Cross-cutting execution guardrails for implementation work: assumptions, simplicity, surgical diffs, and verification | tech-lead, code-reviewer, tester, debugger, frontend, devops |
+| `coding-guardrails` | Cross-cutting execution guardrails for implementation work: assumptions, simplicity, surgical diffs, and verification | tech-lead, code-reviewer, tester, debugger, devops, frontend, backend-engineer, database-specialist |
 | `spec-writing` | Scope decomposition, clarifying dialogue, approach exploration, staged design presentation, and spec self-review | architect |
 | `git-conventions` | Conventional Commits format, branching model, commit hygiene | git-manager, tech-lead |
 | `test-strategy` | Test type selection, coverage targets, mocking guidelines | tester, tech-lead |
@@ -56,6 +58,8 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 | `doc-templates` | Templates for READMEs, API docs, ADRs, changelogs, code comments | documenter |
 | `docker-best-practices` | Multi-stage builds, security hardening, layer caching, Compose patterns | devops |
 | `ci-pipeline` | CI/CD patterns for GitHub Actions and GitLab CI with caching strategies | devops |
+| `backend-patterns` | Backend application patterns for handlers, services, validation, auth/authz, integrations, and app-layer refactors | backend-engineer, tech-lead |
+| `database-patterns` | Database design and performance patterns for schemas, migrations, indexes, constraints, transactions, and query behavior | database-specialist, tech-lead |
 | `frontend-patterns` | Component architecture, state management, accessibility, responsive design | frontend |
 | `agent-authoring` | Schemas, templates, and conventions for creating agents, skills, and commands | agent-builder |
 
@@ -72,6 +76,8 @@ Quick-access commands for common workflows:
 | `/docs` | Generate or update documentation | documenter |
 | `/commit` | Stage logical changes when needed and create Conventional Commits | git-manager |
 | `/release` | Prepare release notes, changelog, and version bump | git-manager |
+| `/backend-engineer` | Implement or modify backend application code | backend-engineer |
+| `/database-specialist` | Design or modify database schemas, migrations, queries, and indexes | database-specialist |
 | `/frontend` | Build, update, or fix frontend UI components and pages | frontend |
 | `/agent-builder` | Create or modify an agent, skill, or command | agent-builder |
 | `/agent-review` | Review agents, skills, and commands for correctness and consistency | agent-builder |
@@ -82,6 +88,7 @@ Quick-access commands for common workflows:
 - Read project config and nearby code before changing anything.
 - For ambiguous or cross-cutting work, use `/spec` or `@architect` first.
 - Skills are the canonical long-form guidance. Keep agent bodies and commands short; load only what you need. For implementation work, start with `coding-guardrails` plus the domain skill.
+- Route backend application work to `@backend-engineer`; when schema, SQL, migrations, indexes, transaction behavior, or database-heavy ORM/query-builder behavior are the real concern, involve `@database-specialist`.
 - For implementation work, surface assumptions, keep changes simple and scoped, and verify with explicit checks.
 - Match existing conventions and prefer the smallest change that satisfies the request.
 - Use `/review`, `/security`, `/test`, `/docs`, and `/commit` as appropriate to keep quality, docs, and history clean.

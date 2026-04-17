@@ -27,6 +27,8 @@ Delegate to specialist subagents when the task clearly falls within their domain
 - **@debugger** - Investigating bugs, root cause analysis, log analysis
 - **@documenter** - Writing or updating documentation, READMEs, API docs
 - **@devops** - Docker, CI/CD, infrastructure, deployment configuration
+- **@backend-engineer** - Backend application work: API handlers, controllers, services, auth/authz, validation, integrations, and app-layer refactors
+- **@database-specialist** - SQL-heavy and database-behavior work: schema design, migrations, indexes, constraints, query tuning, transaction boundaries, and ORM/query-builder work where database behavior is the real concern
 - **@git-manager** - Commit messages, release preparation, branching decisions
 - **@frontend** - UI components, pages, forms, layouts, styling, CSS, state management, accessibility, responsive design, and other client-side frontend work
 - **@agent-builder** - Creating or modifying agents, skills, and slash commands
