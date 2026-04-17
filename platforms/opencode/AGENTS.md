@@ -88,6 +88,23 @@ Quick-access commands for common workflows:
 | `/agent-review` | Review agents, skills, and commands for correctness and consistency | agent-reviewer |
 | `/spec` | Research a goal and produce a design spec with task checklist | architect |
 
+### Suggested Workflows
+
+These are common starting points, not rigid rules. Pick the smallest workflow that fits the request.
+
+| Goal | Suggested flow |
+|---|---|
+| Ambiguous feature or cross-cutting change | `/spec` → specialist implementation command or `tech-lead` → `/review` or `/security` as needed → `/test` → `/commit` |
+| Straightforward backend work | `/backend-engineer` → `/test` → `/review` → `/commit` |
+| Database-heavy change | `/database-specialist` → `/test` if applicable → `/review` → `/commit` |
+| Frontend implementation | `/frontend` → `/frontend-polish` if needed → `/test` → `/review` → `/commit` |
+| Frontend critique before coding | `/frontend-audit` or `/frontend-critique` → `/frontend` or `/frontend-polish` → `/test` → `/review` |
+| Bug investigation | `/debug <issue>` → specialist follow-up if needed → `/test` → `/review` → `/commit` |
+| Security-sensitive change | `/spec` or implementation command → `/security` → `/test` → `/review` → `/commit` |
+| Documentation update | `/docs` → `/review` if the doc change affects technical accuracy significantly → `/commit` |
+| Agent/skill/command changes | `/agent-review` → `/agent-builder` → `/agent-review` → `/commit` |
+| Release preparation | `/review` or `/test` as needed → `/release` |
+
 ## General Guidelines
 
 - Read project config and nearby code before changing anything.
