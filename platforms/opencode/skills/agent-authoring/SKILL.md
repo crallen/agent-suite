@@ -264,7 +264,7 @@ Key conventions:
 - **Dynamic content**: Use `` !`command` `` syntax to inject shell command output into the prompt at invocation time. The `!` backtick block evaluates the command and replaces itself with the output.
 - **`$ARGUMENTS`**: Always present, always at the end. Replaced with whatever the user types after the slash command (e.g., `/debug the login page crashes` replaces `$ARGUMENTS` with "the login page crashes").
 - **Keep it short**. Commands are prompts, not documentation. 5-15 lines total.
-- **Multiple commands can route to the same agent** (e.g., `/commit` and `/release` both route to `git-manager`).
+- **Multiple commands can route to the same agent** (e.g., `/frontend`, `/frontend-polish`, and `/frontend-audit` route within the frontend workflow family).
 
 ## Color Palette
 

@@ -31,7 +31,7 @@ These are invoked automatically by the tech-lead or manually via `@mention`:
 | `@devops-engineer` | Docker, CI/CD, infrastructure configuration | Write access. Bash allowlisted for infrastructure and delivery toolchains. |
 | `@backend-engineer` | Backend application work: API handlers, services, auth/authz, validation, integrations, app-layer refactors | Write access. Bash allowlisted for app/runtime toolchains. |
 | `@database-specialist` | Schema design, migrations, indexes, query tuning, constraints, transactions, ORM/query-builder work where database behavior matters | Write access. Bash allowlisted for database and migration toolchains. |
-| `@git-manager` | Commits, branches, releases, changelogs | Write access. Bash limited to git and read commands. |
+| `@git-manager` | Release preparation, changelog generation, and versioning-heavy git workflow | Write access. Bash limited to git and read commands. |
 | `@frontend-engineer` | UI components, styling, accessibility, responsive design | Write access. Bash allowlisted for frontend build/test toolchains. |
 | `@frontend-auditor` | Read-only frontend audit and critique for UI quality, accessibility, responsiveness, and product-specific design fit | Read-only. Cannot modify files. |
 | `@agent-builder` | Creates, modifies, and reviews agents, skills, and slash commands | Write access. Bash limited to read-only commands. |
@@ -76,7 +76,7 @@ Quick-access commands for common workflows:
 | `/test` | Run tests and analyze results | tester |
 | `/debug <description>` | Start a systematic debugging session | debugger |
 | `/docs` | Generate or update documentation | documenter |
-| `/commit` | Stage logical changes when needed and create Conventional Commits | git-manager |
+| `/commit` | Stage logical changes when needed and create Conventional Commits | tech-lead |
 | `/release` | Prepare release notes, changelog, and version bump | git-manager |
 | `/backend-engineer` | Implement or modify backend application code | backend-engineer |
 | `/database-specialist` | Design or modify database schemas, migrations, queries, and indexes | database-specialist |
