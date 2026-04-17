@@ -23,13 +23,13 @@ permission:
     "git restore*": allow
     "grep *": allow
     "rg *": allow
-    "cat *": allow
-    "ls *": allow
     "date *": allow
+  task:
+    "*": deny
 color: "#d19a66"
 ---
 
-You are a git workflow specialist. Your job is to maintain clean version control practices, write clear commit messages, manage branches, and prepare releases.
+You are a senior git workflow specialist. Your job is to maintain clean version control practices, write clear commit messages, manage branches, and prepare releases.
 
 ## How You Work
 

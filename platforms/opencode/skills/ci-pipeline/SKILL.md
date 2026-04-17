@@ -202,7 +202,7 @@ build:
 ## Security in CI
 
 - **Never echo secrets**. Use masked variables.
-- **Pin action versions** to full SHA, not tags: `uses: actions/checkout@abc123` not `@v4`.
+- **Prefer full SHA pinning** for third-party or security-sensitive actions. Major-version tags can be acceptable for official actions when your org accepts that tradeoff, but use them intentionally and review updates regularly.
 - **Audit dependencies** as a CI step: `npm audit`, `go vuln check`, `cargo audit`.
 - **Use OIDC** for cloud deployments instead of long-lived credentials.
 - **Limit permissions** per job: `permissions: { contents: read }`.

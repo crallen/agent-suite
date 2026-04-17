@@ -25,15 +25,17 @@ These are invoked automatically by the tech-lead or manually via `@mention`:
 | `@architect` | Collaborative spec writing: clarify scope, explore approaches, produce a design and task checklist | Read-only. Cannot modify files. |
 | `@code-reviewer` | Code quality and best practices review | Read-only. Cannot modify files. |
 | `@security-analyst` | Security vulnerability assessment, dependency audits, threat modeling | Read-only. Cannot modify files. |
-| `@tester` | Test generation, coverage analysis, test strategy | Full access. Writes test files, runs test suites. |
-| `@debugger` | Root cause analysis and systematic debugging | Full access. Reads logs, traces code, applies fixes. |
+| `@tester` | Test generation, coverage analysis, test strategy | Write access. Bash allowlisted for test/build toolchains. |
+| `@debugger` | Root cause analysis and systematic debugging | Write access. Bash allowlisted for repro, diagnostics, and runtime toolchains. |
 | `@documenter` | Technical documentation and API docs | Write access. Bash limited to read-only commands. |
-| `@devops-engineer` | Docker, CI/CD, infrastructure configuration | Full access. Writes configs, runs build commands. |
-| `@backend-engineer` | Backend application work: API handlers, services, auth/authz, validation, integrations, app-layer refactors | Full access. Writes code, runs app and test commands. |
-| `@database-specialist` | Schema design, migrations, indexes, query tuning, constraints, transactions, ORM/query-builder work where database behavior matters | Full access. Writes migrations and query code, runs database verification commands. |
+| `@devops-engineer` | Docker, CI/CD, infrastructure configuration | Write access. Bash allowlisted for infrastructure and delivery toolchains. |
+| `@backend-engineer` | Backend application work: API handlers, services, auth/authz, validation, integrations, app-layer refactors | Write access. Bash allowlisted for app/runtime toolchains. |
+| `@database-specialist` | Schema design, migrations, indexes, query tuning, constraints, transactions, ORM/query-builder work where database behavior matters | Write access. Bash allowlisted for database and migration toolchains. |
 | `@git-manager` | Commits, branches, releases, changelogs | Write access. Bash limited to git and read commands. |
-| `@frontend-engineer` | UI components, styling, accessibility, responsive design | Full access. Builds and tests frontend code. |
+| `@frontend-engineer` | UI components, styling, accessibility, responsive design | Write access. Bash allowlisted for frontend build/test toolchains. |
+| `@frontend-auditor` | Read-only frontend audit and critique for UI quality, accessibility, responsiveness, and product-specific design fit | Read-only. Cannot modify files. |
 | `@agent-builder` | Creates, modifies, and reviews agents, skills, and slash commands | Write access. Bash limited to read-only commands. |
+| `@agent-reviewer` | Read-only review of agents, skills, and commands for correctness, permissions, and consistency | Read-only. Cannot modify files. |
 
 Plus the built-in subagents:
 
@@ -60,8 +62,8 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 | `ci-pipeline` | CI/CD patterns for GitHub Actions and GitLab CI with caching strategies | devops-engineer |
 | `backend-patterns` | Backend application patterns for handlers, services, validation, auth/authz, integrations, and app-layer refactors | backend-engineer, tech-lead |
 | `database-patterns` | Database design and performance patterns for schemas, migrations, indexes, constraints, transactions, and query behavior | database-specialist, tech-lead |
-| `frontend-patterns` | Frontend router for product context gathering, work-mode selection, escalation, and targeted reference selection | frontend-engineer |
-| `agent-authoring` | Schemas, templates, and conventions for creating agents, skills, and commands | agent-builder |
+| `frontend-patterns` | Frontend router for product context gathering, work-mode selection, escalation, and targeted reference selection | frontend-engineer, frontend-auditor |
+| `agent-authoring` | Schemas, templates, and conventions for creating agents, skills, and commands | agent-builder, agent-reviewer |
 
 ### Slash Commands
 
@@ -79,11 +81,11 @@ Quick-access commands for common workflows:
 | `/backend-engineer` | Implement or modify backend application code | backend-engineer |
 | `/database-specialist` | Design or modify database schemas, migrations, queries, and indexes | database-specialist |
 | `/frontend` | Build, update, or fix frontend UI components and pages | frontend-engineer |
-| `/frontend-audit` | Audit frontend quality, states, responsiveness, and anti-patterns without editing files | frontend-engineer |
-| `/frontend-critique` | Critique frontend UX and visual direction, then suggest targeted improvements | frontend-engineer |
+| `/frontend-audit` | Audit frontend quality, states, responsiveness, and anti-patterns without editing files | frontend-auditor |
+| `/frontend-critique` | Critique frontend UX and visual direction, then suggest targeted improvements | frontend-auditor |
 | `/frontend-polish` | Apply focused frontend polish before handoff with verification and restraint | frontend-engineer |
 | `/agent-builder` | Create or modify an agent, skill, or command | agent-builder |
-| `/agent-review` | Review agents, skills, and commands for correctness and consistency | agent-builder |
+| `/agent-review` | Review agents, skills, and commands for correctness and consistency | agent-reviewer |
 | `/spec` | Research a goal and produce a design spec with task checklist | architect |
 
 ## General Guidelines
@@ -91,6 +93,7 @@ Quick-access commands for common workflows:
 - Read project config and nearby code before changing anything.
 - For ambiguous or cross-cutting work, use `/spec` or `@architect` first.
 - Skills are the canonical long-form guidance. Keep agent bodies and commands short; load only what you need. For implementation work, start with `coding-guardrails` plus the domain skill.
+- Prefer deny-by-default shell permissions with role-scoped allowlists; reserve unrestricted shell access for cases that truly require it.
 - Route backend application work to `@backend-engineer`; when schema, SQL, migrations, indexes, transaction behavior, or database-heavy ORM/query-builder behavior are the real concern, involve `@database-specialist`.
 - For implementation work, surface assumptions, keep changes simple and scoped, and verify with explicit checks.
 - Match existing conventions and prefer the smallest change that satisfies the request.

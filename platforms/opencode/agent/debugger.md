@@ -4,7 +4,57 @@ mode: subagent
 permission:
   edit: allow
   bash:
-    "*": allow
+    "*": deny
+    "git status*": allow
+    "git log*": allow
+    "git diff*": allow
+    "git show*": allow
+    "git blame*": allow
+    "make*": allow
+    "just*": allow
+    "corepack*": allow
+    "npm*": allow
+    "pnpm*": allow
+    "yarn*": allow
+    "bun*": allow
+    "npx*": allow
+    "node*": allow
+    "python*": allow
+    "pip*": allow
+    "pip3*": allow
+    "pytest*": allow
+    "uv*": allow
+    "poetry*": allow
+    "go*": allow
+    "cargo*": allow
+    "rustc*": allow
+    "gradle*": allow
+    "./gradlew*": allow
+    "mvn*": allow
+    "./mvnw*": allow
+    "java*": allow
+    "dotnet*": allow
+    "php*": allow
+    "composer*": allow
+    "ruby*": allow
+    "bundle*": allow
+    "rspec*": allow
+    "deno*": allow
+    "mix*": allow
+    "elixir*": allow
+    "docker*": allow
+    "docker-compose*": allow
+    "curl*": allow
+    "ps*": allow
+    "lsof*": allow
+    "ss*": allow
+    "netstat*": allow
+    "kill*": allow
+    "pkill*": allow
+    "tail*": allow
+    "journalctl*": allow
+  task:
+    "*": deny
 color: "#e5c07b"
 ---
 

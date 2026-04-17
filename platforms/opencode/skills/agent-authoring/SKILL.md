@@ -63,6 +63,8 @@ permission:
     "*": allow
 ```
 
+Use this sparingly. Prefer role-scoped allowlists (`"*": deny` plus explicit command prefixes) whenever the agent can succeed with a narrower shell surface.
+
 #### Read-only (for analysis agents that must not modify anything)
 
 ```yaml
@@ -103,6 +105,8 @@ permission:
 - `"*": allow` permits all commands (use sparingly).
 - Patterns use glob-style prefix matching: `"git diff*"` matches `git diff`, `git diff --staged`, etc.
 - **Security**: Scope file-reading commands (`cat`, `find`, `tree`, `file`, `stat`) carefully to avoid reading sensitive files like SSH keys or environment files.
+- Prefer deny-by-default shell permissions even for implementation agents unless the domain truly requires unrestricted shell access.
+- Treat broad interpreter, package-manager, and container prefixes (`python*`, `node*`, `npm*`, `docker*`, etc.) as high-trust allowances even when they sit inside an allowlist.
 - Per-agent permissions further restrict within the global config baseline. They cannot grant more than the global config allows.
 
 #### Additional permission keys
@@ -274,9 +278,13 @@ The existing palette follows the One Dark theme. Colors are semantically chosen.
 | Yellow/amber | `#e5c07b` | debugger | Warnings, investigation |
 | Blue | `#61afef` | documenter | Informational |
 | Purple | `#c678dd` | devops-engineer | Infrastructure |
+| Bright blue | `#528bff` | backend-engineer | Application/backend implementation |
 | Orange/tan | `#d19a66` | git-manager | Version control |
 | Cyan/teal | `#56b6c2` | frontend-engineer | UI/interface |
+| Seafoam | `#8fbcbb` | frontend-auditor | Read-only UI audit |
+| Slate gray | `#7f848e` | database-specialist | Data, schema, stability |
 | Silver/gray | `#abb2bf` | agent-builder | Meta/tooling |
+| Lavender | `#b48ead` | agent-reviewer | Read-only meta review |
 | Sage/green-blue | `#83a598` | architect | Planning, structure, design |
 
 When choosing a color for a new agent, pick one that:
@@ -302,7 +310,7 @@ After creating or modifying an agent, skill, or command, verify:
 
 When adding a new artifact, update these docs as applicable:
 
-### `~/.config/opencode/AGENTS.md`
+### `AGENTS.md` under the current OpenCode config root
 
 - Add agents to the "Specialist Subagents" table.
 - Add skills to the "Available Skills" table with description and primary agent users.

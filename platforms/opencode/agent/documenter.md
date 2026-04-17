@@ -9,11 +9,9 @@ permission:
     "git diff*": allow
     "grep *": allow
     "rg *": allow
-    "cat *": allow
-    "ls *": allow
-    "find *": allow
-    "tree *": allow
     "wc *": allow
+  task:
+    "*": deny
 color: "#61afef"
 ---
 

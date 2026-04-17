@@ -10,6 +10,6 @@ Recent tags:
 !`git tag --sort=-version:refname | head -5`
 
 Commits since last tag:
-!`git log $(git describe --tags --abbrev=0 2>/dev/null || echo "HEAD~20")..HEAD --oneline`
+!`if git describe --tags --abbrev=0 >/dev/null 2>&1; then git log "$(git describe --tags --abbrev=0)"..HEAD --oneline; else git log --oneline -20; fi`
 
 $ARGUMENTS
