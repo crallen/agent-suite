@@ -1,155 +1,84 @@
 ---
 name: frontend-patterns
-description: Component architecture patterns, state management approaches, accessibility checklist, responsive design, and performance optimization for frontend development
+description: Frontend router for product context gathering, work-mode selection, escalation, and targeted reference selection
 ---
 
-## Component Architecture
+# Frontend Patterns
 
-### Component Types
+Load this skill first for frontend work. It is a router: gather the right context, decide whether to clarify or escalate, and then consult only the `frontend-patterns/reference/*` material that matches the task.
 
-| Type | Purpose | State | Examples |
-|------|---------|-------|---------|
-| **Presentational** | Render UI from props | None or local UI state only | Button, Card, Avatar, Badge |
-| **Container** | Manage data and logic | Yes, fetches/manages data | UserProfile, Dashboard, OrderList |
-| **Layout** | Structure and composition | None | PageLayout, Sidebar, Grid |
-| **Page** | Route-level entry point | Manages route-level data | HomePage, SettingsPage |
+## Non-Negotiables
 
-### Component Design Rules
+- Reuse the existing visual system before inventing a new one.
+- Avoid generic AI-polished UI that ignores the product's actual workflow and tone.
+- Cover the states that matter: loading, empty, error, disabled, focus, and success when relevant.
+- Verify explicitly. Do not stop at "the JSX/CSS looks right."
+- Escalate to `@architect` or `/spec` when the request is really about workflow, information architecture, or product direction.
 
-1. **Single responsibility** - One component, one job. If a component needs an "and" in its description, split it.
-2. **Props down, events up** - Data flows down through props. User actions propagate up through callbacks/events.
-3. **Prefer composition** - Use children/slots to compose components instead of adding configuration props.
-4. **Consistent prop naming**:
-   - Boolean props: `isDisabled`, `hasError`, `shouldAutoFocus`
-   - Event handlers: `onClick`, `onChange`, `onSubmit`
-   - Render props: `renderHeader`, `renderItem`
-5. **Sensible defaults** - Optional props should have defaults that produce the most common behavior.
+## 1. Gather Product and Screen Context
 
-### File Organization
+Before changing UI, gather enough context to avoid shipping a generic answer.
 
-Colocate related files:
+### Read These Sources First
 
-```
-components/
-  Button/
-    Button.tsx          # Component
-    Button.test.tsx     # Tests
-    Button.module.css   # Styles (or .styled.ts)
-    index.ts            # Public export
-```
+- The target route, page, or component entry point
+- Shared UI primitives, layout wrappers, tokens, and styling config
+- Nearby screens that solve a similar product problem
+- Existing copy, empty states, and loading/error handling
+- Tests, stories, snapshots, or docs if they exist
 
-## State Management
+### Clarify When These Are Missing
 
-### Choosing the Right State Location
+- Primary user goal or success condition
+- Important states (loading, empty, error, disabled, success)
+- Interaction model (inline edit, modal, drawer, navigation change)
+- Constraints from existing design system, brand, or accessibility expectations
 
-| State type | Where to put it |
+## 2. Choose the Work Mode
+
+| Situation | Default move |
 |---|---|
-| **UI-only** (dropdown open, hover) | Local component state |
-| **Shared between siblings** | Lift to nearest common parent |
-| **Used across distant components** | Context, store, or URL |
-| **Server data** | Server state library (React Query, SWR, TanStack Query) |
-| **URL-dependent** (filters, pagination) | URL search params |
-| **Persisted across sessions** | localStorage + state sync |
+| Clear UI bug or scoped feature | Implement directly, following local patterns |
+| Request is visually vague but nearby precedent exists | Infer from adjacent screens and shared primitives |
+| Product intent is unclear and multiple designs are plausible | Ask concise clarifying questions before encoding assumptions |
+| Request implies broader workflow or information architecture changes | Recommend spec/design clarification before large implementation |
 
-### Rules of Thumb
+## 3. Route to the Right Frontend Reference
 
-- Start with local state. Lift only when needed.
-- Keep server state separate from client state. Use dedicated data fetching libraries.
-- Derive values instead of syncing state. If state B can be computed from state A, don't store B separately.
-- URL is state too. Filters, sort order, pagination, and selected tabs should be in the URL for shareability and back-button support.
+Consult only what the task needs. One small UI fix does not need the whole frontend stack in context.
 
-## Accessibility Checklist
+| If the task is mainly about... | Consult this reference |
+|---|---|
+| Visual direction, hierarchy, typography, color, spacing, motion, interaction tone, or avoiding generic UI | `reference/design-direction.md` |
+| AI-slop smells, repeated UI mistakes, overused polish patterns, or what to avoid before refining a surface | `reference/anti-patterns.md` |
+| Component boundaries, state placement, extraction, forms, tables, lists, page shells, or UI composition | `reference/component-architecture.md` |
+| Keyboard behavior, semantics, labels, focus, dialogs/menus/drawers, narrow screens, overflow, or touch behavior | `reference/accessibility-responsive.md` |
+| Proof, state coverage, QA checklist, or concise frontend handoff notes | `reference/verification.md` |
 
-### Structure
-- [ ] Semantic HTML elements used (`button`, `nav`, `main`, `section`, `article`, `aside`, `header`, `footer`)
-- [ ] Heading hierarchy is logical (h1 -> h2 -> h3, no skipped levels)
-- [ ] Page has exactly one `<main>` element
-- [ ] Landmarks are used to define page regions
+### Common Load Sets
 
-### Keyboard
-- [ ] All interactive elements are focusable (buttons, links, inputs, custom widgets)
-- [ ] Focus order follows visual order (no unexpected tab jumps)
-- [ ] Focus is visible (never `outline: none` without a replacement)
-- [ ] Custom widgets support expected keyboard patterns (Enter/Space for buttons, Arrow keys for menus)
-- [ ] Focus is trapped in modals and restored when modals close
-- [ ] Keyboard shortcuts don't conflict with screen reader shortcuts
+| Task shape | Typical skill load |
+|---|---|
+| Small component or form refinement | `reference/component-architecture.md` + `reference/accessibility-responsive.md` |
+| Visually weak or under-specified screen | `reference/design-direction.md` + whichever implementation reference fits |
+| Complex screen update with meaningful UI behavior | `reference/component-architecture.md` + `reference/accessibility-responsive.md` + `reference/verification.md` |
+| Audit or critique of an existing surface | `reference/design-direction.md` + `reference/anti-patterns.md` + `reference/verification.md` |
+| Final pass before handoff | `reference/verification.md`, plus any missing design/accessibility reference |
 
-### Content
-- [ ] Images have meaningful `alt` text (or `alt=""` for decorative images)
-- [ ] Links have descriptive text (not "click here")
-- [ ] Form inputs have associated `<label>` elements
-- [ ] Required fields are indicated (not just by color)
-- [ ] Error messages are associated with their inputs (`aria-describedby`)
-- [ ] Status messages use `aria-live` regions for dynamic updates
+## 4. Escalate Instead of Improvising
 
-### Visual
-- [ ] Color contrast meets WCAG AA: 4.5:1 normal text, 3:1 large text
-- [ ] Information is not conveyed by color alone
-- [ ] Text can be resized to 200% without loss of functionality
-- [ ] No content requires horizontal scrolling at 320px viewport width
-- [ ] Motion/animation respects `prefers-reduced-motion`
+- Escalate when the request changes navigation, information architecture, or multi-screen workflow.
+- Escalate when brand direction or visual tone is explicitly undecided and multiple valid answers would materially change the implementation.
+- Escalate when the current design system is too incomplete to support a confident change without inventing too much.
+- For local UI work, prefer inference from adjacent screens over asking broad design questions.
 
-## Responsive Design
+## 5. Report What You Loaded and Verified
 
-### Mobile-First Approach
+- Name the local precedent, primitives, or tokens that informed the change when helpful.
+- State which frontend references guided the work if the decision-making would otherwise be opaque.
+- Report what you verified directly and what still needs browser or human confirmation.
 
-Start with the smallest viewport. Add complexity for larger screens:
+## Anti-Patterns
 
-```css
-/* Base styles: mobile */
-.container {
-  padding: 1rem;
-}
-
-/* Tablet and up */
-@media (min-width: 768px) {
-  .container {
-    padding: 2rem;
-    max-width: 720px;
-  }
-}
-
-/* Desktop and up */
-@media (min-width: 1024px) {
-  .container {
-    max-width: 960px;
-  }
-}
-```
-
-### Common Breakpoints
-
-| Name | Width | Target |
-|------|-------|--------|
-| sm | 640px | Large phones |
-| md | 768px | Tablets |
-| lg | 1024px | Small laptops |
-| xl | 1280px | Desktops |
-| 2xl | 1536px | Large screens |
-
-### Responsive Patterns
-
-- **Stacking**: Multi-column layouts stack to single column on mobile.
-- **Off-canvas**: Navigation moves to a slide-out drawer on mobile.
-- **Priority+**: Show most important items; overflow into a "more" menu.
-- **Responsive images**: Use `srcset` and `sizes` for appropriate resolution.
-
-## Performance
-
-### Rendering
-- Avoid re-renders: memoize only when profiling shows a bottleneck (not preemptively).
-- Virtualize long lists (1000+ items). Use windowing libraries.
-- Debounce expensive input handlers (search, resize, scroll).
-- Use CSS for animations instead of JavaScript when possible.
-
-### Loading
-- Code-split routes and heavy components with lazy loading.
-- Preload critical resources (`<link rel="preload">`).
-- Optimize images: correct size, modern format (WebP/AVIF), lazy loading for below-fold.
-- Minimize blocking resources in `<head>`.
-
-### Bundle Size
-- Import only what you need: `import { debounce } from 'lodash-es'` not `import _ from 'lodash'`.
-- Analyze your bundle regularly (`webpack-bundle-analyzer`, `source-map-explorer`).
-- Tree-shake unused code (use ESM imports).
-- Consider lighter alternatives for heavy dependencies.
+- Generic "dashboard polish" that ignores the product's real tone and structure
+- Pulling every frontend reference into a small, local change

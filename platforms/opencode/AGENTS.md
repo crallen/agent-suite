@@ -60,7 +60,7 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 | `ci-pipeline` | CI/CD patterns for GitHub Actions and GitLab CI with caching strategies | devops |
 | `backend-patterns` | Backend application patterns for handlers, services, validation, auth/authz, integrations, and app-layer refactors | backend-engineer, tech-lead |
 | `database-patterns` | Database design and performance patterns for schemas, migrations, indexes, constraints, transactions, and query behavior | database-specialist, tech-lead |
-| `frontend-patterns` | Component architecture, state management, accessibility, responsive design | frontend |
+| `frontend-patterns` | Frontend router for product context gathering, work-mode selection, escalation, and targeted reference selection | frontend |
 | `agent-authoring` | Schemas, templates, and conventions for creating agents, skills, and commands | agent-builder |
 
 ### Slash Commands
@@ -79,6 +79,9 @@ Quick-access commands for common workflows:
 | `/backend-engineer` | Implement or modify backend application code | backend-engineer |
 | `/database-specialist` | Design or modify database schemas, migrations, queries, and indexes | database-specialist |
 | `/frontend` | Build, update, or fix frontend UI components and pages | frontend |
+| `/frontend-audit` | Audit frontend quality, states, responsiveness, and anti-patterns without editing files | frontend |
+| `/frontend-critique` | Critique frontend UX and visual direction, then suggest targeted improvements | frontend |
+| `/frontend-polish` | Apply focused frontend polish before handoff with verification and restraint | frontend |
 | `/agent-builder` | Create or modify an agent, skill, or command | agent-builder |
 | `/agent-review` | Review agents, skills, and commands for correctness and consistency | agent-builder |
 | `/spec` | Research a goal and produce a design spec with task checklist | architect |
