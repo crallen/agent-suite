@@ -7,7 +7,7 @@ subtask: true
 Create or modify an OpenCode agent, skill, or slash command. Follow the established schemas and conventions.
 
 Current agents:
-!`ls ~/.config/opencode/agents/`
+!`ls ~/.config/opencode/agent/`
 
 Current skills:
 !`ls ~/.config/opencode/skills/`

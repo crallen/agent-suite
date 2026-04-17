@@ -7,13 +7,15 @@ description: Schemas, templates, conventions, and validation rules for creating 
 
 This skill contains the exact schemas, conventions, and templates for authoring OpenCode agents, skills, and slash commands. Use it whenever creating or modifying these artifacts.
 
+Paths below are relative to the OpenCode config root at `~/.config/opencode/`. In a dotfiles repo, that root may be mirrored elsewhere (for example via GNU Stow), but the artifact layout stays the same.
+
 ## File Locations and Naming
 
 | Artifact | Location | Naming Rule | Identifier |
 |---|---|---|---|
-| Agent | `.opencode/agents/<name>.md` | kebab-case filename | Filename sans `.md` (becomes `@name`) |
-| Skill | `.opencode/skills/<name>/SKILL.md` | kebab-case directory name | Directory name = `name` in frontmatter |
-| Command | `.opencode/commands/<name>.md` | kebab-case filename | Filename sans `.md` (becomes `/name`) |
+| Agent | `agent/<name>.md` | kebab-case filename | Filename sans `.md` (becomes `@name`) |
+| Skill | `skills/<name>/SKILL.md` | kebab-case directory name | Directory name = `name` in frontmatter |
+| Command | `commands/<name>.md` | kebab-case filename | Filename sans `.md` (becomes `/name`) |
 
 Identifiers must be consistent across all references:
 - Commands reference agents by their filename identifier in the `agent:` frontmatter key.
@@ -175,7 +177,7 @@ description: One-sentence description of the skill's content.
 
 | Key | Type | Required | Description |
 |---|---|---|---|
-| `name` | string | Yes | Must exactly match the directory name under `.opencode/skills/`. |
+| `name` | string | Yes | Must exactly match the directory name under `skills/`. |
 | `description` | string | Yes | One-sentence summary. Displayed in the skill tool's available skills listing. |
 
 ### Body Structure
@@ -268,6 +270,7 @@ The existing palette follows the One Dark theme. Colors are semantically chosen.
 | Orange/tan | `#d19a66` | git-manager | Version control |
 | Cyan/teal | `#56b6c2` | frontend | UI/interface |
 | Silver/gray | `#abb2bf` | agent-builder | Meta/tooling |
+| Sage/green-blue | `#83a598` | architect | Planning, structure, design |
 
 When choosing a color for a new agent, pick one that:
 1. Is not already used by another agent.
@@ -285,11 +288,11 @@ After creating or modifying an agent, skill, or command, verify:
 - [ ] **Frontmatter is complete**: All required keys are present with valid values.
 - [ ] **Body follows conventions**: Opening persona line (agents), no persona (skills), `$ARGUMENTS` at end (commands).
 - [ ] **AGENTS.md is updated**: New agents appear in the subagent table, new skills in the skills table, new commands in the commands table.
-- [ ] **README.md is updated**: Same tables are updated for user-facing documentation.
+- [ ] **User-facing docs are updated if present**: README or other suite docs are kept in sync when this repo actually includes them.
 
-## Updating Global Documentation
+## Updating Suite Documentation
 
-When adding a new artifact, update these files:
+When adding a new artifact, update these docs as applicable:
 
 ### `~/.config/opencode/AGENTS.md`
 
@@ -297,8 +300,7 @@ When adding a new artifact, update these files:
 - Add skills to the "Available Skills" table with description and primary agent users.
 - Add commands to the "Slash Commands" table with description and agent.
 
-### `README.md`
+### `README.md` or other user-facing docs (if present)
 
-- Add agents to the "Agents" table under "What's Inside".
-- Add skills to the "Skills" table.
-- Add commands to the "Slash Commands" table.
+- Update any public-facing summary tables so they match the suite on disk.
+- If the repo has no README or equivalent docs file, do not invent one just to satisfy a checklist item.

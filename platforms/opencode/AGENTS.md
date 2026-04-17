@@ -4,12 +4,13 @@ A custom suite of software engineering agents, skills, and commands designed for
 
 ## Agent Suite
 
-### Primary Agent: Architect (default)
+### Primary Agent: Tech Lead (default)
 
-The **architect** is the default primary agent and acts as an orchestrator. It:
+The **tech-lead** is the default primary agent and acts as the executing orchestrator. It:
 
 - Analyzes requests and breaks complex work into structured plans
 - Delegates specialist work to subagents via the Task tool
+- Delegates to `@architect` when work needs a design spec before implementation
 - Integrates results from subagents into cohesive solutions
 - Handles straightforward tasks directly without delegation
 
@@ -17,10 +18,11 @@ Switch to the built-in **plan** agent (Tab key) for read-only analysis and plann
 
 ### Specialist Subagents
 
-These are invoked automatically by the architect or manually via `@mention`:
+These are invoked automatically by the tech-lead or manually via `@mention`:
 
 | Agent | Purpose | Permissions |
 |---|---|---|
+| `@architect` | Collaborative spec writing: clarify scope, explore approaches, produce a design and task checklist | Read-only. Cannot modify files. |
 | `@code-reviewer` | Code quality and best practices review | Read-only. Cannot modify files. |
 | `@security-analyst` | Security vulnerability assessment, dependency audits, threat modeling | Read-only. Cannot modify files. |
 | `@tester` | Test generation, coverage analysis, test strategy | Full access. Writes test files, runs test suites. |
@@ -30,7 +32,6 @@ These are invoked automatically by the architect or manually via `@mention`:
 | `@git-manager` | Commits, branches, releases, changelogs | Write access. Bash limited to git and read commands. |
 | `@frontend` | UI components, styling, accessibility, responsive design | Full access. Builds and tests frontend code. |
 | `@agent-builder` | Creates, modifies, and reviews agents, skills, and slash commands | Write access. Bash limited to read-only commands. |
-| `@strategist` | Research a goal and produce a structured execution plan before any work begins | Read-only. Cannot modify files. |
 
 Plus the built-in subagents:
 
@@ -45,8 +46,9 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 
 | Skill | Description | Primary users |
 |---|---|---|
-| `git-conventions` | Conventional Commits format, branching model, commit hygiene | git-manager, architect |
-| `test-strategy` | Test type selection, coverage targets, mocking guidelines | tester, architect |
+| `spec-writing` | Scope decomposition, clarifying dialogue, approach exploration, staged design presentation, and spec self-review | architect |
+| `git-conventions` | Conventional Commits format, branching model, commit hygiene | git-manager, tech-lead |
+| `test-strategy` | Test type selection, coverage targets, mocking guidelines | tester, tech-lead |
 | `code-review-checklist` | Structured review rubric across 7 categories with severity levels | code-reviewer |
 | `security-analysis` | Vulnerability taxonomy, data flow analysis, dependency auditing, remediation patterns | security-analyst |
 | `debugging-methodology` | 5-phase debugging workflow: reproduce, gather, hypothesize, test, fix | debugger |
@@ -67,12 +69,12 @@ Quick-access commands for common workflows:
 | `/test` | Run tests and analyze results | tester |
 | `/debug <description>` | Start a systematic debugging session | debugger |
 | `/docs` | Generate or update documentation | documenter |
-| `/commit` | Create a Conventional Commits message from staged changes | git-manager |
+| `/commit` | Stage logical changes when needed and create Conventional Commits | git-manager |
 | `/release` | Prepare release notes, changelog, and version bump | git-manager |
 | `/frontend` | Build, update, or fix frontend UI components and pages | frontend |
-| `/agent` | Create or modify an agent, skill, or command | agent-builder |
+| `/agent-builder` | Create or modify an agent, skill, or command | agent-builder |
 | `/agent-review` | Review agents, skills, and commands for correctness and consistency | agent-builder |
-| `/plan` | Research a goal and produce a structured execution plan with task checklist | strategist |
+| `/spec` | Research a goal and produce a design spec with task checklist | architect |
 
 ## General Guidelines
 

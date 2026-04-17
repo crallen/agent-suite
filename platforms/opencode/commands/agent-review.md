@@ -9,7 +9,7 @@ Review the existing agents, skills, and slash commands for correctness, consiste
 If specific artifacts are named, focus the review there. Otherwise, audit the full suite.
 
 Current agents:
-!`ls ~/.config/opencode/agents/`
+!`ls ~/.config/opencode/agent/`
 
 Current skills:
 !`ls ~/.config/opencode/skills/`

@@ -6,10 +6,9 @@ subtask: true
 
 Review the following code for quality, security, performance, and maintainability issues.
 
-If no specific files are mentioned, review the currently staged changes:
-!`git diff --staged`
+If specific files are named, focus there. Otherwise, review the current working diff below: prefer the staged diff when present; fall back to the unstaged diff when nothing is staged.
 
-If the staging area is empty, review the unstaged changes:
-!`git diff`
+Current review diff:
+!`if git diff --staged --quiet; then git diff; else git diff --staged; fi`
 
 $ARGUMENTS
