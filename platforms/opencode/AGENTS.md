@@ -12,7 +12,7 @@ The **tech-lead** is the default primary agent and acts as the executing orchest
 - Delegates specialist work to subagents via the Task tool
 - Delegates to `@architect` when work needs a design spec before implementation
 - Integrates results from subagents into cohesive solutions
-- Handles straightforward tasks directly without delegation
+- Handles straightforward tasks directly, including basic shell work and routine git/GitHub operations
 
 Switch to the built-in **plan** agent (Tab key) for read-only analysis and planning.
 
@@ -31,7 +31,7 @@ These are invoked automatically by the tech-lead or manually via `@mention`:
 | `@devops-engineer` | Docker, CI/CD, infrastructure configuration | Write access. Bash allowlisted for infrastructure and delivery toolchains. |
 | `@backend-engineer` | Backend application work: API handlers, services, auth/authz, validation, integrations, app-layer refactors | Write access. Bash allowlisted for app/runtime toolchains. |
 | `@database-specialist` | Schema design, migrations, indexes, query tuning, constraints, transactions, ORM/query-builder work where database behavior matters | Write access. Bash allowlisted for database and migration toolchains. |
-| `@git-manager` | Release preparation, changelog generation, and versioning-heavy git workflow | Write access. Bash limited to git and read commands. |
+| `@git-manager` | Release preparation, changelog generation, and versioning-heavy git workflow | Write access. Bash limited to git, `gh`, and read commands. |
 | `@frontend-engineer` | UI components, styling, accessibility, responsive design | Write access. Bash allowlisted for frontend build/test toolchains. |
 | `@frontend-auditor` | Read-only frontend audit and critique for UI quality, accessibility, responsiveness, and product-specific design fit | Read-only. Cannot modify files. |
 | `@agent-builder` | Creates, modifies, and reviews agents, skills, and slash commands | Write access. Bash limited to read-only commands. |
@@ -114,5 +114,6 @@ These are common starting points, not rigid rules. Pick the smallest workflow th
 - Route backend application work to `@backend-engineer`; when schema, SQL, migrations, indexes, transaction behavior, or database-heavy ORM/query-builder behavior are the real concern, involve `@database-specialist`.
 - For implementation work, surface assumptions, keep changes simple and scoped, and verify with explicit checks.
 - Match existing conventions and prefer the smallest change that satisfies the request.
+- Use the GitHub CLI (`gh`) for GitHub-hosted tasks when shell access is appropriate.
 - Use `/review`, `/security`, `/test`, `/docs`, and `/commit` as appropriate to keep quality, docs, and history clean.
 - Never read `.env` files via any method.
