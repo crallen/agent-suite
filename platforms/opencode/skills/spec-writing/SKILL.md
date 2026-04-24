@@ -196,4 +196,4 @@ Every non-trivial claim in the spec should be backed by something you've read. I
 
 ## Handoff
 
-The terminal state of this workflow is delivering an approved spec to the executor (the `@tech-lead`). Do not begin implementation yourself. If the user wants the spec saved as a file, ask for confirmation and write it to disk with a date-stamped filename like `docs/specs/YYYY-MM-DD-<topic>.md` (or follow the project's existing convention if one exists).
+The terminal state of this workflow is delivering an approved spec to the executor (the `@tech-lead`). Do not begin implementation yourself. If the user wants the spec saved as a file, ask for confirmation and write it to disk with a date-stamped filename like `docs/specs/YYYY-MM-DD-<topic>.md` (or follow the project's existing convention if one exists). For greenfield projects or early-stage work, a top-level `DESIGN.md` is also appropriate.
