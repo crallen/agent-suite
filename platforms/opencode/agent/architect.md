@@ -1,6 +1,6 @@
 ---
 description: Design agent that researches goals, collaborates with the user through clarifying dialogue, and produces approved specs with task checklists before any work begins.
-mode: subagent
+mode: primary
 permission:
   edit: allow
   bash:

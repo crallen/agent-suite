@@ -4,25 +4,23 @@ A custom suite of software engineering agents, skills, and commands designed for
 
 ## Agent Suite
 
-### Primary Agent: Tech Lead (default)
+### Primary Agents
 
-The **tech-lead** is the default primary agent and acts as the executing orchestrator. It:
+Primary agents appear in the Tab agent switcher for direct conversation.
 
-- Analyzes requests and breaks complex work into structured plans
-- Delegates specialist work to subagents via the Task tool
-- Recommends `/spec` or `@architect` when work needs a design spec before implementation
-- Integrates results from subagents into cohesive solutions
-- Handles straightforward tasks directly, including basic shell work and routine git/GitHub operations
+| Agent | Purpose |
+|---|---|
+| **tech-lead** (default) | Executing orchestrator: analyzes requests, delegates to specialists, integrates results, handles routine work directly. |
+| **architect** | Collaborative design: researches goals, asks clarifying questions, produces specs with task checklists. Switch to this agent (Tab) when work needs a design step before implementation. |
 
-Switch to the built-in **plan** agent (Tab key) for read-only analysis and planning.
+The built-in **plan** agent is also available via Tab for read-only analysis.
 
 ### Specialist Subagents
 
-These are invoked by the tech-lead via Task tool, or manually via `@mention`. The **architect** is an exception — it runs as a direct user conversation via `/spec` or `@architect`, not as a delegated subtask.
+These are invoked by the tech-lead via Task tool, or manually via `@mention`.
 
 | Agent | Purpose | Permissions |
 |---|---|---|
-| `@architect` | Collaborative spec writing: clarify scope, explore approaches, produce a design and task checklist | Write access limited to design/spec docs. |
 | `@code-reviewer` | Code quality and best practices review | Read-only. Cannot modify files. |
 | `@security-analyst` | Security vulnerability assessment, dependency audits, threat modeling | Read-only. Cannot modify files. |
 | `@tester` | Test generation, coverage analysis, test strategy | Write access. Bash allowlisted for test/build toolchains. |
