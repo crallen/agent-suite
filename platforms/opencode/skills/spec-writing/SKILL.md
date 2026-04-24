@@ -141,7 +141,7 @@ Present the finished spec and ask for review. If the user requests changes, appl
 
 Suggested wording:
 
-> "Here's the spec. Let me know if you want any changes before we hand this to the tech-lead for execution — or I can save it as a file first if you want to review it offline."
+> "Here's the spec. Let me know if you want any changes before we hand this to the tech-lead for execution — or I can save it as a file first."
 
 ## Design Principles
 
@@ -196,4 +196,4 @@ Every non-trivial claim in the spec should be backed by something you've read. I
 
 ## Handoff
 
-The terminal state of this workflow is delivering an approved spec to the executor (the `@tech-lead`). Do not begin implementation yourself. If the user wants the spec saved as a file, hand off to `@documenter` to write it to disk with a date-stamped filename like `docs/specs/YYYY-MM-DD-<topic>.md`.
+The terminal state of this workflow is delivering an approved spec to the executor (the `@tech-lead`). Do not begin implementation yourself. If the user wants the spec saved as a file, ask for confirmation and write it to disk with a date-stamped filename like `docs/specs/YYYY-MM-DD-<topic>.md` (or follow the project's existing convention if one exists).

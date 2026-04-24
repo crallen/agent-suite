@@ -22,7 +22,7 @@ These are invoked by the tech-lead via Task tool, or manually via `@mention`. Th
 
 | Agent | Purpose | Permissions |
 |---|---|---|
-| `@architect` | Collaborative spec writing: clarify scope, explore approaches, produce a design and task checklist | Read-only. Cannot modify files. |
+| `@architect` | Collaborative spec writing: clarify scope, explore approaches, produce a design and task checklist | Write access limited to design/spec docs. |
 | `@code-reviewer` | Code quality and best practices review | Read-only. Cannot modify files. |
 | `@security-analyst` | Security vulnerability assessment, dependency audits, threat modeling | Read-only. Cannot modify files. |
 | `@tester` | Test generation, coverage analysis, test strategy | Write access. Bash allowlisted for test/build toolchains. |
