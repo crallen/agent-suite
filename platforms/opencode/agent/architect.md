@@ -5,10 +5,15 @@ permission:
   edit: allow
   bash:
     "*": deny
+    "git status*": allow
     "git log*": allow
     "git diff*": allow
     "git show*": allow
-    "git status*": allow
+    "git blame*": allow
+    "git rev-parse*": allow
+    "git add*": allow
+    "git commit*": allow
+    "git branch*": allow
   task:
     "*": deny
     "explore": allow
