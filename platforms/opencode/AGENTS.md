@@ -10,7 +10,7 @@ The **tech-lead** is the default primary agent and acts as the executing orchest
 
 - Analyzes requests and breaks complex work into structured plans
 - Delegates specialist work to subagents via the Task tool
-- Delegates to `@architect` when work needs a design spec before implementation
+- Recommends `/spec` or `@architect` when work needs a design spec before implementation
 - Integrates results from subagents into cohesive solutions
 - Handles straightforward tasks directly, including basic shell work and routine git/GitHub operations
 
@@ -18,7 +18,7 @@ Switch to the built-in **plan** agent (Tab key) for read-only analysis and plann
 
 ### Specialist Subagents
 
-These are invoked automatically by the tech-lead or manually via `@mention`:
+These are invoked by the tech-lead via Task tool, or manually via `@mention`. The **architect** is an exception — it runs as a direct user conversation via `/spec` or `@architect`, not as a delegated subtask.
 
 | Agent | Purpose | Permissions |
 |---|---|---|
@@ -108,7 +108,7 @@ These are common starting points, not rigid rules. Pick the smallest workflow th
 ## General Guidelines
 
 - Read project config and nearby code before changing anything.
-- For ambiguous or cross-cutting work, use `/spec` or `@architect` first.
+- For ambiguous or cross-cutting work, use `/spec` or `@architect` first. The architect is a collaborative dialogue agent — always invoke it directly, never via Task delegation.
 - Skills are the canonical long-form guidance. Keep agent bodies and commands short; load only what you need. For implementation work, start with `coding-guardrails` plus the domain skill.
 - Prefer deny-by-default shell permissions with role-scoped allowlists; reserve unrestricted shell access for cases that truly require it.
 - Route backend application work to `@backend-engineer`; when schema, SQL, migrations, indexes, transaction behavior, or database-heavy ORM/query-builder behavior are the real concern, involve `@database-specialist`.
