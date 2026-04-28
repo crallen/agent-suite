@@ -3,16 +3,7 @@ description: Analyzes code and configuration for security vulnerabilities, suppl
 mode: subagent
 permission:
   edit: deny
-  bash:
-    "*": deny
-    "git diff*": allow
-    "git log*": allow
-    "git show*": allow
-    "curl --head *": allow
-    "npm audit*": allow
-    "yarn audit*": allow
-    "pip audit*": allow
-    "pip-audit*": allow
+  bash: allow
   task:
     "*": deny
 color: "#be5046"

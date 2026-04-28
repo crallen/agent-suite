@@ -3,13 +3,7 @@ description: Reviews code for quality, security vulnerabilities, performance iss
 mode: subagent
 permission:
   edit: deny
-  bash:
-    "*": deny
-    "git diff*": allow
-    "git log*": allow
-    "git show*": allow
-    "git blame*": allow
-    "wc *": allow
+  bash: allow
   task:
     "*": deny
 color: "#e06c75"

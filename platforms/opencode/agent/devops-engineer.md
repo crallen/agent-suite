@@ -3,66 +3,7 @@ description: Handles Docker configuration, CI/CD pipelines, infrastructure-as-co
 mode: subagent
 permission:
   edit: allow
-  bash:
-    "*": deny
-    "git status*": allow
-    "git log*": allow
-    "git diff*": allow
-    "git show*": allow
-    "git blame*": allow
-    "make*": allow
-    "just*": allow
-    "corepack*": allow
-    "npm*": allow
-    "pnpm*": allow
-    "yarn*": allow
-    "bun*": allow
-    "npx*": allow
-    "node*": allow
-    "python*": allow
-    "pip*": allow
-    "pip3*": allow
-    "pytest*": allow
-    "uv*": allow
-    "poetry*": allow
-    "go*": allow
-    "cargo*": allow
-    "rustc*": allow
-    "gradle*": allow
-    "./gradlew*": allow
-    "mvn*": allow
-    "./mvnw*": allow
-    "java*": allow
-    "dotnet*": allow
-    "php*": allow
-    "composer*": allow
-    "ruby*": allow
-    "bundle*": allow
-    "rspec*": allow
-    "deno*": allow
-    "mix*": allow
-    "elixir*": allow
-    "docker*": allow
-    "docker-compose*": allow
-    "kubectl*": allow
-    "helm*": allow
-    "terraform*": allow
-    "tofu*": allow
-    "ansible*": allow
-    "aws*": allow
-    "gcloud*": allow
-    "az*": allow
-    "curl*": allow
-    "openssl*": allow
-    "ssh*": allow
-    "scp*": allow
-    "rsync*": allow
-    "systemctl*": allow
-    "journalctl*": allow
-    "ps*": allow
-    "lsof*": allow
-    "ss*": allow
-    "netstat*": allow
+  bash: allow
   task:
     "*": deny
 color: "#c678dd"

@@ -4,12 +4,7 @@ mode: subagent
 hidden: true
 permission:
   edit: deny
-  bash:
-    "*": deny
-    "git diff*": allow
-    "git log*": allow
-    "git show*": allow
-    "wc *": allow
+  bash: allow
   task:
     "*": deny
 color: "#b48ead"

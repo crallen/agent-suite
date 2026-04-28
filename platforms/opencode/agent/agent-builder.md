@@ -3,10 +3,7 @@ description: Creates, modifies, and reviews OpenCode agents, skills, and slash c
 mode: subagent
 permission:
   edit: allow
-  bash:
-    "*": deny
-    "grep *": allow
-    "rg *": allow
+  bash: allow
   task:
     "*": deny
 color: "#abb2bf"

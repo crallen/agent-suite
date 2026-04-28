@@ -3,13 +3,7 @@ description: Writes and maintains technical documentation including READMEs, API
 mode: subagent
 permission:
   edit: allow
-  bash:
-    "*": deny
-    "git log*": allow
-    "git diff*": allow
-    "grep *": allow
-    "rg *": allow
-    "wc *": allow
+  bash: allow
   task:
     "*": deny
 color: "#61afef"

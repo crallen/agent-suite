@@ -3,29 +3,7 @@ description: Manages git workflow including logical commit grouping, Conventiona
 mode: subagent
 permission:
   edit: allow
-  bash:
-    "*": deny
-    "git status*": allow
-    "git log*": allow
-    "git diff*": allow
-    "git show*": allow
-    "git blame*": allow
-    "git add*": allow
-    "git commit*": allow
-    "git branch*": allow
-    "git tag*": allow
-    "git describe*": allow
-    "git rev-parse*": allow
-    "git remote*": allow
-    "git fetch*": allow
-    "git push*": allow
-    "git switch*": allow
-    "git restore*": allow
-    "gh": allow
-    "gh *": allow
-    "grep *": allow
-    "rg *": allow
-    "date *": allow
+  bash: allow
   task:
     "*": deny
 color: "#d19a66"

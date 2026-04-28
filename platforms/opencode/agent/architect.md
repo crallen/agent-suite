@@ -3,17 +3,7 @@ description: Design agent that researches goals, collaborates with the user thro
 mode: primary
 permission:
   edit: allow
-  bash:
-    "*": deny
-    "git status*": allow
-    "git log*": allow
-    "git diff*": allow
-    "git show*": allow
-    "git blame*": allow
-    "git rev-parse*": allow
-    "git add*": allow
-    "git commit*": allow
-    "git branch*": allow
+  bash: allow
   task:
     "*": deny
     "explore": allow

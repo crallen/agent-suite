@@ -3,35 +3,7 @@ description: Implements application UI with strong design judgment, accessibilit
 mode: subagent
 permission:
   edit: allow
-  bash:
-    "*": deny
-    "git status*": allow
-    "git log*": allow
-    "git diff*": allow
-    "git show*": allow
-    "git blame*": allow
-    "make*": allow
-    "just*": allow
-    "corepack*": allow
-    "npm*": allow
-    "pnpm*": allow
-    "yarn*": allow
-    "bun*": allow
-    "npx*": allow
-    "node*": allow
-    "vite*": allow
-    "vitest*": allow
-    "jest*": allow
-    "playwright*": allow
-    "cypress*": allow
-    "python*": allow
-    "pip*": allow
-    "pip3*": allow
-    "pytest*": allow
-    "uv*": allow
-    "poetry*": allow
-    "docker*": allow
-    "docker-compose*": allow
+  bash: allow
   task:
     "*": deny
 color: "#56b6c2"

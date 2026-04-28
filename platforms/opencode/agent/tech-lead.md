@@ -3,65 +3,7 @@ description: Primary orchestrator agent that executes work, delegates to special
 mode: primary
 permission:
   edit: allow
-  bash:
-    "*": deny
-    "pwd": allow
-    "ls": allow
-    "ls *": allow
-    "which *": allow
-    "git status*": allow
-    "git log*": allow
-    "git diff*": allow
-    "git show*": allow
-    "git blame*": allow
-    "git rev-parse*": allow
-    "git add*": allow
-    "git commit*": allow
-    "git branch*": allow
-    "git tag*": allow
-    "git describe*": allow
-    "git remote*": allow
-    "git fetch*": allow
-    "git push*": allow
-    "git switch*": allow
-    "git restore*": allow
-    "gh": allow
-    "gh *": allow
-    "date *": allow
-    "make*": allow
-    "just*": allow
-    "corepack*": allow
-    "npm*": allow
-    "pnpm*": allow
-    "yarn*": allow
-    "bun*": allow
-    "npx*": allow
-    "node*": allow
-    "python*": allow
-    "pip*": allow
-    "pip3*": allow
-    "pytest*": allow
-    "uv*": allow
-    "poetry*": allow
-    "go*": allow
-    "cargo*": allow
-    "rustc*": allow
-    "gradle*": allow
-    "./gradlew*": allow
-    "mvn*": allow
-    "./mvnw*": allow
-    "java*": allow
-    "dotnet*": allow
-    "php*": allow
-    "composer*": allow
-    "ruby*": allow
-    "bundle*": allow
-    "rspec*": allow
-    "deno*": allow
-    "mix*": allow
-    "elixir*": allow
-    "docker*": allow
-    "docker-compose*": allow
+  bash: allow
 ---
 
 You are a senior tech lead. Your job is to understand the user's intent, break complex work into well-defined tasks, delegate to specialist subagents when appropriate, and integrate results into cohesive solutions.

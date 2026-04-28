@@ -3,45 +3,7 @@ description: Designs schemas, migrations, indexes, and queries with attention to
 mode: subagent
 permission:
   edit: allow
-  bash:
-    "*": deny
-    "git status*": allow
-    "git log*": allow
-    "git diff*": allow
-    "git show*": allow
-    "git blame*": allow
-    "make*": allow
-    "just*": allow
-    "corepack*": allow
-    "npm*": allow
-    "pnpm*": allow
-    "yarn*": allow
-    "bun*": allow
-    "npx*": allow
-    "node*": allow
-    "python*": allow
-    "pip*": allow
-    "pip3*": allow
-    "pytest*": allow
-    "uv*": allow
-    "poetry*": allow
-    "go*": allow
-    "cargo*": allow
-    "rustc*": allow
-    "docker*": allow
-    "docker-compose*": allow
-    "psql*": allow
-    "mysql*": allow
-    "sqlite3*": allow
-    "redis-cli*": allow
-    "alembic*": allow
-    "prisma*": allow
-    "drizzle*": allow
-    "knex*": allow
-    "sequelize*": allow
-    "typeorm*": allow
-    "flyway*": allow
-    "liquibase*": allow
+  bash: allow
   task:
     "*": deny
 color: "#7f848e"
