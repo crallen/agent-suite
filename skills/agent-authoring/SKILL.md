@@ -1,26 +1,25 @@
 ---
-description: Schemas, templates, conventions, and validation rules for creating OpenCode agents, skills, and slash commands.
+description: Schemas, templates, conventions, and validation rules for creating Claude Code agents, skills, and slash commands.
 ---
 
 # Agent Authoring Reference
 
-This skill contains the exact schemas, conventions, and templates for authoring OpenCode agents, skills, and slash commands. Use it whenever creating or modifying these artifacts.
+This skill contains the exact schemas, conventions, and templates for authoring Claude Code agents, skills, and slash commands. Use it whenever creating or modifying these artifacts.
 
-Paths below are relative to the OpenCode config root at `~/.config/opencode/`. In a dotfiles repo, that root may be mirrored elsewhere (for example via GNU Stow), but the artifact layout stays the same.
+Paths below are relative to the Claude Code config root at `~/.claude/`. In a dotfiles repo, that root may be mirrored elsewhere (for example via GNU Stow), but the artifact layout stays the same.
 
 ## File Locations and Naming
 
 | Artifact | Location | Naming Rule | Identifier |
 |---|---|---|---|
-| Agent | `agent/<name>.md` | kebab-case filename | Filename sans `.md` (becomes `@name`) |
-| Skill | `skills/<name>/SKILL.md` | kebab-case directory name | Directory name = `name` in frontmatter |
+| Agent | `agents/<name>.md` | kebab-case filename | Filename sans `.md` (becomes `@name`) |
+| Skill | `skills/<name>/SKILL.md` | kebab-case directory name | Directory name (no `name:` in frontmatter) |
 | Command | `commands/<name>.md` | kebab-case filename | Filename sans `.md` (becomes `/name`) |
 
 Identifiers must be consistent across all references:
-- Commands reference agents by their filename identifier in the `agent:` frontmatter key.
-- Agents reference skills by directory name in prose (e.g., "Use the skill tool to load `agent-authoring`").
-- The global config (`opencode.json`) references the default agent by filename identifier.
-- `AGENTS.md` uses `@name` syntax when referencing agents.
+- Commands route to agents via the `agent:` frontmatter key (filename without `.md`) and/or via prose ("Use the `@name` subagent ...").
+- Agents reference skills by directory name in prose (e.g., "Use the Skill tool to load `agent-authoring`").
+- `CLAUDE.md` uses `@name` syntax when referencing agents.
 
 ## Agent Definition Schema
 
@@ -28,110 +27,71 @@ Identifiers must be consistent across all references:
 
 ```yaml
 ---
-description: One-sentence summary of the agent's purpose and capabilities.
-mode: primary | subagent
-permission:
-  edit: allow | deny
-  bash:
-    "*": allow | deny
-    "<command-pattern>": allow
-  webfetch: allow | ask | deny
-color: "#hexcode"
+name: kebab-case-name
+description: One-sentence summary of when Claude should delegate to this subagent.
+tools: Read, Glob, Grep, Bash
+disallowedTools: Write, Edit, MultiEdit, NotebookEdit
+model: sonnet
+color: red
 ---
 ```
 
 | Key | Type | Required | Description |
 |---|---|---|---|
-| `description` | string | Yes | One-sentence summary. Displayed in agent listings and injected into the runtime. |
-| `mode` | `"primary"` or `"subagent"` | Yes | `primary` = top-level orchestrator (only one). `subagent` = specialist invoked via `@mention` or Task tool. |
-| `permission` | object | Yes | Defines the agent's access scope. See Permission Patterns below. |
-| `color` | hex string | Subagents only | UI display color. Omit for `primary` agents. Must not duplicate an existing agent's color. |
-| `temperature` | float (0.0-1.0) | No | Controls response randomness. Lower = more deterministic. Omit to use model defaults. |
-| `top_p` | float (0.0-1.0) | No | Controls response diversity. Alternative to temperature. |
-| `steps` | integer | No | Maximum agentic iterations before forced text-only response. Omit for unlimited. |
-| `hidden` | boolean | No | Subagents only. Hides from `@` autocomplete menu. Agent can still be invoked via the Task tool. |
+| `name` | string | Yes | Unique identifier. Must match filename sans `.md`. Lowercase + hyphens. |
+| `description` | string | Yes | When Claude should delegate to this subagent. Appears in the agent listing and informs auto-routing. |
+| `tools` | comma-separated string | No | Allowlist of tools the agent can use. Omit to inherit the full tool set. Use the allowlist to scope read-only agents. |
+| `disallowedTools` | comma-separated string | No | Denylist applied on top of the inherited or allowlisted tool set. Useful for blocking write tools while keeping Bash. |
+| `model` | string | No | `sonnet`, `opus`, `haiku`, or full model ID. Defaults to inherit from parent. |
+| `color` | string | No | Word: `red`, `blue`, `green`, `yellow`, `purple`, `orange`, `pink`, `cyan`. **Not** a hex code. |
+| `permissionMode` | string | No | `default`, `acceptEdits`, `auto`, `dontAsk`, or `bypassPermissions`. |
+| `maxTurns` | integer | No | Maximum agentic turns before stopping. |
 
 ### Permission Patterns
 
-#### Full access (for agents that need to build, test, or run arbitrary commands)
+Claude Code's `tools:` key is an **unrestricted allowlist** — there is no granular per-command Bash scoping like OpenCode supports. Listing `Bash` grants arbitrary shell. Use one of these patterns:
+
+#### Full access (implementation agents)
+
+Omit `tools:` and `disallowedTools:`. The agent inherits the full tool set.
 
 ```yaml
-permission:
-  edit: allow
-  bash:
-    "*": allow
+---
+name: backend-engineer
+description: Implements backend application code ...
+model: sonnet
+color: blue
+---
 ```
 
-Use this sparingly. Prefer role-scoped allowlists (`"*": deny` plus explicit command prefixes) whenever the agent can succeed with a narrower shell surface.
+#### Read-only (analysis agents that must not modify files)
 
-#### Read-only (for analysis agents that must not modify anything)
+Allowlist only the read/search tools, plus Bash if the agent needs git/lint/dependency commands. Add `disallowedTools:` to belt-and-suspenders the write tools in case Bash inheritance changes:
 
 ```yaml
-permission:
-  edit: deny
-  bash:
-    "*": deny
-    "git diff*": allow
-    "git log*": allow
-    "git show*": allow
-    "git blame*": allow
-    "grep *": allow
-    "rg *": allow
-    "cat *": allow
-    "wc *": allow
+---
+name: code-reviewer
+description: Reviews code for quality, security, performance, and best practices ...
+tools: Read, Glob, Grep, Bash
+disallowedTools: Write, Edit, MultiEdit, NotebookEdit
+model: opus
+color: red
+---
 ```
 
-#### Edit + restricted bash (for agents that write files but have limited shell access)
+Bash remains powerful — shell `>` redirects, `rm`, `mv`, `sed -i`, etc. all stay available. The prose body of read-only agents must explicitly forbid file modification ("You do NOT modify files — you only read and analyze.").
+
+#### Write but no Bash (rare)
 
 ```yaml
-permission:
-  edit: allow
-  bash:
-    "*": deny
-    "git log*": allow
-    "git diff*": allow
-    "grep *": allow
-    "rg *": allow
-    "cat *": allow
-    "ls *": allow
-    "find *": allow
-    "wc *": allow
+tools: Read, Glob, Grep, Edit, Write
 ```
 
-#### Bash pattern rules
-
-- `"*": deny` sets the default to deny-all; specific patterns then allowlist commands.
-- `"*": allow` permits all commands (use sparingly).
-- Patterns use glob-style prefix matching: `"git diff*"` matches `git diff`, `git diff --staged`, etc.
-- **Security**: Scope file-reading commands (`cat`, `find`, `tree`, `file`, `stat`) carefully to avoid reading sensitive files like SSH keys or environment files.
-- Prefer deny-by-default shell permissions even for implementation agents unless the domain truly requires unrestricted shell access.
-- Treat broad interpreter, package-manager, and container prefixes (`python*`, `node*`, `npm*`, `docker*`, etc.) as high-trust allowances even when they sit inside an allowlist.
-- Per-agent permissions further restrict within the global config baseline. They cannot grant more than the global config allows.
-
-#### Additional permission keys
-
-Beyond `edit` and `bash`, these permission keys can be set at the agent level:
-
-| Key | Granularity | Description |
-|---|---|---|
-| `webfetch` | URL pattern (`allow`, `ask`, `deny`) | Controls URL fetching. Set to `deny` for agents that shouldn't access the web. |
-| `task` | Subagent name pattern | Controls which subagents an agent can invoke via the Task tool. Use glob patterns (e.g., `"orchestrator-*": allow`). |
-| `skill` | Skill name pattern | Controls which skills an agent can load. Rarely needed — defaults to `allow`. |
-| `question` | Non-granular | Controls whether the agent can ask the user interactive questions. |
-
-Example — restricting task invocation:
-
-```yaml
-permission:
-  task:
-    "*": deny
-    "code-reviewer": allow
-    "tester": allow
-```
+Use when the agent should be able to author files but never run shell commands.
 
 ### Body Structure
 
-Follow this template for the markdown body (after the `---` closing the frontmatter):
+Follow this template for the markdown body (after the closing `---` of frontmatter):
 
 ```markdown
 You are a senior [role title]. Your job is to [primary responsibility in one sentence].
@@ -139,7 +99,7 @@ You are a senior [role title]. Your job is to [primary responsibility in one sen
 ## How You Work
 
 1. **Step one** - Description of the first phase of the agent's workflow.
-2. **Step two** - Load relevant skills: "Use the skill tool to load `skill-name` for [what it provides]."
+2. **Step two** - Load relevant skills: "Use the Skill tool to load `skill-name` for [what it provides]."
 3. **Step three** - The core work phase.
 4. **Step four** - Verification, output, or handoff.
 
@@ -162,7 +122,7 @@ Structure your [report/review/analysis] as:
 
 Key conventions:
 - **Opening line**: Always starts with "You are a senior [role]." followed by "Your job is to [verb]."
-- **How You Work**: Numbered steps. Reference the skill tool here for loading procedural knowledge.
+- **How You Work**: Numbered steps. Reference the Skill tool here for loading procedural knowledge.
 - **Domain sections**: One or more sections with the agent's area-specific knowledge.
 - **Output Format**: Only for analysis/reporting agents (code-reviewer, security-analyst). Includes severity levels and structured templates.
 - **Guidelines**: Always the last section. Bullet list of behavioral rules and guardrails.
@@ -173,15 +133,17 @@ Key conventions:
 
 ```yaml
 ---
-name: skill-name
-description: One-sentence description of the skill's content.
+description: One-sentence description of the skill's content and when to load it.
 ---
 ```
 
 | Key | Type | Required | Description |
 |---|---|---|---|
-| `name` | string | Yes | Must exactly match the directory name under `skills/`. |
-| `description` | string | Yes | One-sentence summary. Displayed in the skill tool's available skills listing. |
+| `description` | string | Yes | One-sentence summary. Displayed in the Skill tool's available-skills listing and used for auto-routing. |
+| `disable-model-invocation` | boolean | No | Set `true` to prevent auto-loading. Skill becomes user-invocable only. |
+| `allowed-tools` | comma-separated string | No | Tools pre-approved while this skill is active. |
+
+Claude Code skills do **not** use a `name:` field. The directory name (`skills/<name>/`) is the canonical identifier.
 
 ### Body Structure
 
@@ -218,7 +180,23 @@ Key conventions:
 - **Dense and scannable**. Use headings, tables, code blocks, and bullet points liberally.
 - **Actionable examples**. Include real code examples, command snippets, and templates.
 - **Self-contained**. A skill should provide everything an agent needs without requiring additional context lookups.
-- Skills typically range from 90-250 lines.
+- **Open with `# H1 Title`**. Every skill body starts with a single H1 matching the skill's purpose, followed by a 1-2 sentence intro. Avoid jumping straight into an H2.
+- Skills typically range from 90-250 lines. For larger reference material, split into `SKILL.md` (router) plus `reference/*.md` files loaded on demand.
+
+### Reference-File Pattern
+
+When a skill's domain is too large for a single file, split it:
+
+```
+skills/<name>/
+├── SKILL.md         # Router: index of references and when to load each
+└── reference/
+    ├── topic-a.md
+    ├── topic-b.md
+    └── topic-c.md
+```
+
+The router `SKILL.md` should map task shapes to the reference files an agent should load. See `frontend-patterns/SKILL.md` for the canonical example.
 
 ## Cross-Cutting Skill Expectations
 
@@ -235,15 +213,18 @@ Some skills are domain-specific (`docker-best-practices`, `frontend-patterns`). 
 ---
 description: Short description of what the command does.
 agent: agent-identifier
-subtask: true
+context: fork
+disable-model-invocation: true
 ---
 ```
 
 | Key | Type | Required | Description |
 |---|---|---|---|
-| `description` | string | Yes | Short description displayed in help/command listings. |
-| `agent` | string | Yes | The agent identifier (filename without `.md`) to route this command to. |
-| `subtask` | boolean | Yes | Always `true`. Indicates the command runs as a delegated subtask. |
+| `description` | string | Yes | Short description displayed in `/help` and the command palette. |
+| `agent` | string | No | Agent identifier (filename without `.md`) to route the command to. When paired with `context: fork`, the command runs in that agent's isolated subagent context. |
+| `context` | string | No | Set to `fork` to run the command in an isolated subagent context with no access to the conversation history. Pair with `agent:`. |
+| `disable-model-invocation` | boolean | No | Set `true` to prevent the command from being auto-invoked by Claude — it becomes user-triggered only. |
+| `allowed-tools` | comma-separated string | No | Tools pre-approved while this command is running. |
 
 ### Body Structure
 
@@ -261,55 +242,49 @@ $ARGUMENTS
 
 Key conventions:
 - **Dynamic content**: Use `` !`command` `` syntax to inject shell command output into the prompt at invocation time. The `!` backtick block evaluates the command and replaces itself with the output.
-- **`$ARGUMENTS`**: Always present, always at the end. Replaced with whatever the user types after the slash command (e.g., `/debug the login page crashes` replaces `$ARGUMENTS` with "the login page crashes").
+- **`$ARGUMENTS`**: When the command accepts free-form user input, place `$ARGUMENTS` at the end. The user's text after the slash command (e.g., `/debug the login page crashes`) replaces it.
 - **Keep it short**. Commands are prompts, not documentation. 5-15 lines total.
 - **Multiple commands can route to the same agent** (e.g., `/frontend`, `/frontend-polish`, and `/frontend-audit` route within the frontend workflow family).
+- **Prefer frontmatter routing over prose-only routing**. `agent:` + `context: fork` is the canonical way to delegate; the prose body should still name the agent for clarity, but the frontmatter is what wires the routing.
 
 ## Color Palette
 
-The existing palette follows the One Dark theme. Colors are semantically chosen.
+Claude Code colors are limited to a fixed set of names: `red`, `blue`, `green`, `yellow`, `purple`, `orange`, `pink`, `cyan`. Hex codes are not supported.
 
-| Color | Hex | Currently used by | Semantic meaning |
-|---|---|---|---|
-| Red/coral | `#e06c75` | code-reviewer | Critical analysis |
-| Dark red/brick | `#be5046` | security-analyst | Security/danger |
-| Green | `#98c379` | tester | Pass/fail, testing |
-| Yellow/amber | `#e5c07b` | debugger | Warnings, investigation |
-| Blue | `#61afef` | documenter | Informational |
-| Purple | `#c678dd` | devops-engineer | Infrastructure |
-| Bright blue | `#528bff` | backend-engineer | Application/backend implementation |
-| Orange/tan | `#d19a66` | git-manager | Version control |
-| Cyan/teal | `#56b6c2` | frontend-engineer | UI/interface |
-| Seafoam | `#8fbcbb` | frontend-auditor | Read-only UI audit |
-| Slate gray | `#7f848e` | database-specialist | Data, schema, stability |
-| Silver/gray | `#abb2bf` | agent-builder | Meta/tooling |
-| Lavender | `#b48ead` | agent-reviewer | Read-only meta review |
-| Sage/green-blue | `#83a598` | architect | Planning, structure, design |
+Current assignments in this suite:
 
-When choosing a color for a new agent, pick one that:
-1. Is not already used by another agent.
-2. Has semantic relevance to the agent's domain if possible.
-3. Maintains sufficient visual contrast with existing colors.
+| Color | Currently used by | Semantic meaning |
+|---|---|---|
+| `red` | code-reviewer, security-analyst | Critical analysis, security |
+| `green` | architect, tester, frontend-auditor | Planning, pass/fail, audit |
+| `yellow` | debugger | Warnings, investigation |
+| `blue` | backend-engineer, database-specialist | Application/data implementation |
+| `purple` | devops-engineer | Infrastructure |
+| `orange` | git-manager | Version control |
+| `cyan` | documenter, frontend-engineer | Documentation, UI |
+| `pink` | agent-builder, agent-reviewer | Meta/tooling |
+
+With only 8 colors available, duplication across roles is unavoidable. When picking a color for a new agent, prefer one with semantic relevance even if it overlaps an existing assignment.
 
 ## Validation Checklist
 
 After creating or modifying an agent, skill, or command, verify:
 
-- [ ] **Filename matches identifier**: Agent filename = `@mention` name. Skill directory = `name` in frontmatter. Command filename = `/command` name.
-- [ ] **Cross-references are correct**: Commands reference valid agent identifiers. Agents reference valid skill names. AGENTS.md lists the new artifact.
-- [ ] **No color collisions**: New agent's `color` is not used by any existing agent.
-- [ ] **Permission model is appropriate**: Read-only agents deny edit and restrict bash. Analysis agents don't need write access. File-reading commands are scoped to safe paths.
+- [ ] **Filename matches identifier**: Agent filename = `@mention` name = `name:` frontmatter. Skill directory matches references in prose. Command filename = `/command` name.
+- [ ] **Cross-references are correct**: Commands reference valid agent identifiers via `agent:` frontmatter or prose. Agents reference valid skill names. `CLAUDE.md` lists the new artifact.
+- [ ] **Color is a valid word**: `red`, `blue`, `green`, `yellow`, `purple`, `orange`, `pink`, or `cyan` — not a hex code.
+- [ ] **Tool scope is appropriate**: Read-only agents allowlist only `Read, Glob, Grep, Bash` (Bash only if needed for git/lint/etc.) and add `disallowedTools: Write, Edit, MultiEdit, NotebookEdit`. Implementation agents typically omit `tools:` to inherit everything.
 - [ ] **Frontmatter is complete**: All required keys are present with valid values.
-- [ ] **Body follows conventions**: Opening persona line (agents), no persona (skills), `$ARGUMENTS` at end (commands).
+- [ ] **Body follows conventions**: Opening persona line (agents), `# H1 Title` + intro (skills), `$ARGUMENTS` at end when accepting user args (commands).
 - [ ] **Cross-cutting guidance is wired in**: Implementation-oriented agents reference `coding-guardrails` (or clearly include equivalent guardrails) alongside any domain skill.
-- [ ] **AGENTS.md is updated**: New agents appear in the subagent table, new skills in the skills table, new commands in the commands table.
+- [ ] **`CLAUDE.md` is updated**: New agents appear in the subagent table, new skills in the skills table, new commands in the commands table.
 - [ ] **User-facing docs are updated if present**: README or other suite docs are kept in sync when this repo actually includes them.
 
 ## Updating Suite Documentation
 
 When adding a new artifact, update these docs as applicable:
 
-### `AGENTS.md` under the current OpenCode config root
+### `CLAUDE.md` under the current Claude Code config root
 
 - Add agents to the "Specialist Subagents" table.
 - Add skills to the "Available Skills" table with description and primary agent users.
