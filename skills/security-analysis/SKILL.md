@@ -2,9 +2,13 @@
 description: Structured security assessment methodology covering vulnerability taxonomy, data flow analysis, dependency auditing, and remediation patterns
 ---
 
+# Security Analysis
+
+Structured methodology for application security assessment. Load this skill when performing security reviews, dependency audits, or vulnerability investigations.
+
 ## Security Analysis Methodology
 
-This skill provides a systematic approach to application security assessment. Work through each phase in order, adapting depth to the scope of the analysis.
+Work through each phase in order, adapting depth to the scope of the analysis.
 
 ### Phase 1: Reconnaissance
 

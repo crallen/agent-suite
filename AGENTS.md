@@ -60,7 +60,7 @@ These are invoked automatically by Claude when appropriate, or explicitly via `@
 | `@git-manager` | Release preparation, changelog generation, and versioning-heavy git workflow | Write access. |
 | `@frontend-engineer` | UI components, styling, accessibility, responsive design | Write access. |
 | `@frontend-auditor` | Read-only frontend audit and critique for UI quality, accessibility, responsiveness, and product-specific design fit | Read-only. Cannot modify files. |
-| `@agent-builder` | Creates, modifies, and reviews custom agents, skills, and slash commands | Write access. |
+| `@agent-builder` | Creates and modifies custom agents, skills, and slash commands | Write access. |
 | `@agent-reviewer` | Read-only review of agents, skills, and commands for correctness, permissions, and consistency | Read-only. Cannot modify files. |
 
 ### Available Skills
