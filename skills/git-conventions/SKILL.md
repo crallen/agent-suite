@@ -2,6 +2,10 @@
 description: Conventional Commits format, branching model, and git workflow rules for clean version control history
 ---
 
+# Git Conventions
+
+Rules for clean version control history: Conventional Commits format, branching model, and commit hygiene.
+
 ## Conventional Commits Specification
 
 Every commit message must follow this format:

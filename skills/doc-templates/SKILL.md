@@ -2,6 +2,10 @@
 description: Templates and structure for READMEs, API documentation, architecture decision records, changelogs, and inline code documentation
 ---
 
+# Documentation Templates
+
+Reusable templates for common documentation artifacts: READMEs, API docs, architecture decision records, changelogs, and inline code comments.
+
 ## README Template
 
 ```markdown

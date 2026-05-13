@@ -2,6 +2,10 @@
 description: Systematic debugging workflow covering reproduction, evidence gathering, hypothesis testing, root cause analysis, and fix verification
 ---
 
+# Debugging Methodology
+
+A phased workflow for investigating bugs end-to-end: reproduce the problem, gather evidence, test hypotheses, find the root cause, and verify the fix.
+
 ## Debugging Workflow
 
 Follow these phases in order. Don't skip ahead to fixing before you understand the problem.

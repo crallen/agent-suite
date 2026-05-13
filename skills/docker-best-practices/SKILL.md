@@ -2,6 +2,10 @@
 description: Docker image optimization, multi-stage builds, security hardening, layer caching, and Compose patterns for development and production
 ---
 
+# Docker Best Practices
+
+Patterns for building secure, efficient Docker images and Compose configurations: multi-stage builds, layer caching, hardening, and dev/prod parity.
+
 ## Dockerfile Best Practices
 
 ### Use Multi-Stage Builds
