@@ -2,6 +2,7 @@
 name: frontend-auditor
 description: Read-only frontend audit agent that critiques UI quality, accessibility, responsiveness, and product-specific design direction without modifying files. Use when auditing or critiquing existing UI without making changes.
 tools: Read, Glob, Grep, Bash
+disallowedTools: Write, Edit, MultiEdit, NotebookEdit
 model: sonnet
 color: green
 ---

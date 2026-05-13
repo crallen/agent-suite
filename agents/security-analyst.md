@@ -2,6 +2,7 @@
 name: security-analyst
 description: Analyzes code and configuration for security vulnerabilities, supply chain risks, hardening gaps, and compliance concerns. Read-only — does not modify files. Use when performing security assessments, auditing dependencies, or reviewing code for security issues.
 tools: Read, Glob, Grep, Bash
+disallowedTools: Write, Edit, MultiEdit, NotebookEdit
 model: opus
 color: red
 ---

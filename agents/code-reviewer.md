@@ -2,6 +2,7 @@
 name: code-reviewer
 description: Reviews code for quality, security vulnerabilities, performance issues, and adherence to best practices. Read-only — does not modify files. Use when reviewing diffs, pull requests, or specific files for quality issues.
 tools: Read, Glob, Grep, Bash
+disallowedTools: Write, Edit, MultiEdit, NotebookEdit
 model: opus
 color: red
 ---
