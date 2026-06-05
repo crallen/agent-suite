@@ -62,6 +62,7 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 | `database-patterns` | Database design and performance patterns for schemas, migrations, indexes, constraints, transactions, and query behavior | database-specialist, tech-lead |
 | `frontend-patterns` | Frontend router for product context gathering, work-mode selection, escalation, and targeted reference selection | frontend-engineer, frontend-auditor |
 | `agent-authoring` | Schemas, templates, and conventions for creating agents, skills, and commands | agent-builder, agent-reviewer |
+| `grill` | Relentless one-at-a-time interrogation of a plan — sharpens terminology, stress-tests decisions, and writes CONTEXT.md and ADRs inline as conclusions crystallize | architect |
 
 ### Slash Commands
 
@@ -85,6 +86,7 @@ Quick-access commands for common workflows:
 | `/agent-builder` | Create or modify an agent, skill, or command | agent-builder |
 | `/agent-review` | Review agents, skills, and commands for correctness and consistency | agent-reviewer |
 | `/spec` | Research a goal and produce a design spec with task checklist | architect |
+| `/grill <plan or topic>` | Stress-test a plan through relentless questioning, sharpen domain language, and write CONTEXT.md and ADRs inline | architect |
 
 ### Suggested Workflows
 
@@ -102,6 +104,7 @@ These are common starting points, not rigid rules. Pick the smallest workflow th
 | Documentation update | `/docs` → `/review` if the doc change affects technical accuracy significantly → `/commit` |
 | Agent/skill/command changes | `/agent-review` → `/agent-builder` → `/agent-review` → `/commit` |
 | Release preparation | `/review` or `/test` as needed → `/release` |
+| Domain-heavy spec or post-spec grilling | `/spec` → `/grill <plan>` → specialist implementation command or `tech-lead` → `/test` → `/commit` |
 
 ## General Guidelines
 
