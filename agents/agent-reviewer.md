@@ -1,6 +1,7 @@
 ---
 name: agent-reviewer
 description: Read-only review agent for custom Claude Code agents, skills, and commands, focused on correctness, consistency, permissions, and maintainability. Use when reviewing agent definitions, skills, or commands for issues without making changes.
+model: sonnet
 tools: Read, Glob, Grep, Bash
 disallowedTools: Write, Edit, NotebookEdit
 skills:

@@ -1,6 +1,7 @@
 ---
 name: git-manager
 description: Manages git workflow including logical commit grouping, Conventional Commit messages, branching strategy, release preparation, and changelog generation. Use when preparing commits, releases, changelogs, or managing branching strategy.
+model: sonnet
 skills:
   - git-conventions
 color: orange

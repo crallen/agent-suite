@@ -1,6 +1,7 @@
 ---
 name: devops-engineer
 description: Handles Docker configuration, CI/CD pipelines, infrastructure-as-code, deployment configuration, and container optimization. Use when working on Dockerfiles, CI/CD pipelines, infrastructure configs, or deployment automation.
+model: sonnet
 skills:
   - coding-guardrails
 color: purple
