@@ -83,6 +83,9 @@ Skills are loaded on-demand via `/skill-name` or automatically when relevant, an
 | `database-patterns` | Database design and performance patterns for schemas, migrations, indexes, constraints, transactions, and query behavior | database-specialist |
 | `frontend-patterns` | Frontend router for product context gathering, work-mode selection, escalation, and targeted reference selection | frontend-engineer, frontend-auditor |
 | `agent-authoring` | Schemas, templates, and conventions for creating agents, skills, and commands | agent-builder, agent-reviewer |
+| `grill-methodology` | One-at-a-time Socratic interrogation of a plan: assumption challenging, domain-language sharpening, codebase cross-referencing, and inline CONTEXT.md / ADR writes as decisions crystallize | architect |
+| `prototype-methodology` | Throwaway prototype workflow — routes between a terminal app for logic/state questions and multiple UI variants for visual questions | architect, backend-engineer, frontend-engineer |
+| `architecture-review` | Architecture deepening workflow: find shallow modules, propose depth-increasing refactors, present markdown report of candidates, then grill on the chosen one with CONTEXT.md / ADR integration | architect |
 
 ### Slash Commands
 
@@ -96,6 +99,7 @@ Quick-access commands for common workflows. Each is a user-invocable workflow sk
 | `/debugger` | Start a systematic debugging session | debugger |
 | `/docs` | Generate or update documentation | documenter |
 | `/commit` | Stage logical changes when needed and create Conventional Commits | git-manager |
+| `/ship` | Commit and push in one step — same logic as `/commit`, then pushes to the remote | git-manager |
 | `/release` | Prepare release notes, changelog, and version bump | git-manager |
 | `/backend-engineer` | Implement or modify backend application code | backend-engineer |
 | `/database-specialist` | Design or modify database schemas, migrations, queries, and indexes | database-specialist |
@@ -106,12 +110,19 @@ Quick-access commands for common workflows. Each is a user-invocable workflow sk
 | `/agent-builder` | Create or modify an agent, skill, or command | agent-builder |
 | `/agent-review` | Review agents, skills, and commands for correctness and consistency | agent-reviewer |
 | `/spec` | Research a goal and produce a design spec with task checklist | architect |
+| `/grill` | Stress-test a plan with relentless one-at-a-time interrogation, sharpening domain language and writing CONTEXT.md / ADRs as decisions crystallize | architect |
+| `/prototype` | Build a throwaway prototype to explore a design question — logic branch for state/data-model questions, UI branch for visual layout questions | backend-engineer, frontend-engineer |
+| `/architecture` | Find deepening opportunities in the codebase, present a markdown report of candidates, then grill on the chosen one | architect |
+| `/zoom-out` | Get a map of relevant modules and callers when unfamiliar with an area, using the project's domain vocabulary | — |
 
 ### Suggested Workflows
 
 | Goal | Suggested flow |
 |---|---|
 | Ambiguous feature or cross-cutting change | `/spec` → specialist implementation command → `/code-reviewer` or `/security` as needed → `/test` → `/commit` |
+| Stress-testing a plan or sharpening domain language | `/grill` → specialist implementation command → `/commit` |
+| Exploring a design before committing to it | `/prototype` → `/spec` if needed → specialist implementation command → `/commit` |
+| Improving codebase architecture or testability | `/zoom-out` (orient first) → `/architecture` → specialist implementation command → `/test` → `/commit` |
 | Straightforward backend work | `/backend-engineer` → `/test` → `/code-reviewer` → `/commit` |
 | Database-heavy change | `/database-specialist` → `/test` if applicable → `/code-reviewer` → `/commit` |
 | Frontend implementation | `/frontend` → `/frontend-polish` if needed → `/test` → `/code-reviewer` → `/commit` |
@@ -124,7 +135,7 @@ Quick-access commands for common workflows. Each is a user-invocable workflow sk
 
 ## General Guidelines
 
-- Read project config and nearby code before changing anything.
+- Read project config and nearby code before changing anything. If `CONTEXT.md` exists at the repo root (or `CONTEXT-MAP.md` for multi-context repos), read it too — it defines the canonical domain language for that project and takes precedence over general terminology.
 - For ambiguous or cross-cutting work, use `/spec` first.
 - Skills are the canonical long-form guidance. Load only what you need. For implementation work, start with `coding-guardrails` plus the domain skill.
 - Route backend application work to `@backend-engineer`; when schema, SQL, migrations, indexes, transaction behavior, or database-heavy ORM/query-builder behavior are the real concern, involve `@database-specialist`.
