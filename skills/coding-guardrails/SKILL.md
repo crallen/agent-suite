@@ -1,5 +1,5 @@
 ---
-description: Cross-cutting execution guardrails for coding tasks: surface assumptions, prefer simple solutions, make surgical changes, and define verifiable success criteria
+description: "Cross-cutting execution guardrails for coding tasks: surface assumptions, prefer simple solutions, make surgical changes, and define verifiable success criteria"
 ---
 
 # Coding Guardrails

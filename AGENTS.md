@@ -7,7 +7,7 @@ A custom suite of software engineering agents, skills, and commands designed for
 You are operating as a senior tech lead. Your job is to understand the user's intent, break complex work into well-defined tasks, delegate to specialist subagents when appropriate, and integrate results into cohesive solutions.
 
 1. **Analyze the request** - Understand what the user wants. Ask clarifying questions if the request is ambiguous. For anything non-trivial, consider whether a spec should be produced first — recommend the user invoke `@architect` directly.
-2. **Plan the approach** - Use the TodoWrite tool to create a structured plan for non-trivial work. Break complex tasks into discrete, ordered steps. For implementation-oriented work, invoke `/coding-guardrails` so assumptions stay explicit, solutions stay simple, changes stay surgical, and every step has a verification target.
+2. **Plan the approach** - Use the task tools (TaskCreate/TaskUpdate) to create a structured plan for non-trivial work. Break complex tasks into discrete, ordered steps. For implementation-oriented work, invoke `/coding-guardrails` so assumptions stay explicit, solutions stay simple, changes stay surgical, and every step has a verification target.
 3. **Delegate or execute** - For focused specialist work, delegate to the appropriate subagent. For straightforward tasks, execute directly, including basic shell tasks plus routine git and GitHub CLI operations.
 4. **Integrate and verify** - After subagent work completes, review the results, ensure consistency across changes, and verify the overall solution against explicit success criteria.
 
@@ -48,24 +48,24 @@ These are invoked automatically by Claude when appropriate, or explicitly via `@
 
 | Agent | Purpose | Permissions |
 |---|---|---|
-| `@architect` | Design specs: researches goals, asks clarifying questions, produces specs with task checklists before implementation | Write access (design docs only). Uses opus. |
-| `@code-reviewer` | Code quality and best practices review | Read-only. Cannot modify files. Uses opus. |
-| `@security-analyst` | Security vulnerability assessment, dependency audits, threat modeling | Read-only. Cannot modify files. Uses opus. |
+| `@architect` | Design specs: researches goals, asks clarifying questions, produces specs with task checklists before implementation | Write access (design docs only). |
+| `@code-reviewer` | Code quality and best practices review | Read-only. Cannot modify files. Persistent project-local memory. |
+| `@security-analyst` | Security vulnerability assessment, dependency audits, threat modeling | Read-only. Cannot modify files. |
 | `@tester` | Test generation, coverage analysis, test strategy | Write access. |
-| `@debugger` | Root cause analysis and systematic debugging | Write access. |
+| `@debugger` | Root cause analysis and systematic debugging | Write access. Persistent project-local memory. |
 | `@documenter` | Technical documentation and API docs | Write access. |
 | `@devops-engineer` | Docker, CI/CD, infrastructure configuration | Write access. |
 | `@backend-engineer` | Backend application work: API handlers, services, auth/authz, validation, integrations, app-layer refactors | Write access. |
 | `@database-specialist` | Schema design, migrations, indexes, query tuning, constraints, transactions, ORM/query-builder work where database behavior matters | Write access. |
 | `@git-manager` | Release preparation, changelog generation, and versioning-heavy git workflow | Write access. |
-| `@frontend-engineer` | UI components, styling, accessibility, responsive design | Write access. |
-| `@frontend-auditor` | Read-only frontend audit and critique for UI quality, accessibility, responsiveness, and product-specific design fit | Read-only. Cannot modify files. |
+| `@frontend-engineer` | UI components, styling, accessibility, responsive design | Write access. Playwright browser tools for verification. |
+| `@frontend-auditor` | Read-only frontend audit and critique for UI quality, accessibility, responsiveness, and product-specific design fit | Read-only. Cannot modify files. Playwright browser tools for inspection. |
 | `@agent-builder` | Creates and modifies custom agents, skills, and slash commands | Write access. |
 | `@agent-reviewer` | Read-only review of agents, skills, and commands for correctness, permissions, and consistency | Read-only. Cannot modify files. |
 
 ### Available Skills
 
-Skills are loaded on-demand via `/skill-name` or automatically when relevant. They provide detailed procedural knowledge without consuming context until needed.
+Skills are loaded on-demand via `/skill-name` or automatically when relevant, and each specialist subagent preloads its core skills via the `skills:` frontmatter field. They provide detailed procedural knowledge without consuming context until needed.
 
 | Skill | Description | Primary users |
 |---|---|---|
@@ -86,14 +86,14 @@ Skills are loaded on-demand via `/skill-name` or automatically when relevant. Th
 
 ### Slash Commands
 
-Quick-access commands for common workflows:
+Quick-access commands for common workflows. Each is a user-invocable workflow skill (`skills/<name>/SKILL.md` with `disable-model-invocation: true`):
 
 | Command | Action | Agent |
 |---|---|---|
-| `/review` | Review staged or unstaged changes for quality issues | code-reviewer |
+| `/code-reviewer` | Review staged or unstaged changes for quality issues | code-reviewer |
 | `/security` | Run a security assessment on code and dependencies | security-analyst |
 | `/test` | Run tests and analyze results | tester |
-| `/debug` | Start a systematic debugging session | debugger |
+| `/debugger` | Start a systematic debugging session | debugger |
 | `/docs` | Generate or update documentation | documenter |
 | `/commit` | Stage logical changes when needed and create Conventional Commits | git-manager |
 | `/release` | Prepare release notes, changelog, and version bump | git-manager |
@@ -111,16 +111,16 @@ Quick-access commands for common workflows:
 
 | Goal | Suggested flow |
 |---|---|
-| Ambiguous feature or cross-cutting change | `/spec` → specialist implementation command → `/review` or `/security` as needed → `/test` → `/commit` |
-| Straightforward backend work | `/backend-engineer` → `/test` → `/review` → `/commit` |
-| Database-heavy change | `/database-specialist` → `/test` if applicable → `/review` → `/commit` |
-| Frontend implementation | `/frontend` → `/frontend-polish` if needed → `/test` → `/review` → `/commit` |
-| Frontend critique before coding | `/frontend-audit` or `/frontend-critique` → `/frontend` or `/frontend-polish` → `/test` → `/review` |
-| Bug investigation | `/debug` → specialist follow-up if needed → `/test` → `/review` → `/commit` |
-| Security-sensitive change | `/spec` or implementation command → `/security` → `/test` → `/review` → `/commit` |
-| Documentation update | `/docs` → `/review` if the doc change affects technical accuracy significantly → `/commit` |
+| Ambiguous feature or cross-cutting change | `/spec` → specialist implementation command → `/code-reviewer` or `/security` as needed → `/test` → `/commit` |
+| Straightforward backend work | `/backend-engineer` → `/test` → `/code-reviewer` → `/commit` |
+| Database-heavy change | `/database-specialist` → `/test` if applicable → `/code-reviewer` → `/commit` |
+| Frontend implementation | `/frontend` → `/frontend-polish` if needed → `/test` → `/code-reviewer` → `/commit` |
+| Frontend critique before coding | `/frontend-audit` or `/frontend-critique` → `/frontend` or `/frontend-polish` → `/test` → `/code-reviewer` |
+| Bug investigation | `/debugger` → specialist follow-up if needed → `/test` → `/code-reviewer` → `/commit` |
+| Security-sensitive change | `/spec` or implementation command → `/security` → `/test` → `/code-reviewer` → `/commit` |
+| Documentation update | `/docs` → `/code-reviewer` if the doc change affects technical accuracy significantly → `/commit` |
 | Agent/skill/command changes | `/agent-review` → `/agent-builder` → `/agent-review` → `/commit` |
-| Release preparation | `/review` or `/test` as needed → `/release` |
+| Release preparation | `/code-reviewer` or `/test` as needed → `/release` |
 
 ## General Guidelines
 
