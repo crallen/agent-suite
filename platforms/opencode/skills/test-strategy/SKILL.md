@@ -15,6 +15,61 @@ Use this skill when deciding how correctness will be proven. Tests are not just 
 - **Multi-step work** - Pair each implementation step with a `verify:` check so progress is observable.
 - **Avoid speculative matrices** - Do not add large suites for hypothetical future behaviors that the code does not implement.
 
+## TDD Workflow: Vertical Slices via Tracer Bullets
+
+When building a feature test-first, use **vertical slices** — one test, one implementation, repeat. This is the correct approach.
+
+**Do NOT write all tests first, then all implementation.** This is "horizontal slicing" and produces bad tests: they test imagined behavior rather than actual behavior, couple to shape rather than outcomes, and become insensitive to real changes.
+
+```
+WRONG (horizontal):
+  RED:   test1, test2, test3, test4, test5
+  GREEN: impl1, impl2, impl3, impl4, impl5
+
+RIGHT (vertical):
+  RED → GREEN: test1 → impl1
+  RED → GREEN: test2 → impl2
+  RED → GREEN: test3 → impl3
+  ...
+```
+
+Each test responds to what you learned from the previous cycle. Because you just wrote the code, you know exactly what behavior matters and how to verify it.
+
+### Planning Step
+
+Before writing any test or code:
+- Confirm with the user what interface changes are needed
+- Confirm which behaviors to test (you can't test everything — prioritize critical paths)
+- List the behaviors to test (not implementation steps) and get user approval
+- Use the project's domain vocabulary (from `CONTEXT.md` if present) so test names match the project's language
+
+### Tracer Bullet
+
+Write ONE test that confirms ONE thing about the system:
+
+```
+RED:   Write test for first behavior → test fails
+GREEN: Write minimal code to pass → test passes
+```
+
+This is your tracer bullet — proves the path works end-to-end.
+
+### Incremental Loop
+
+For each remaining behavior: one test → minimal code to pass. Never anticipate future tests. Keep tests focused on observable behavior.
+
+### Refactor
+
+After all tests pass, look for cleanup: extract duplication, deepen shallow modules, apply SOLID where natural. **Never refactor while RED.** Get to GREEN first.
+
+### Checklist per Cycle
+
+- [ ] Test describes behavior, not implementation
+- [ ] Test uses public interface only
+- [ ] Test would survive an internal refactor
+- [ ] Code is minimal for this test
+- [ ] No speculative features added
+
 ## Test Pyramid
 
 Prioritize tests from bottom to top — more unit tests, fewer E2E tests:
