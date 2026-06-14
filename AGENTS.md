@@ -95,6 +95,7 @@ Quick-access commands for common workflows. Each is a user-invocable workflow sk
 |---|---|---|
 | `/code-review` | Review pending changes for quality issues, or the full codebase when the working tree is clean | code-reviewer |
 | `/security` | Run a security assessment on code and dependencies | security-analyst |
+| `/full-review` | Run a code quality review and security audit in parallel | code-reviewer + security-analyst |
 | `/test` | Run tests and analyze results | tester |
 | `/debugger` | Start a systematic debugging session | debugger |
 | `/docs` | Generate or update documentation | documenter |
@@ -128,7 +129,7 @@ Quick-access commands for common workflows. Each is a user-invocable workflow sk
 | Frontend implementation | `/frontend` → `/frontend-polish` if needed → `/test` → `/code-review` → `/commit` |
 | Frontend critique before coding | `/frontend-audit` or `/frontend-critique` → `/frontend` or `/frontend-polish` → `/test` → `/code-review` |
 | Bug investigation | `/debugger` → specialist follow-up if needed → `/test` → `/code-review` → `/commit` |
-| Security-sensitive change | `/spec` or implementation command → `/security` → `/test` → `/code-review` → `/commit` |
+| Security-sensitive change | `/spec` or implementation command → `/full-review` → `/test` → `/commit` |
 | Documentation update | `/docs` → `/code-review` if the doc change affects technical accuracy significantly → `/commit` |
 | Agent/skill/command changes | `/agent-review` → `/agent-builder` → `/agent-review` → `/commit` |
 | Release preparation | `/code-review` or `/test` as needed → `/release` |
