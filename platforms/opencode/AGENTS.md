@@ -54,7 +54,7 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 | `test-strategy` | Test type selection, coverage targets, mocking guidelines | tester, tech-lead |
 | `code-review-checklist` | Structured review rubric across core review categories with severity levels | code-reviewer |
 | `security-analysis` | Vulnerability taxonomy, data flow analysis, dependency auditing, remediation patterns | security-analyst |
-| `debugging-methodology` | 5-phase debugging workflow: reproduce, gather, hypothesize, test, fix | debugger |
+| `debugging-methodology` | Phased debugging workflow — Phase 0 builds a feedback loop (10 strategies), phases 1–5 reproduce/gather/hypothesize/test/fix, Phase 6 is cleanup and post-mortem | debugger |
 | `doc-templates` | Templates for READMEs, API docs, ADRs, changelogs, code comments | documenter |
 | `docker-best-practices` | Multi-stage builds, security hardening, layer caching, Compose patterns | devops-engineer |
 | `ci-pipeline` | CI/CD patterns for GitHub Actions and GitLab CI with caching strategies | devops-engineer |
@@ -63,6 +63,8 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 | `frontend-patterns` | Frontend router for product context gathering, work-mode selection, escalation, and targeted reference selection | frontend-engineer, frontend-auditor |
 | `agent-authoring` | Schemas, templates, and conventions for creating agents, skills, and commands | agent-builder, agent-reviewer |
 | `grill` | Relentless one-at-a-time interrogation of a plan — sharpens terminology, stress-tests decisions, and writes CONTEXT.md and ADRs inline as conclusions crystallize | architect |
+| `architecture-review` | Architecture deepening workflow: find shallow modules, propose depth-increasing refactors, present markdown report of candidates, then grill on the chosen one with CONTEXT.md / ADR integration | architect |
+| `prototype-methodology` | Throwaway prototype workflow — routes between a terminal app for logic/state questions and multiple UI variants for visual questions | architect, backend-engineer, frontend-engineer |
 
 ### Slash Commands
 
@@ -70,10 +72,10 @@ Quick-access commands for common workflows:
 
 | Command | Action | Agent |
 |---|---|---|
-| `/review` | Review staged or unstaged changes for quality issues | code-reviewer |
+| `/code-reviewer` | Review staged or unstaged changes for quality issues | code-reviewer |
 | `/security` | Run a security assessment on code and dependencies | security-analyst |
 | `/test` | Run tests and analyze results | tester |
-| `/debug <description>` | Start a systematic debugging session | debugger |
+| `/debugger` | Start a systematic debugging session | debugger |
 | `/docs` | Generate or update documentation | documenter |
 | `/commit` | Stage logical changes when needed and create Conventional Commits | tech-lead |
 | `/release` | Prepare release notes, changelog, and version bump | git-manager |
@@ -87,6 +89,10 @@ Quick-access commands for common workflows:
 | `/agent-review` | Review agents, skills, and commands for correctness and consistency | agent-reviewer |
 | `/spec` | Research a goal and produce a design spec with task checklist | architect |
 | `/grill <plan or topic>` | Stress-test a plan through relentless questioning, sharpen domain language, and write CONTEXT.md and ADRs inline | architect |
+| `/ship` | Commit and push in one step — same logic as `/commit`, then pushes to the remote | git-manager |
+| `/architecture` | Find deepening opportunities in the codebase, present a markdown report of candidates, then grill on the chosen one | architect |
+| `/prototype` | Build a throwaway prototype to explore a design question — logic branch for state/data-model questions, UI branch for visual layout questions | tech-lead |
+| `/zoom-out` | Get a map of relevant modules and callers when unfamiliar with an area, using the project's domain vocabulary | — |
 
 ### Suggested Workflows
 
@@ -94,21 +100,23 @@ These are common starting points, not rigid rules. Pick the smallest workflow th
 
 | Goal | Suggested flow |
 |---|---|
-| Ambiguous feature or cross-cutting change | `/spec` → specialist implementation command or `tech-lead` → `/review` or `/security` as needed → `/test` → `/commit` |
-| Straightforward backend work | `/backend-engineer` → `/test` → `/review` → `/commit` |
-| Database-heavy change | `/database-specialist` → `/test` if applicable → `/review` → `/commit` |
-| Frontend implementation | `/frontend` → `/frontend-polish` if needed → `/test` → `/review` → `/commit` |
-| Frontend critique before coding | `/frontend-audit` or `/frontend-critique` → `/frontend` or `/frontend-polish` → `/test` → `/review` |
-| Bug investigation | `/debug <issue>` → specialist follow-up if needed → `/test` → `/review` → `/commit` |
-| Security-sensitive change | `/spec` or implementation command → `/security` → `/test` → `/review` → `/commit` |
-| Documentation update | `/docs` → `/review` if the doc change affects technical accuracy significantly → `/commit` |
+| Ambiguous feature or cross-cutting change | `/spec` → specialist implementation command or `tech-lead` → `/code-reviewer` or `/security` as needed → `/test` → `/commit` |
+| Straightforward backend work | `/backend-engineer` → `/test` → `/code-reviewer` → `/commit` |
+| Database-heavy change | `/database-specialist` → `/test` if applicable → `/code-reviewer` → `/commit` |
+| Frontend implementation | `/frontend` → `/frontend-polish` if needed → `/test` → `/code-reviewer` → `/commit` |
+| Frontend critique before coding | `/frontend-audit` or `/frontend-critique` → `/frontend` or `/frontend-polish` → `/test` → `/code-reviewer` |
+| Bug investigation | `/debugger` → specialist follow-up if needed → `/test` → `/code-reviewer` → `/commit` |
+| Security-sensitive change | `/spec` or implementation command → `/security` → `/test` → `/code-reviewer` → `/commit` |
+| Documentation update | `/docs` → `/code-reviewer` if the doc change affects technical accuracy significantly → `/commit` |
 | Agent/skill/command changes | `/agent-review` → `/agent-builder` → `/agent-review` → `/commit` |
-| Release preparation | `/review` or `/test` as needed → `/release` |
-| Domain-heavy spec or post-spec grilling | `/spec` → `/grill <plan>` → specialist implementation command or `tech-lead` → `/test` → `/commit` |
+| Release preparation | `/code-reviewer` or `/test` as needed → `/release` |
+| Stress-testing a plan or sharpening domain language | `/grill <plan>` → specialist implementation command → `/commit` |
+| Exploring a design before committing to it | `/prototype` → `/spec` if needed → specialist implementation command → `/commit` |
+| Improving codebase architecture or testability | `/zoom-out` (orient first) → `/architecture` → specialist implementation command → `/test` → `/commit` |
 
 ## General Guidelines
 
-- Read project config and nearby code before changing anything.
+- Read project config and nearby code before changing anything. If `CONTEXT.md` exists at the repo root (or `CONTEXT-MAP.md` for multi-context repos), read it too — it defines the canonical domain language for that project and takes precedence over general terminology.
 - For ambiguous or cross-cutting work, use `/spec` or `@architect` first. The architect is a collaborative dialogue agent — always invoke it directly, never via Task delegation.
 - Skills are the canonical long-form guidance. Keep agent bodies and commands short; load only what you need. For implementation work, start with `coding-guardrails` plus the domain skill.
 - Prefer deny-by-default shell permissions with role-scoped allowlists; reserve unrestricted shell access for cases that truly require it.
@@ -116,5 +124,5 @@ These are common starting points, not rigid rules. Pick the smallest workflow th
 - For implementation work, surface assumptions, keep changes simple and scoped, and verify with explicit checks.
 - Match existing conventions and prefer the smallest change that satisfies the request.
 - Use the GitHub CLI (`gh`) for GitHub-hosted tasks when shell access is appropriate.
-- Use `/review`, `/security`, `/test`, `/docs`, and `/commit` as appropriate to keep quality, docs, and history clean.
+- Use `/code-reviewer`, `/security`, `/test`, `/docs`, and `/commit` as appropriate to keep quality, docs, and history clean.
 - Never read `.env` files via any method.
