@@ -93,7 +93,7 @@ Quick-access commands for common workflows. Each is a user-invocable workflow sk
 
 | Command | Action | Agent |
 |---|---|---|
-| `/code-reviewer` | Review staged or unstaged changes for quality issues | code-reviewer |
+| `/code-review` | Review pending changes for quality issues, or the full codebase when the working tree is clean | code-reviewer |
 | `/security` | Run a security assessment on code and dependencies | security-analyst |
 | `/test` | Run tests and analyze results | tester |
 | `/debugger` | Start a systematic debugging session | debugger |
@@ -119,19 +119,19 @@ Quick-access commands for common workflows. Each is a user-invocable workflow sk
 
 | Goal | Suggested flow |
 |---|---|
-| Ambiguous feature or cross-cutting change | `/spec` → specialist implementation command → `/code-reviewer` or `/security` as needed → `/test` → `/commit` |
+| Ambiguous feature or cross-cutting change | `/spec` → specialist implementation command → `/code-review` or `/security` as needed → `/test` → `/commit` |
 | Stress-testing a plan or sharpening domain language | `/grill` → specialist implementation command → `/commit` |
 | Exploring a design before committing to it | `/prototype` → `/spec` if needed → specialist implementation command → `/commit` |
 | Improving codebase architecture or testability | `/zoom-out` (orient first) → `/architecture` → specialist implementation command → `/test` → `/commit` |
-| Straightforward backend work | `/backend-engineer` → `/test` → `/code-reviewer` → `/commit` |
-| Database-heavy change | `/database-specialist` → `/test` if applicable → `/code-reviewer` → `/commit` |
-| Frontend implementation | `/frontend` → `/frontend-polish` if needed → `/test` → `/code-reviewer` → `/commit` |
-| Frontend critique before coding | `/frontend-audit` or `/frontend-critique` → `/frontend` or `/frontend-polish` → `/test` → `/code-reviewer` |
-| Bug investigation | `/debugger` → specialist follow-up if needed → `/test` → `/code-reviewer` → `/commit` |
-| Security-sensitive change | `/spec` or implementation command → `/security` → `/test` → `/code-reviewer` → `/commit` |
-| Documentation update | `/docs` → `/code-reviewer` if the doc change affects technical accuracy significantly → `/commit` |
+| Straightforward backend work | `/backend-engineer` → `/test` → `/code-review` → `/commit` |
+| Database-heavy change | `/database-specialist` → `/test` if applicable → `/code-review` → `/commit` |
+| Frontend implementation | `/frontend` → `/frontend-polish` if needed → `/test` → `/code-review` → `/commit` |
+| Frontend critique before coding | `/frontend-audit` or `/frontend-critique` → `/frontend` or `/frontend-polish` → `/test` → `/code-review` |
+| Bug investigation | `/debugger` → specialist follow-up if needed → `/test` → `/code-review` → `/commit` |
+| Security-sensitive change | `/spec` or implementation command → `/security` → `/test` → `/code-review` → `/commit` |
+| Documentation update | `/docs` → `/code-review` if the doc change affects technical accuracy significantly → `/commit` |
 | Agent/skill/command changes | `/agent-review` → `/agent-builder` → `/agent-review` → `/commit` |
-| Release preparation | `/code-reviewer` or `/test` as needed → `/release` |
+| Release preparation | `/code-review` or `/test` as needed → `/release` |
 
 ## General Guidelines
 
