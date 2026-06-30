@@ -267,8 +267,8 @@ disable-model-invocation: true
 ```markdown
 Instructional text telling the agent what to do (1-3 sentences).
 
-Optional dynamic content:
-!`shell command here`
+Optional dynamic content (injects command output — see the "Dynamic content" note below for the exact syntax):
+<dynamic command output block>
 
 Optional conditional/fallback logic in prose:
 If [condition], do X. If [other condition], do Y.
@@ -277,7 +277,7 @@ $ARGUMENTS
 ```
 
 Key conventions:
-- **Dynamic content**: Use `` !`command` `` syntax to inject shell command output into the prompt at invocation time. The `!` backtick block evaluates the command and replaces itself with the output before Claude sees the content. The `!` must start a line or follow whitespace; use a ```` ```! ```` fenced block for multi-line commands.
+- **Dynamic content**: Use `` !`command` `` syntax to inject shell command output into the prompt at invocation time. The `!` backtick block evaluates the command and replaces itself with the output before Claude sees the content. The `!` must start a line or follow whitespace; use a ```` ```! ```` fenced block for multi-line commands. Because it evaluates on load, never leave this token bare (at line start or after whitespace) in a skill or agent file — keep it inside inline code as shown above, or it will execute whenever the file is pulled into context.
 - **`$ARGUMENTS`**: When the command accepts free-form user input, place `$ARGUMENTS` at the end. The user's text after the slash command (e.g., `/debug the login page crashes`) replaces it. Positional access is available via `$0`/`$1` (or `$ARGUMENTS[N]`), and `${CLAUDE_SKILL_DIR}` resolves to the skill's own directory for referencing bundled files.
 - **Keep it short**. Workflow skills are prompts, not documentation. 5-15 lines total.
 - **Multiple workflow skills can route to the same agent** (e.g., `/frontend`, `/frontend-polish`, and `/frontend-audit` route within the frontend workflow family).

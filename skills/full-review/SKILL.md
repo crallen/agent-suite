@@ -5,6 +5,8 @@ context: fork
 disable-model-invocation: true
 ---
 
+<!-- No `agent:` key by design: this fork orchestrates two subagents (@code-reviewer and @security-analyst) in parallel rather than routing to a single named agent. -->
+
 Run a combined review: spawn `@code-reviewer` and `@security-analyst` as **parallel subagents** and present their findings in two labeled sections.
 
 If the diff below says `REVIEW BLOCKED`, relay the message to the user and stop immediately. If it says `(no pending changes)`, both agents should assess the full codebase directly. If specific files or scope are mentioned in `$ARGUMENTS`, pass that focus to both agents.
