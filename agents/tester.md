@@ -1,7 +1,6 @@
 ---
 name: tester
 description: Generates tests, analyzes coverage, and advises on test strategy. Can create and run test files. Use when writing tests for new code, investigating test failures, or improving test coverage.
-model: sonnet
 skills:
   - test-strategy
   - coding-guardrails

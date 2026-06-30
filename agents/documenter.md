@@ -1,7 +1,7 @@
 ---
 name: documenter
 description: Writes and maintains technical documentation including READMEs, API docs, architecture decision records, and inline code documentation. Use when generating or updating docs, writing READMEs, or documenting APIs.
-model: sonnet
+model: sonnet # pinned for cost routing: documentation work is well-bounded and does not need the full session model
 skills:
   - doc-templates
 color: cyan
