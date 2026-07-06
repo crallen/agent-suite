@@ -11,9 +11,9 @@ Collaborate with the user to produce a design spec for the goal below. Start wit
 The `spec-writing` skill is preloaded into your context; follow its full dialogue-to-spec workflow.
 
 Current repository state:
-!`git status --short`
+!`git status --short 2>/dev/null || echo "(not a git repository)"`
 
 Recent commits:
-!`git log --oneline -10`
+!`git log --oneline -10 2>/dev/null || echo "(no git history yet)"`
 
 $ARGUMENTS
