@@ -83,6 +83,7 @@ Skills are loaded on-demand via `/skill-name` or automatically when relevant, an
 | `database-patterns` | Database design and performance patterns for schemas, migrations, indexes, constraints, transactions, and query behavior | database-specialist |
 | `frontend-patterns` | Frontend router for product context gathering, work-mode selection, escalation, and targeted reference selection | frontend-engineer, frontend-auditor |
 | `agent-authoring` | Schemas, templates, and conventions for creating agents, skills, and commands | agent-builder, agent-reviewer |
+| `skill-design` | Design principles for writing and reviewing skills: predictability, information hierarchy, leading words, progressive disclosure, and failure modes (glossary disclosed) | agent-builder, agent-reviewer |
 | `grill-methodology` | One-at-a-time Socratic interrogation of a plan: assumption challenging, domain-language sharpening, codebase cross-referencing, and inline CONTEXT.md / ADR writes as decisions crystallize | architect |
 | `prototype-methodology` | Throwaway prototype workflow — routes between a terminal app for logic/state questions and multiple UI variants for visual questions | architect, backend-engineer, frontend-engineer |
 | `architecture-review` | Architecture deepening workflow: find shallow modules, propose depth-increasing refactors, present markdown report of candidates, then grill on the chosen one with CONTEXT.md / ADR integration | architect |

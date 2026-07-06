@@ -147,6 +147,8 @@ Key conventions:
 
 ## Skill Definition Schema
 
+This section is the **mechanics** of a skill — file layout, frontmatter, body conventions. For the **design** of a skill's content — predictability, information hierarchy, leading words, progressive disclosure, and the failure modes it catalogs — use the `skill-design` skill, its single source of truth.
+
 ### Frontmatter
 
 ```yaml
@@ -314,6 +316,7 @@ After creating or modifying an agent, skill, or command, verify:
 - [ ] **Skills are preloaded, not stranded**: Every skill an agent's body depends on appears in its `skills:` frontmatter. An agent with a `tools:` allowlist that omits `Skill` must never be told to "use the Skill tool." Preloaded skills must not set `disable-model-invocation: true`.
 - [ ] **Frontmatter is complete**: All required keys are present with valid values.
 - [ ] **Body follows conventions**: Opening persona line (agents), `# H1 Title` + intro (skills), `$ARGUMENTS` at end when accepting user args (commands).
+- [ ] **Skill content is well-designed**: For a new or edited skill, apply `skill-design` — the description triggers on distinct branches, reference is disclosed rather than bloating the top, and the body is free of the failure modes it catalogs.
 - [ ] **Cross-cutting guidance is wired in**: Implementation-oriented agents reference `coding-guardrails` (or clearly include equivalent guardrails) alongside any domain skill.
 - [ ] **`CLAUDE.md` is updated**: New agents appear in the subagent table, new skills in the skills table, new commands in the commands table.
 - [ ] **User-facing docs are updated if present**: README or other suite docs are kept in sync when this repo actually includes them.
