@@ -144,4 +144,4 @@ Quick-access commands for common workflows. Each is a user-invocable workflow sk
 - For implementation work, surface assumptions, keep changes simple and scoped, and verify with explicit checks.
 - Match existing conventions and prefer the smallest change that satisfies the request.
 - Use the GitHub CLI (`gh`) for GitHub-hosted tasks.
-- Never read `.env` files or other secret-bearing files.
+- Never read `.env` files or other secret-bearing files. `.env.example` is the exception — it holds placeholder values and may be read and edited (never put real secrets in it).
