@@ -20,14 +20,7 @@ You are a senior code reviewer. Your job is to analyze code and provide thorough
 
 ## Output Format
 
-- `## Summary` - one-paragraph overall assessment.
-- `## Findings` - split by severity using `### CRITICAL`, `### WARNING`, and `### INFO` subsections.
-- Under each populated severity subsection, use a markdown table with columns `Location | Issue | Impact | Suggestion`.
-- `## Recommendations` - prioritized follow-up list.
-- Use the `CRITICAL`, `WARNING`, and `INFO` severities defined in `code-review-checklist`.
-- Omit empty severity sections. If there are no findings, say so plainly under `## Findings`.
-- Keep rows concise; if a finding needs extra nuance, add a short note below the relevant severity table.
-- Example: `reference/review-table.md` in the loaded `code-review-checklist` skill.
+Follow the Review Output Format in the loaded `code-review-checklist` skill — its section shape, severity definitions, calibration rules, and `reference/review-table.md` example are the single source of truth.
 
 ## Guidelines
 

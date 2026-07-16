@@ -52,7 +52,7 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 | `spec-writing` | Scope decomposition, clarifying dialogue, approach exploration, staged design presentation, and spec self-review | architect |
 | `git-conventions` | Conventional Commits format, branching model, commit hygiene | git-manager, tech-lead |
 | `test-strategy` | Test type selection, coverage targets, mocking guidelines | tester, tech-lead |
-| `code-review-checklist` | Structured review rubric across core review categories with severity levels | code-reviewer |
+| `code-review-checklist` | Structured review rubric across core review categories, spec fidelity, and a Fowler design-smell baseline, with severity levels | code-reviewer |
 | `security-analysis` | Vulnerability taxonomy, data flow analysis, dependency auditing, remediation patterns | security-analyst |
 | `debugging-methodology` | Phased debugging workflow — Phase 0 builds a feedback loop (10 strategies), phases 1–5 reproduce/gather/hypothesize/test/fix, Phase 6 is cleanup and post-mortem | debugger |
 | `doc-templates` | Templates for READMEs, API docs, ADRs, changelogs, code comments | documenter |
@@ -72,7 +72,7 @@ Quick-access commands for common workflows:
 
 | Command | Action | Agent |
 |---|---|---|
-| `/code-review` | Review pending changes for quality issues, or the full codebase when the working tree is clean | code-reviewer |
+| `/code-review` | Review pending changes, changes since a base ref, or the full codebase when the working tree is clean | code-reviewer |
 | `/security` | Run a security assessment on code and dependencies | security-analyst |
 | `/full-review` | Run a code quality review and security audit in parallel | tech-lead |
 | `/test` | Run tests and analyze results | tester |
