@@ -6,8 +6,6 @@ description: Structured code review rubric covering spec fidelity, correctness, 
 
 Work through each section systematically. Not every item applies to every review — focus on what's relevant to the changes at hand.
 
-*The governing rules, spec-fidelity axis, and design-smell baseline are adapted from Matt Pocock's [`code-review`](https://github.com/mattpocock/skills) skill.*
-
 Two rules govern every item:
 
 - **The repo overrides.** Documented project standards (`CONTRIBUTING.md`, `CODING_STANDARDS.md`, `CONTEXT.md`, style guides) win over any generic item here. Where the repo endorses something this rubric would flag, follow the repo.

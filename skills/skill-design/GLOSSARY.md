@@ -2,8 +2,6 @@
 
 The domain model for what makes a skill great. A skill exists to wrangle determinism out of a stochastic system; the root virtue is **Predictability**, and every term below is a lever on it. This is the disclosed reference for [`SKILL.md`](SKILL.md).
 
-*Adapted from Matt Pocock's [`writing-great-skills`](https://github.com/mattpocock/skills) glossary, reconciled to this suite's vocabulary: the source's "model-invoked / user-invoked" axis maps onto this suite's **reference skill** (keeps its description, preloadable via `skills:`) and **workflow skill** (`disable-model-invocation: true`, the `/`-commands).*
-
 The terms are grouped by axis: **Invocation** (how a skill is reached), **Information Hierarchy** (how its content is arranged), **Steering** (how the agent's runtime behaviour is shaped), and **Pruning** (how it is kept lean). Each **failure mode** lives beside the lever that cures it, tagged *failure mode*. **Bold terms** in any definition are themselves defined here — find them by their heading.
 
 ## Predictability

@@ -10,8 +10,6 @@ A skill exists to wrangle determinism out of a stochastic system. **Predictabili
 
 Terms in **bold** are defined in [`GLOSSARY.md`](GLOSSARY.md), the disclosed reference for this skill. Reach for it when a term needs its full meaning.
 
-*Adapted from Matt Pocock's [`writing-great-skills`](https://github.com/mattpocock/skills) skill, reconciled to this suite's vocabulary.*
-
 ## Invocation
 
 This suite has two skill kinds, and they map onto one design axis — whether the **agent** can reach the skill or only the **human** can:
