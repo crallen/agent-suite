@@ -53,9 +53,9 @@ Once the user picks a candidate, drop into a grilling conversation. Walk the des
 
 Read `architecture-review/reference/deepening.md` to classify the candidate's dependencies and determine the right testing strategy across the seam.
 
-Side effects happen inline as decisions crystallize:
+Side effects happen inline as decisions crystallize — follow `domain-modeling` for the CONTEXT.md and ADR formats:
 
-- **Naming a deepened module after a concept not in CONTEXT.md?** Add the term to CONTEXT.md — same discipline as `grill`.
+- **Naming a deepened module after a concept not in CONTEXT.md?** Add the term to CONTEXT.md.
 - **Sharpening a fuzzy term?** Update CONTEXT.md right there.
 - **User rejects a candidate with a load-bearing reason?** Offer an ADR: *"Want me to record this so future architecture reviews don't re-suggest it?"* Only when the reason would actually help a future explorer — skip ephemeral reasons ("not worth it right now") and self-evident ones.
 - **Want to explore alternative interfaces for the deepened module?** Read `architecture-review/reference/interface-design.md` for the parallel sub-agent pattern.

@@ -1,6 +1,6 @@
 ---
 name: doc-templates
-description: Templates and structure for READMEs, API documentation, architecture decision records, changelogs, and inline code documentation
+description: Templates and structure for READMEs, API documentation, changelogs, and inline code documentation — ADRs defer to the domain-modeling skill
 ---
 
 ## README Template
@@ -127,50 +127,9 @@ curl -X GET https://api.example.com/resource/123 \
 \```
 ```
 
-## Architecture Decision Record (ADR) Template
+## Architecture Decision Records (ADRs)
 
-```markdown
-# ADR-NNN: Title of Decision
-
-**Status**: Proposed | Accepted | Deprecated | Superseded by ADR-XXX
-**Date**: YYYY-MM-DD
-**Authors**: Name(s)
-
-## Context
-
-What is the problem or situation that requires a decision?
-What constraints exist? What forces are at play?
-
-## Decision
-
-What is the decision that was made?
-State it clearly and directly.
-
-## Alternatives Considered
-
-### Alternative A: Name
-- **Pros**: ...
-- **Cons**: ...
-- **Why rejected**: ...
-
-### Alternative B: Name
-- **Pros**: ...
-- **Cons**: ...
-- **Why rejected**: ...
-
-## Consequences
-
-### Positive
-- What becomes easier or better?
-
-### Negative
-- What becomes harder or worse?
-- What new constraints does this introduce?
-
-### Risks
-- What could go wrong?
-- How can those risks be mitigated?
-```
+ADRs follow the `domain-modeling` skill — it owns the three-part gate for when a decision deserves one, the `docs/adr/` layout, and the canonical minimal format (a title plus 1-3 sentences, with optional Status / Considered Options / Consequences sections). Load it before writing an ADR.
 
 ## Changelog Template
 
