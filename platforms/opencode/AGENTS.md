@@ -95,6 +95,7 @@ Quick-access commands for common workflows:
 | `/architecture` | Find deepening opportunities in the codebase, present a markdown report of candidates, then grill on the chosen one | architect |
 | `/prototype` | Build a throwaway prototype to explore a design question — logic branch for state/data-model questions, UI branch for visual layout questions | tech-lead |
 | `/zoom-out` | Get a map of relevant modules and callers when unfamiliar with an area, using the project's domain vocabulary | — |
+| `/loop [interval] <prompt>` | Re-run a prompt or command on a fixed interval, or self-paced when no interval is given — requires the `opencode-loop-plugin` reference in `opencode.json` | — |
 
 ### Suggested Workflows
 
