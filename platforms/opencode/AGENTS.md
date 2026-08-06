@@ -57,7 +57,7 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 | `debugging-methodology` | Phased debugging workflow — Phase 0 builds a feedback loop (10 strategies), phases 1–5 reproduce/gather/hypothesize/test/fix, Phase 6 is cleanup and post-mortem | debugger |
 | `doc-templates` | Templates for READMEs, API docs, changelogs, code comments — ADRs defer to `domain-modeling` | documenter |
 | `docker-best-practices` | Multi-stage builds, security hardening, layer caching, Compose patterns | devops-engineer |
-| `ci-pipeline` | CI/CD patterns for GitHub Actions and GitLab CI with caching strategies | devops-engineer |
+| `ci-pipeline` | CI/CD stage order, architecture and coverage enforcement gates, per-stack reference workflows, and a discovery procedure for unfamiliar stacks | devops-engineer |
 | `backend-patterns` | Backend application patterns for handlers, services, validation, auth/authz, integrations, and app-layer refactors | backend-engineer, tech-lead |
 | `database-patterns` | Database design and performance patterns for schemas, migrations, indexes, constraints, transactions, and query behavior | database-specialist, tech-lead |
 | `frontend-patterns` | Frontend router for product context gathering, work-mode selection, escalation, and targeted reference selection | frontend-engineer, frontend-auditor |
