@@ -41,7 +41,7 @@ Keep the import graph acyclic. A cycle between modules means the seam sits in th
 - Keep handlers thin. They should coordinate, not own deep business logic.
 - Normalize input once near the boundary.
 - Return consistent status codes or error envelopes.
-- Prefer explicit dependency injection over hidden globals when the codebase already uses injection.
+- Inject dependencies explicitly at new seams rather than reaching for hidden globals. Match the surrounding pattern when editing code that already relies on them.
 - Preserve idempotency for retried writes when the API contract expects it.
 
 ### Handler Checklist
