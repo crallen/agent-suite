@@ -75,7 +75,7 @@ Skills are loaded on-demand via `/skill-name` or automatically when relevant, an
 | `test-strategy` | Test type selection, coverage targets, mocking guidelines, fixture-data hygiene | tester |
 | `code-review-checklist` | Structured review rubric across core review categories, spec fidelity, and a Fowler design-smell baseline, with severity levels | code-reviewer |
 | `security-analysis` | Vulnerability taxonomy, data flow analysis, dependency auditing, remediation patterns | security-analyst |
-| `debugging-methodology` | Phased debugging workflow — Phase 0 builds a feedback loop, phases 1–5 reproduce/gather/hypothesize/test/fix, Phase 6 is cleanup and post-mortem | debugger |
+| `debugging-methodology` | Phased debugging workflow — Phase 0 builds a feedback loop (10 strategies), phases 1–5 reproduce/gather/hypothesize/test/fix, Phase 6 is cleanup and post-mortem | debugger |
 | `doc-templates` | Templates for READMEs, API docs, changelogs, code comments, plus register and naming rules | documenter |
 | `docker-best-practices` | The static-binary vs runtime base-image decision, multi-stage builds, layer caching, hardening, and per-stack reference Dockerfiles | devops-engineer |
 | `ci-pipeline` | CI/CD stage order, architecture and coverage enforcement gates, auditing an inherited pipeline, per-stack reference workflows, and a discovery procedure for unfamiliar stacks | devops-engineer |

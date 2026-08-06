@@ -51,13 +51,13 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 | `coding-guardrails` | Cross-cutting execution guardrails for implementation work: assumptions, simplicity, surgical diffs, and verification | tech-lead, code-reviewer, tester, debugger, devops-engineer, frontend-engineer, backend-engineer, database-specialist |
 | `spec-writing` | Scope decomposition, clarifying dialogue, approach exploration, staged design presentation, and spec self-review | architect |
 | `git-conventions` | Conventional Commits format, branching model, commit hygiene | git-manager, tech-lead |
-| `test-strategy` | Test type selection, coverage targets, mocking guidelines | tester, tech-lead |
+| `test-strategy` | Test type selection, coverage targets, mocking guidelines, fixture-data hygiene | tester, tech-lead |
 | `code-review-checklist` | Structured review rubric across core review categories, spec fidelity, and a Fowler design-smell baseline, with severity levels | code-reviewer |
 | `security-analysis` | Vulnerability taxonomy, data flow analysis, dependency auditing, remediation patterns | security-analyst |
 | `debugging-methodology` | Phased debugging workflow — Phase 0 builds a feedback loop (10 strategies), phases 1–5 reproduce/gather/hypothesize/test/fix, Phase 6 is cleanup and post-mortem | debugger |
-| `doc-templates` | Templates for READMEs, API docs, changelogs, code comments — ADRs defer to `domain-modeling` | documenter |
+| `doc-templates` | Templates for READMEs, API docs, changelogs, code comments, plus register and naming rules | documenter |
 | `docker-best-practices` | The static-binary vs runtime base-image decision, multi-stage builds, layer caching, hardening, and per-stack reference Dockerfiles | devops-engineer |
-| `ci-pipeline` | CI/CD stage order, architecture and coverage enforcement gates, per-stack reference workflows, and a discovery procedure for unfamiliar stacks | devops-engineer |
+| `ci-pipeline` | CI/CD stage order, architecture and coverage enforcement gates, auditing an inherited pipeline, per-stack reference workflows, and a discovery procedure for unfamiliar stacks | devops-engineer |
 | `backend-patterns` | Backend application patterns for handlers, services, validation, auth/authz, integrations, and app-layer refactors | backend-engineer, tech-lead |
 | `database-patterns` | Database design and performance patterns for schemas, migrations, indexes, constraints, transactions, and query behavior | database-specialist, tech-lead |
 | `frontend-patterns` | Frontend router for product context gathering, work-mode selection, escalation, and targeted reference selection | frontend-engineer, frontend-auditor |
