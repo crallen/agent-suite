@@ -48,7 +48,7 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 
 | Skill | Description | Primary users |
 |---|---|---|
-| `coding-guardrails` | Cross-cutting execution guardrails for implementation work: assumptions, simplicity, surgical diffs, and verification | tech-lead, code-reviewer, tester, debugger, devops-engineer, frontend-engineer, backend-engineer, database-specialist |
+| `coding-guardrails` | Cross-cutting execution guardrails for implementation work: assumptions, simplicity, surgical diffs, verification, and naming over comments | tech-lead, code-reviewer, tester, debugger, devops-engineer, frontend-engineer, backend-engineer, database-specialist |
 | `spec-writing` | Scope decomposition, clarifying dialogue, approach exploration, staged design presentation, and spec self-review | architect |
 | `git-conventions` | Conventional Commits format, branching model, commit hygiene | git-manager, tech-lead |
 | `test-strategy` | Test type selection, coverage targets, mocking guidelines, fixture-data hygiene | tester, tech-lead |

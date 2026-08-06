@@ -196,7 +196,10 @@ const maxRequestsPerMinute = 80
 const maxRequestsPerMinute = 80
 ```
 
-### Register
+## Register
+
+Applies to every prose surface a human reads: comments, README and API docs,
+changelog entries, and commit bodies.
 
 Name the mechanism, not a metaphor for it. Colloquial phrasing reads as
 precision but carries less information: it gestures at what happened instead of
@@ -217,7 +220,7 @@ Keep the words that are load-bearing, though. "A real value here **silently**
 becomes the image tag" earns its adverb — the absence of any error is the whole
 reason the surrounding check exists.
 
-### Naming
+## Naming
 
 The same standard applies to identifiers, and vague naming does more damage
 there, because a reader cannot skip a name the way they can skip a comment.
