@@ -3,6 +3,10 @@ name: doc-templates
 description: Templates and structure for READMEs, API documentation, changelogs, and inline code documentation — ADRs defer to the domain-modeling skill
 ---
 
+# Documentation Templates
+
+Reusable templates for common documentation artifacts: READMEs, API docs, changelogs, and inline code comments. ADRs defer to the `domain-modeling` skill.
+
 ## README Template
 
 ```markdown

@@ -3,7 +3,7 @@ name: grill
 description: Structured interrogation workflow for stress-testing a plan — one question at a time with a recommendation, codebase-grounded answers, and a shared-understanding gate before any action. Load when the user wants to grill a plan or design; pairs with domain-modeling for terminology and ADR writes.
 ---
 
-# Grill
+# Grill Methodology
 
 This skill drives a structured grilling session: a sustained, Socratic interrogation of a plan or design that challenges every assumption and anchors decisions in the real codebase. Load it when the user wants to stress-test a plan before or after speccing it.
 
