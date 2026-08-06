@@ -75,16 +75,16 @@ Skills are loaded on-demand via `/skill-name` or automatically when relevant, an
 | `test-strategy` | Test type selection, coverage targets, mocking guidelines | tester |
 | `code-review-checklist` | Structured review rubric across core review categories, spec fidelity, and a Fowler design-smell baseline, with severity levels | code-reviewer |
 | `security-analysis` | Vulnerability taxonomy, data flow analysis, dependency auditing, remediation patterns | security-analyst |
-| `debugging-methodology` | 5-phase debugging workflow: reproduce, gather, hypothesize, test, fix | debugger |
+| `debugging-methodology` | Phased debugging workflow — Phase 0 builds a feedback loop, phases 1–5 reproduce/gather/hypothesize/test/fix, Phase 6 is cleanup and post-mortem | debugger |
 | `doc-templates` | Templates for READMEs, API docs, changelogs, code comments — ADRs defer to `domain-modeling` | documenter |
-| `docker-best-practices` | Multi-stage builds, security hardening, layer caching, Compose patterns | devops-engineer |
-| `ci-pipeline` | CI/CD patterns for GitHub Actions and GitLab CI with caching strategies | devops-engineer |
+| `docker-best-practices` | The static-binary vs runtime base-image decision, multi-stage builds, layer caching, hardening, and per-stack reference Dockerfiles | devops-engineer |
+| `ci-pipeline` | CI/CD stage order, architecture and coverage enforcement gates, per-stack reference workflows, and a discovery procedure for unfamiliar stacks | devops-engineer |
 | `backend-patterns` | Backend application patterns for handlers, services, validation, auth/authz, integrations, and app-layer refactors | backend-engineer |
 | `database-patterns` | Database design and performance patterns for schemas, migrations, indexes, constraints, transactions, and query behavior | database-specialist |
 | `frontend-patterns` | Frontend router for product context gathering, work-mode selection, escalation, and targeted reference selection | frontend-engineer, frontend-auditor |
 | `agent-authoring` | Schemas, templates, and conventions for creating agents, skills, and commands | agent-builder, agent-reviewer |
 | `skill-design` | Design principles for writing and reviewing skills: predictability, information hierarchy, leading words, progressive disclosure, and failure modes (glossary disclosed) | agent-builder, agent-reviewer |
-| `domain-modeling` | Active domain-model maintenance: terminology sharpening, CONTEXT.md glossary upkeep, and minimal ADRs gated by a three-part test | architect, documenter |
+| `domain-modeling` | Active domain-model maintenance: terminology sharpening, CONTEXT.md glossary upkeep, which terms earn a type, and minimal ADRs — both gated by a three-part test | architect, documenter |
 | `grill-methodology` | One-at-a-time Socratic interrogation of a plan: assumption challenging, recommendation-first questions, codebase cross-referencing, and a shared-understanding gate — pairs with `domain-modeling` | architect |
 | `prototype-methodology` | Throwaway prototype workflow — routes between a terminal app for logic/state questions and multiple UI variants for visual questions | architect, backend-engineer, frontend-engineer |
 | `architecture-review` | Architecture deepening workflow: find shallow modules, propose depth-increasing refactors, present markdown report of candidates, then grill on the chosen one with CONTEXT.md / ADR integration | architect |

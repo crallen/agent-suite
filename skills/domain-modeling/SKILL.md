@@ -1,5 +1,5 @@
 ---
-description: Active domain-model maintenance — sharpen terminology, keep CONTEXT.md as the project glossary, and record ADRs for hard-to-reverse decisions. Load when pinning down domain language, recording an architectural decision, or when a session is changing the domain model; merely reading CONTEXT.md for vocabulary needs no skill.
+description: Active domain-model maintenance — sharpen terminology, keep CONTEXT.md as the project glossary, record ADRs for hard-to-reverse decisions, and decide which terms earn their own type. Load when pinning down domain language, deciding whether a concept needs a type, recording an architectural decision, or when a session is changing the domain model; merely reading CONTEXT.md for vocabulary needs no skill.
 ---
 
 # Domain Modeling
@@ -65,6 +65,31 @@ _Avoid_: Client, buyer, account
 
 **Creating CONTEXT.md lazily**: if no CONTEXT.md exists yet, create `CONTEXT.md` at the repo root when the first term is resolved. Start from the template above, naming the context after the primary domain (e.g., `# Orders` or `# Billing`).
 
+## Terms That Earn a Type
+
+A glossary entry names a concept; a type makes the code agree. When a term is resolved, ask once whether it should exist in the type system — but hold the line, because wrapping every noun is the **Speculative Generality** that `coding-guardrails` warns against.
+
+A term earns its own type when all three hold:
+
+1. **It carries a rule a primitive cannot** — a non-empty constraint, a format, a range, a currency that must not be assumed.
+2. **Mixing it up would be a real bug** — two `string` parameters that must never be swapped, two `int` amounts in different units.
+3. **It crosses a seam** — the concept is passed between modules, so the compiler has somewhere useful to object.
+
+If only one or two hold, the primitive is fine. Suspecting a type is already overdue in existing code is the reactive case, and the **Primitive Obsession** entry in `code-review-checklist` owns it.
+
+### How far the type system will take you
+
+Say what the language actually enforces rather than promising more:
+
+| Language | Enforcement available |
+|---|---|
+| Rust | Strong. Newtypes resist coercion, enums are real sum types with exhaustive `match`, and private fields plus a fallible constructor make validity structural. |
+| TypeScript, Java, C# | Good for sum types (discriminated unions, sealed hierarchies). Branded primitives work but are a convention the boundary can erase. |
+| Go | Naming, plus a validated constructor by convention. A named type is distinct but cheaply converted, there are no sum types or exhaustiveness checks, and **the zero value is always constructible** — so validity is enforced at the boundary, not by the type. |
+| Python | Documentation. `NewType` is erased at runtime; `frozen=True` dataclasses carry intent, not a guarantee. |
+
+"Make illegal states unrepresentable" is achievable in Rust and largely is not in Go. Where the type system won't carry the rule, put it in one validated constructor and say in CONTEXT.md what the term guarantees — the glossary is then the contract the compiler can't express.
+
 ## Writing ADRs
 
 Offer to write an ADR when all three of these are true:
@@ -101,3 +126,5 @@ Before writing an ADR, confirm with the user. Example:
 - **Deferring doc writes.** Write CONTEXT.md and ADR updates the moment a term or decision is resolved. Deferred documentation doesn't happen.
 - **Glossary inflation.** Don't add every noun to CONTEXT.md. Only project-specific domain terms belong there.
 - **ADR for every decision.** The three-part test is a gate. Most decisions don't clear it.
+- **A type per noun.** The three-part test above is a gate too. A wrapper that carries no rule and crosses no seam is indirection with a domain name on it.
+- **Promising enforcement the language can't give.** Claiming a Go named type makes a state unrepresentable is worse than saying nothing — it retires a boundary check that was doing the real work.

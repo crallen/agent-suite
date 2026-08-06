@@ -30,14 +30,18 @@ Prefer a predictable request path:
 4. **Persistence/integration** - Call repositories, queues, or third-party systems.
 5. **Response mapping** - Convert domain result into transport response and errors.
 
-Keep transport-specific concerns out of business logic where possible.
+### Dependency direction
+
+Dependencies point inward. Transport depends on the service layer; the service layer depends only on interfaces it owns. When a service needs the outside world, it declares the shape it needs and an outer layer supplies it — `Avoid in services` below lists the concrete cases.
+
+Keep the import graph acyclic. A cycle between modules means the seam sits in the wrong place; extract the shared concept into its own module instead of importing both ways.
 
 ## Handler and Controller Rules
 
 - Keep handlers thin. They should coordinate, not own deep business logic.
 - Normalize input once near the boundary.
 - Return consistent status codes or error envelopes.
-- Prefer explicit dependency injection over hidden globals when the codebase already uses injection.
+- Inject dependencies explicitly at new seams rather than reaching for hidden globals. Match the surrounding pattern when editing code that already relies on them.
 - Preserve idempotency for retried writes when the API contract expects it.
 
 ### Handler Checklist
