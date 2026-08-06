@@ -58,6 +58,8 @@ Two rules govern every item:
 - [ ] Is the code self-documenting, or does it need explanatory comments?
 - [ ] Are abstractions at the right level? (not too abstract, not too concrete)
 - [ ] Is the module/package structure logical?
+- [ ] Do dependencies point one way? (business logic free of transport, framework, and persistence types)
+- [ ] Does the change introduce an import cycle between modules or packages?
 - [ ] Would a new team member understand this code without explanation?
 
 Naming, duplication, and structural design problems are covered by the smell baseline in section 8.

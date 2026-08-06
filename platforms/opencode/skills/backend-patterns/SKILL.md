@@ -31,7 +31,11 @@ Prefer a predictable request path:
 4. **Persistence/integration** - Call repositories, queues, or third-party systems.
 5. **Response mapping** - Convert domain result into transport response and errors.
 
-Keep transport-specific concerns out of business logic where possible.
+### Dependency direction
+
+Dependencies point inward. Transport depends on the service layer; the service layer depends only on interfaces it owns. When a service needs the outside world, it declares the shape it needs and an outer layer supplies it — `Avoid in services` below lists the concrete cases.
+
+Keep the import graph acyclic. A cycle between modules means the seam sits in the wrong place; extract the shared concept into its own module instead of importing both ways.
 
 ## Handler and Controller Rules
 
