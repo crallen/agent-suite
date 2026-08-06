@@ -1,0 +1,30 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      # PyYAML is optional for the validator, but installing it enables the
+      # frontmatter-validity check.
+      - run: pip install pyyaml
+      # Covers reference integrity, index accuracy, and claude<->opencode parity.
+      - run: scripts/validate-config.py
+      # shellcheck ships on the runner image.
+      - run: shellcheck scripts/*.sh
