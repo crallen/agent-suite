@@ -32,13 +32,13 @@ jobs:
 # Node.js - cache node_modules via setup-node
 - uses: actions/setup-node@v4
   with:
-    node-version: 22
+    node-version: 24
     cache: npm
 
 # Go - cache module downloads and build cache
 - uses: actions/setup-go@v5
   with:
-    go-version: '1.22'
+    go-version: '1.26'
     cache: true
 
 # Rust - use swatinem/rust-cache
@@ -63,7 +63,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        node-version: [20, 22]
+        node-version: [22, 24]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4

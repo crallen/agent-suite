@@ -6,7 +6,7 @@ Go emits a static binary, so the final image needs nothing but the binary itself
 
 ```dockerfile
 # Stage 1: Build
-FROM golang:1.22-alpine AS build
+FROM golang:1.26-alpine AS build
 WORKDIR /src
 
 # Dependencies resolve from the manifest alone, so this layer survives source edits.

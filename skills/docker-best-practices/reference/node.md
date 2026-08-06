@@ -6,7 +6,7 @@ Node needs its runtime in the final image, so the floor is the size of the base 
 
 ```dockerfile
 # Stage 1: Build
-FROM node:22.12-slim AS build
+FROM node:24-slim AS build
 WORKDIR /app
 
 # Dependencies resolve from the manifest alone, so this layer survives source edits.
@@ -17,13 +17,13 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Production dependencies only
-FROM node:22.12-slim AS deps
+FROM node:24-slim AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
 # Stage 3: Production
-FROM node:22.12-slim
+FROM node:24-slim
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=deps /app/node_modules ./node_modules

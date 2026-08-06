@@ -35,7 +35,7 @@ Two consequences for the static-binary case that catch people out:
 - **`scratch` has no `/etc/passwd`**, so `USER appuser` fails. Use a numeric UID (`USER 65532:65532`) — distroless images already define `nonroot` at 65532.
 - **`scratch` has no CA certificates**, so outbound TLS fails. Copy them from the build stage, or use `distroless/static`, which includes them.
 
-Always pin the base to a specific version. Never `latest` in production.
+Always pin the base to a specific version — never `latest` in production. `ci-pipeline` covers which version each ecosystem's current supported release is, and how to verify it rather than write it from memory.
 
 ## Multi-Stage Builds
 

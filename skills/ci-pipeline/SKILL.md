@@ -129,6 +129,28 @@ Then prove the check can fail. Run it against a deliberately broken input — an
 
 Add `ci-pipeline/reference/<stack>.md` in the shape of the existing stack files: the job YAML, a roles table, and any role the stack leaves empty with a note on why. Record what you verified, not what you assumed.
 
+## Toolchain Versions
+
+Target the ecosystem's current supported release. "LTS" only means something in some ecosystems, so know which rule applies:
+
+| Ecosystem | Target | How it works |
+|---|---|---|
+| Node | Active LTS | Even majors enter LTS each October. Current carries unreleased-feature risk; Maintenance LTS is an upgrade signal, not a resting place |
+| Go | Latest stable | No LTS. Only the two most recent majors get security fixes, so one behind is the floor rather than the goal |
+| Rust | `stable` channel | No LTS. Pin the channel and let the toolchain action resolve it |
+| Python | Latest stable minor | No LTS. Each minor is supported roughly five years |
+| Databases and services | Latest supported major | Postgres and peers support a major for about five years |
+
+**Verify before pinning.** A version written from memory is stale the moment a release lands, and a stale pin in a template propagates into every project built from it:
+
+```sh
+curl -s https://nodejs.org/dist/index.json       # newest entry per major with lts != false
+curl -s "https://go.dev/dl/?mode=json"           # stable releases, newest first
+curl -s https://endoflife.date/api/python.json   # also postgresql, node, and most others
+```
+
+Pin the major in templates (`node:24-slim`, `go-version: '1.26'`) so patch releases arrive without an edit, and pin further — to a digest — in a production image where reproducibility outweighs convenience. Let Renovate or Dependabot raise the major bump as a reviewable PR instead of discovering it years later.
+
 ## Security in CI
 
 - **Never echo secrets**. Use masked variables.
