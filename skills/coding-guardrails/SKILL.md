@@ -1,5 +1,5 @@
 ---
-description: "Cross-cutting execution guardrails for coding tasks: surface assumptions, prefer simple solutions, make surgical changes, and define verifiable success criteria"
+description: "Cross-cutting execution guardrails for coding tasks: surface assumptions, prefer simple solutions, make surgical changes, define verifiable success criteria, and prefer a clear name over a comment that explains it"
 ---
 
 # Coding Guardrails
@@ -88,9 +88,20 @@ Translate work into explicit proof, not vague motion.
 | New feature | Clarify → smallest useful slice → verify |
 | Refactor | Capture behavior → change in steps → confirm behavior holds |
 
+## Naming and Comments
+
+Both get read far more often than they get written, so a vague one charges every
+later reader. Prefer a name that makes the code self-explanatory over a comment
+that explains it. Where a comment earns its place, name the mechanism rather than
+a metaphor for it — "raises `SettingsError`", not "blows up".
+
+`doc-templates` holds the full register and naming rules. Load it when writing
+comments, docstrings, or identifiers a human will read.
+
 ## Anti-Patterns
 
 - Silent assumption
 - Speculative architecture
 - Drive-by refactor
 - Vague success criteria
+- Comment standing in for a name that could have been clearer

@@ -5,6 +5,10 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Manual re-run, for a run lost to a platform incident rather than a code
+  # change. GitHub only offers the Run workflow button once this file is on the
+  # default branch, so it becomes usable after this branch merges.
+  workflow_dispatch:
 
 concurrency:
   group: validate-${{ github.ref }}

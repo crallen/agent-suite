@@ -1,6 +1,6 @@
 ---
 name: ci-pipeline
-description: CI/CD pipeline patterns for GitHub Actions and GitLab CI — stage order, architecture and coverage enforcement gates, and a procedure for determining the toolchain of a stack with no reference file yet. Load when building or reviewing a pipeline, adding quality gates, or working out which checks a stack needs.
+description: CI/CD pipeline patterns for GitHub Actions and GitLab CI — stage order, architecture and coverage enforcement gates, auditing an existing pipeline for stages it is missing, and a procedure for determining the toolchain of a stack with no reference file yet. Load when building or reviewing a pipeline, adding quality gates, inheriting a repo whose CI you have not read, or working out which checks a stack needs.
 ---
 
 # CI Pipeline
@@ -26,6 +26,28 @@ Working in a stack with no file above? Follow **Determining a Stack's Toolchain*
 3. **Parallel where possible** - Independent jobs should run concurrently.
 4. **Minimal permissions** - Each job gets only the permissions it needs.
 5. **Cache aggressively** - Dependencies, build artifacts, and Docker layers should be cached between runs.
+6. **Audit before trusting** - On an existing repo, confirm the pipeline runs the suite before treating a green build as evidence.
+
+## Auditing an Existing Pipeline
+
+A green build only proves the configured stages passed. Before relying on it as
+a safety net, confirm those stages exist. A repo can carry a full test suite that
+nothing ever executes, and it will stay green through every regression.
+
+Check, in order:
+
+1. **Does any job run the tests?** Grep the CI config for the test runner by
+   name. Check the build too, and do not assume it covers you — a Dockerfile
+   that installs dependencies is not running tests.
+2. **Does the test job gate anything?** A job that runs and reports but blocks
+   no downstream step lets failures through. Trace what `requires`/`needs` it.
+3. **Is it required on the protected branch?** A passing job that is not a
+   required status check does not stop a merge.
+
+Say so before shipping into a pipeline with a gap. A suite nobody runs is worse
+than no suite: it advertises a level of safety that is not there, and the first
+sign of the gap is usually a production failure that a local test would have
+caught.
 
 ## Pipeline Stages (in order)
 

@@ -55,14 +55,15 @@ Two rules govern every item:
 ### 4. Maintainability
 
 - [ ] Are functions small and focused? (single responsibility)
-- [ ] Is the code self-documenting, or does it need explanatory comments?
+- [ ] Could a clearer name remove the need for the comment? Where a comment earns its place, does it name the mechanism rather than a metaphor for it?
+- [ ] Are identifiers named for the scenario they represent, rather than for a failure or a vaguer alias? (`raise_access_denied`, not `_boom`)
 - [ ] Are abstractions at the right level? (not too abstract, not too concrete)
 - [ ] Is the module/package structure logical?
 - [ ] Do dependencies point one way? (business logic free of transport, framework, and persistence types)
 - [ ] Does the change introduce an import cycle between modules or packages?
 - [ ] Would a new team member understand this code without explanation?
 
-Naming, duplication, and structural design problems are covered by the smell baseline in section 8.
+Duplication and structural design problems are covered by the smell baseline in section 8, which also flags a name that reveals nothing (Mysterious Name). The comment and identifier items above catch the different failure — a name or comment that reads as precise but is not. `doc-templates` holds the full register and naming rules.
 
 ### 5. Error Handling
 

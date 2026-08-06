@@ -1,5 +1,5 @@
 ---
-name: grill
+name: grill-methodology
 description: Structured interrogation workflow for stress-testing a plan — one question at a time with a recommendation, codebase-grounded answers, and a shared-understanding gate before any action. Load when the user wants to grill a plan or design; pairs with domain-modeling for terminology and ADR writes.
 ---
 

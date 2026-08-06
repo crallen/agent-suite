@@ -1,5 +1,5 @@
 ---
-description: Guidelines for choosing test types, setting coverage targets, mocking strategies, and structuring test suites effectively
+description: Guidelines for choosing test types, setting coverage targets, mocking strategies, structuring test suites, and fixture-data hygiene (reserved placeholders, never real accounts or hosts)
 ---
 
 # Test Strategy
@@ -157,3 +157,26 @@ Branch coverage matters more than line coverage. A line can be "covered" without
   - Bad: `test_validate_token_3`
 - Use setup/teardown (beforeEach/afterEach, setUp/tearDown) for shared state, but keep it minimal.
 - Avoid test interdependence. Each test must be able to run independently and in any order.
+- Name helpers and fixtures for the scenario they stand in for, not for the fact
+  that they fail: `raise_access_denied`, not `_boom`. See the `doc-templates`
+  skill for the general naming and register rules.
+
+## Fixture Data
+
+Never put real account numbers, ARNs, hostnames, or customer identifiers in
+fixtures. A test file is readable by everyone with repo access and long outlives
+the reason someone pasted a real value into it.
+
+Use the reserved placeholder for each provider:
+
+| Kind | Placeholder |
+|---|---|
+| AWS account ID | `123456789012` (also moto's default) |
+| Domain names | `example.com`, `example.org`, `example.net` |
+| IPv4 | `192.0.2.0/24`, `198.51.100.0/24`, `203.0.113.0/24` |
+| Phone (US) | `555-0100` to `555-0199` |
+
+Do not invent an "obviously fake" value instead. All-zeros and all-ones look
+safe but are not reserved, and may belong to a real account or host. Reach for
+the documented placeholder, and use the same one across a repo so a real value
+stands out in review.
