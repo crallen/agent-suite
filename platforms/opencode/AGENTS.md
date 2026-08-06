@@ -23,17 +23,19 @@ These are invoked by the tech-lead via Task tool, or manually via `@mention`.
 |---|---|---|
 | `@code-reviewer` | Code quality and best practices review | Read-only. Cannot modify files. |
 | `@security-analyst` | Security vulnerability assessment, dependency audits, threat modeling | Read-only. Cannot modify files. |
-| `@tester` | Test generation, coverage analysis, test strategy | Write access. Bash allowlisted for test/build toolchains. |
-| `@debugger` | Root cause analysis and systematic debugging | Write access. Bash allowlisted for repro, diagnostics, and runtime toolchains. |
-| `@documenter` | Technical documentation and API docs | Write access. Bash limited to read-only commands. |
-| `@devops-engineer` | Docker, CI/CD, infrastructure configuration | Write access. Bash allowlisted for infrastructure and delivery toolchains. |
-| `@backend-engineer` | Backend application work: API handlers, services, auth/authz, validation, integrations, app-layer refactors | Write access. Bash allowlisted for app/runtime toolchains. |
-| `@database-specialist` | Schema design, migrations, indexes, query tuning, constraints, transactions, ORM/query-builder work where database behavior matters | Write access. Bash allowlisted for database and migration toolchains. |
-| `@git-manager` | Release preparation, changelog generation, and versioning-heavy git workflow | Write access. Bash limited to git, `gh`, and read commands. |
-| `@frontend-engineer` | UI components, styling, accessibility, responsive design | Write access. Bash allowlisted for frontend build/test toolchains. |
+| `@tester` | Test generation, coverage analysis, test strategy | Write access. |
+| `@debugger` | Root cause analysis and systematic debugging | Write access. |
+| `@documenter` | Technical documentation and API docs | Write access. |
+| `@devops-engineer` | Docker, CI/CD, infrastructure configuration | Write access. |
+| `@backend-engineer` | Backend application work: API handlers, services, auth/authz, validation, integrations, app-layer refactors | Write access. |
+| `@database-specialist` | Schema design, migrations, indexes, query tuning, constraints, transactions, ORM/query-builder work where database behavior matters | Write access. |
+| `@git-manager` | Release preparation, changelog generation, and versioning-heavy git workflow | Write access. |
+| `@frontend-engineer` | UI components, styling, accessibility, responsive design | Write access. |
 | `@frontend-auditor` | Read-only frontend audit and critique for UI quality, accessibility, responsiveness, and product-specific design fit | Read-only. Cannot modify files. |
-| `@agent-builder` | Creates, modifies, and reviews agents, skills, and slash commands | Write access. Bash limited to read-only commands. |
+| `@agent-builder` | Creates, modifies, and reviews agents, skills, and slash commands | Write access. |
 | `@agent-reviewer` | Read-only review of agents, skills, and commands for correctness, permissions, and consistency | Read-only. Cannot modify files. |
+
+`@agent-reviewer` and `@frontend-auditor` are `hidden: true` — they stay out of `@` autocomplete and are reached through their commands (`/agent-review`, `/frontend-audit`, `/frontend-critique`).
 
 Plus the built-in subagents:
 
@@ -79,7 +81,7 @@ Quick-access commands for common workflows:
 | `/test` | Run tests and analyze results | tester |
 | `/debugger` | Start a systematic debugging session | debugger |
 | `/docs` | Generate or update documentation | documenter |
-| `/commit` | Stage logical changes when needed and create Conventional Commits | tech-lead |
+| `/commit` | Stage logical changes when needed and create Conventional Commits | git-manager |
 | `/release` | Prepare release notes, changelog, and version bump | git-manager |
 | `/backend-engineer` | Implement or modify backend application code | backend-engineer |
 | `/database-specialist` | Design or modify database schemas, migrations, queries, and indexes | database-specialist |
@@ -95,7 +97,7 @@ Quick-access commands for common workflows:
 | `/architecture` | Find deepening opportunities in the codebase, present a markdown report of candidates, then grill on the chosen one | architect |
 | `/prototype` | Build a throwaway prototype to explore a design question — logic branch for state/data-model questions, UI branch for visual layout questions | tech-lead |
 | `/zoom-out` | Get a map of relevant modules and callers when unfamiliar with an area, using the project's domain vocabulary | — |
-| `/loop [interval] <prompt>` | Re-run a prompt or command on a fixed interval, or self-paced when no interval is given — requires the `opencode-loop-plugin` reference in `opencode.json` | — |
+| `/loop [interval] <prompt>` | Re-run a prompt or command on a fixed interval, or self-paced when no interval is given — requires the `opencode-loop-plugin` reference in `opencode.json`, whose `file:` path is machine-specific — update it per machine | — |
 
 ### Suggested Workflows
 
@@ -122,7 +124,7 @@ These are common starting points, not rigid rules. Pick the smallest workflow th
 - Read project config and nearby code before changing anything. If `CONTEXT.md` exists at the repo root (or `CONTEXT-MAP.md` for multi-context repos), read it too — it defines the canonical domain language for that project and takes precedence over general terminology.
 - For ambiguous or cross-cutting work, use `/spec` or `@architect` first. The architect is a collaborative dialogue agent — always invoke it directly, never via Task delegation.
 - Skills are the canonical long-form guidance. Keep agent bodies and commands short; load only what you need. For implementation work, start with `coding-guardrails` plus the domain skill.
-- Prefer deny-by-default shell permissions with role-scoped allowlists; reserve unrestricted shell access for cases that truly require it.
+- Agent permissions enforce two things: `edit` (denied on the read-only agents) and `task` (`"*": deny` on every subagent, so subagents cannot spawn subagents; the primaries keep delegation — tech-lead unrestricted, architect only to explore, code-reviewer, and security-analyst). Bash is `allow` across the suite — a read-only agent's shell restraint is carried by its prose, so state it in the body. Role-scoped bash allowlists exist in the schema (`agent-authoring` documents the pattern) for an agent that genuinely needs a narrower shell.
 - Route backend application work to `@backend-engineer`; when schema, SQL, migrations, indexes, transaction behavior, or database-heavy ORM/query-builder behavior are the real concern, involve `@database-specialist`.
 - For implementation work, surface assumptions, keep changes simple and scoped, and verify with explicit checks.
 - Match existing conventions and prefer the smallest change that satisfies the request.

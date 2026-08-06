@@ -44,7 +44,7 @@ color: "#hexcode"
 | Key | Type | Required | Description |
 |---|---|---|---|
 | `description` | string | Yes | One-sentence summary. Displayed in agent listings and injected into the runtime. |
-| `mode` | `"primary"` or `"subagent"` | Yes | `primary` = top-level orchestrator (only one). `subagent` = specialist invoked via `@mention` or Task tool. |
+| `mode` | `"primary"` or `"subagent"` | Yes | `primary` = session-level agent reachable via Tab (this suite has two: tech-lead, architect). `subagent` = specialist invoked via `@mention` or Task tool. |
 | `permission` | object | Yes | Defines the agent's access scope. See Permission Patterns below. |
 | `color` | hex string | Subagents only | UI display color. Omit for `primary` agents. Must not duplicate an existing agent's color. |
 | `temperature` | float (0.0-1.0) | No | Controls response randomness. Lower = more deterministic. Omit to use model defaults. |
@@ -54,18 +54,37 @@ color: "#hexcode"
 
 ### Permission Patterns
 
-#### Full access (for agents that need to build, test, or run arbitrary commands)
+#### Write agent (the suite default for implementation agents)
 
 ```yaml
 permission:
   edit: allow
-  bash:
-    "*": allow
+  bash: allow
+  task:
+    "*": deny
 ```
 
-Use this sparingly. Prefer role-scoped allowlists (`"*": deny` plus explicit command prefixes) whenever the agent can succeed with a narrower shell surface.
+Every implementation subagent in the suite uses this shape. `task: "*": deny`
+keeps subagents from spawning subagents; the primaries own delegation (the
+architect narrows its own `task` block to explore, code-reviewer, and
+security-analyst).
 
 #### Read-only (for analysis agents that must not modify anything)
+
+```yaml
+permission:
+  edit: deny
+  bash: allow
+  task:
+    "*": deny
+```
+
+`edit: deny` is the enforced guarantee. Bash stays open — the shell could still
+mutate files — so a read-only agent's body must state the restraint explicitly
+("You do NOT modify files"), as code-reviewer and security-analyst do. The
+index's permission column must claim only what the agent file enforces.
+
+#### Role-scoped bash allowlist (optional narrowing)
 
 ```yaml
 permission:
@@ -75,37 +94,23 @@ permission:
     "git diff*": allow
     "git log*": allow
     "git show*": allow
-    "git blame*": allow
     "grep *": allow
     "rg *": allow
     "cat *": allow
     "wc *": allow
 ```
 
-#### Edit + restricted bash (for agents that write files but have limited shell access)
-
-```yaml
-permission:
-  edit: allow
-  bash:
-    "*": deny
-    "git log*": allow
-    "git diff*": allow
-    "grep *": allow
-    "rg *": allow
-    "cat *": allow
-    "ls *": allow
-    "find *": allow
-    "wc *": allow
-```
+The schema supports deny-by-default with explicit command prefixes. No current
+suite agent uses one — reach for this when a new agent genuinely needs a
+narrower shell surface, and update the index's permission column to match.
 
 #### Bash pattern rules
 
 - `"*": deny` sets the default to deny-all; specific patterns then allowlist commands.
-- `"*": allow` permits all commands (use sparingly).
+- `"*": allow` permits all commands, equivalent to the scalar `bash: allow` the suite's agents use.
 - Patterns use glob-style prefix matching: `"git diff*"` matches `git diff`, `git diff --staged`, etc.
 - **Security**: Scope file-reading commands (`cat`, `find`, `tree`, `file`, `stat`) carefully to avoid reading sensitive files like SSH keys or environment files.
-- Prefer deny-by-default shell permissions even for implementation agents unless the domain truly requires unrestricted shell access.
+- If you narrow an agent's shell with an allowlist, keep the index's permission column in step with what the agent file actually sets — the drift between claimed and enforced permissions is worse than either posture.
 - Treat broad interpreter, package-manager, and container prefixes (`python*`, `node*`, `npm*`, `docker*`, etc.) as high-trust allowances even when they sit inside an allowlist.
 - Per-agent permissions further restrict within the global config baseline. They cannot grant more than the global config allows.
 
@@ -243,8 +248,8 @@ subtask: true
 | Key | Type | Required | Description |
 |---|---|---|---|
 | `description` | string | Yes | Short description displayed in help/command listings. |
-| `agent` | string | Yes | The agent identifier (filename without `.md`) to route this command to. |
-| `subtask` | boolean | Yes | Always `true`. Indicates the command runs as a delegated subtask. |
+| `agent` | string | No | The agent identifier (filename without `.md`) to route this command to. Omit when the command must run in the current session as the current agent (`/loop`, `/zoom-out`). Naming a `mode: primary` agent without `subtask` switches the live session to it — the shape for dialogue-driven commands (`/spec`, `/grill`, `/architecture`). |
+| `subtask` | boolean | No | `true` runs the command as a delegated subtask that reports back. Use for self-contained work; never for a command that must converse with the user mid-run. |
 
 ### Body Structure
 
@@ -263,7 +268,7 @@ $ARGUMENTS
 Key conventions:
 - **Dynamic content**: Use `` !`command` `` syntax to inject shell command output into the prompt at invocation time. The `!` backtick block evaluates the command and replaces itself with the output.
 - **`$ARGUMENTS`**: Always present, always at the end. Replaced with whatever the user types after the slash command (e.g., `/debug the login page crashes` replaces `$ARGUMENTS` with "the login page crashes").
-- **Keep it short**. Commands are prompts, not documentation. 5-15 lines total.
+- **Keep it as short as the task allows**. Commands are prompts, not documentation — most fit in 5-15 lines, but target-selection and diff-injection commands (`/code-review`, `/full-review`) legitimately run longer.
 - **Multiple commands can route to the same agent** (e.g., `/frontend`, `/frontend-polish`, and `/frontend-audit` route within the frontend workflow family).
 
 ## Color Palette

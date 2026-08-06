@@ -1,6 +1,6 @@
 ---
 description: Stage logical changes when needed and create well-formed Conventional Commits
-agent: tech-lead
+agent: git-manager
 subtask: true
 ---
 
