@@ -1,5 +1,5 @@
 ---
-description: Templates and structure for READMEs, API documentation, changelogs, and inline code documentation — ADRs defer to the domain-modeling skill
+description: Templates and structure for READMEs, API documentation, changelogs, and inline code documentation, plus the register and naming rules for prose humans read (name the mechanism, not a metaphor for it) — ADRs defer to the domain-modeling skill
 ---
 
 # Documentation Templates
@@ -194,3 +194,38 @@ const maxRequestsPerMinute = 80
 // Set max requests to 80
 const maxRequestsPerMinute = 80
 ```
+
+### Register
+
+Name the mechanism, not a metaphor for it. Colloquial phrasing reads as
+precision but carries less information: it gestures at what happened instead of
+saying it.
+
+| Instead of | Write |
+|---|---|
+| "blows up with a `SettingsError`" | "raises `SettingsError`" |
+| "clobbers the value" | "overwrites the value" |
+| "so keep it honest" | "so the entry stays current" |
+| "fails loudly" | "fails", or "exits non-zero" |
+| "under the hood" | name the layer actually doing the work |
+
+Cut emphasis that adds nothing: "before this validator *ever* runs" says no more
+than "before this validator runs".
+
+Keep the words that are load-bearing, though. "A real value here **silently**
+becomes the image tag" earns its adverb — the absence of any error is the whole
+reason the surrounding check exists.
+
+### Naming
+
+The same standard applies to identifiers, and vague naming does more damage
+there, because a reader cannot skip a name the way they can skip a comment.
+
+- Name a test helper for the scenario it represents, not for the fact that it
+  fails: `raise_access_denied`, not `_boom`.
+- Do not alias a well-known framework fixture to a vaguer name. `monkeypatch`
+  used directly reads as what it is; returning it as `clean_env` produces
+  `clean_env.setattr(...)`, which describes neither the environment nor the
+  patching.
+- If an assertion refers to an identifier by name, the name should make the
+  assertion self-explanatory without a comment.
