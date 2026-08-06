@@ -112,10 +112,10 @@ Quick-access commands for common workflows. Each is a user-invocable workflow sk
 | `/frontend-polish` | Apply focused frontend polish before handoff with verification and restraint | frontend-engineer |
 | `/agent-builder` | Create or modify an agent, skill, or command | agent-builder |
 | `/agent-review` | Review agents, skills, and commands for correctness and consistency | agent-reviewer |
-| `/spec` | Research a goal and produce a design spec with task checklist | architect |
-| `/grill` | Stress-test a plan with relentless one-at-a-time interrogation, sharpening domain language and writing CONTEXT.md / ADRs as decisions crystallize | architect |
+| `/spec` | Research a goal and produce a design spec with task checklist | — (inline, as architect) |
+| `/grill` | Stress-test a plan with relentless one-at-a-time interrogation, sharpening domain language and writing CONTEXT.md / ADRs as decisions crystallize | — (inline, as architect) |
 | `/prototype` | Build a throwaway prototype to explore a design question — logic branch for state/data-model questions, UI branch for visual layout questions | backend-engineer, frontend-engineer |
-| `/architecture` | Find deepening opportunities in the codebase, present a markdown report of candidates, then grill on the chosen one | architect |
+| `/architecture` | Find deepening opportunities in the codebase, present a markdown report of candidates, then grill on the chosen one | — (inline, as architect) |
 | `/zoom-out` | Get a map of relevant modules and callers when unfamiliar with an area, using the project's domain vocabulary | — |
 
 ### Suggested Workflows

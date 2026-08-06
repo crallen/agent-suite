@@ -260,7 +260,7 @@ disable-model-invocation: true
 | `description` | string | Yes | Short description displayed in `/help` and the command palette. |
 | `argument-hint` | string | No | Autocomplete hint shown after the command name, e.g. `[issue description]`. Add it whenever the command accepts `$ARGUMENTS`. |
 | `agent` | string | No | Agent identifier (filename without `.md`) to route the command to. When paired with `context: fork`, the command runs in that agent's isolated subagent context. |
-| `context` | string | No | Set to `fork` to run the command in an isolated subagent context with no access to the conversation history. Pair with `agent:`. Only use when the body is a self-contained task (inject any needed state via `` !`command` ``). |
+| `context` | string | No | Set to `fork` to run the command in an isolated subagent context with no access to the conversation history. Pair with `agent:`. Only use when the body is a self-contained task (inject any needed state via `` !`command` ``). A fork cannot pause for user input — `AskUserQuestion` is stripped from every subagent — so dialogue-driven workflows must run inline. |
 | `disable-model-invocation` | boolean | No | Set `true` to prevent the command from being auto-invoked by Claude — it becomes user-triggered only. |
 | `allowed-tools` | comma-separated string | No | Tools pre-approved while this command is running. Supports rule specifiers like `Bash(git commit *)`. |
 
@@ -281,9 +281,9 @@ $ARGUMENTS
 Key conventions:
 - **Dynamic content**: Use `` !`command` `` syntax to inject shell command output into the prompt at invocation time. The `!` backtick block evaluates the command and replaces itself with the output before Claude sees the content. The `!` must start a line or follow whitespace; use a ```` ```! ```` fenced block for multi-line commands. Because it evaluates on load, never leave this token bare (at line start or after whitespace) in a skill or agent file — keep it inside inline code as shown above, or it will execute whenever the file is pulled into context.
 - **`$ARGUMENTS`**: When the command accepts free-form user input, place `$ARGUMENTS` at the end. The user's text after the slash command (e.g., `/debug the login page crashes`) replaces it. Positional access is available via `$0`/`$1` (or `$ARGUMENTS[N]`), and `${CLAUDE_SKILL_DIR}` resolves to the skill's own directory for referencing bundled files.
-- **Keep it short**. Workflow skills are prompts, not documentation. 5-15 lines total.
+- **Keep it as short as the task allows**. Workflow skills are prompts, not documentation — most fit in 5-15 lines, but target-selection and diff-injection skills (`/code-review`, `/full-review`) legitimately run longer.
 - **Multiple workflow skills can route to the same agent** (e.g., `/frontend`, `/frontend-polish`, and `/frontend-audit` route within the frontend workflow family).
-- **Choose the routing style by context needs**. `agent:` + `context: fork` runs the skill body as the task in an isolated subagent — no conversation history, so inject any needed state via `` !`command` ``. Prose routing ("Use the `@name` subagent ...") runs in the main conversation, which composes a delegation message that can carry conversation context. Use fork for self-contained analyses (review, audit, security); use prose routing when the surrounding conversation matters (debugging, implementation).
+- **Choose the routing style by context needs**. `agent:` + `context: fork` runs the skill body as the task in an isolated subagent — no conversation history, so inject any needed state via `` !`command` ``. Prose routing ("Use the `@name` subagent ...") runs in the main conversation, which composes a delegation message that can carry conversation context. Use fork for self-contained analyses (review, audit, security); use prose routing when the surrounding conversation matters (debugging, implementation). Dialogue-driven workflows (`/spec`, `/grill`, `/architecture`) must not fork at all: a forked subagent has no `AskUserQuestion` and cannot pause for the user's answers, so they run inline in the main conversation.
 
 ## Color Palette
 
