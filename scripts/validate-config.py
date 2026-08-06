@@ -7,8 +7,8 @@ documents (claude/.claude/CLAUDE.md, opencode/.../AGENTS.md) neither name
 artifacts that don't exist nor omit ones that do, and that the shared skills
 are in sync with their canonical claude/ source.
 
-    scripts/validate-config.py          report problems, exit 1 if any
-    scripts/validate-config.py -v       also list what passed
+    scripts/validate-config.py          list every check and what it covered
+    scripts/validate-config.py -q       print only failures and the summary
 
 Frontmatter is parsed with PyYAML when available; without it the YAML-validity
 check is skipped and a simple key scanner is used instead.
@@ -40,15 +40,10 @@ OPENCODE = ROOT / "opencode/.config/opencode"
 BUILTIN_AGENTS = {"explore", "general", "plan", "build"}
 
 problems: list[str] = []
-passes: list[str] = []
 
 
 def fail(msg: str) -> None:
     problems.append(msg)
-
-
-def ok(msg: str) -> None:
-    passes.append(msg)
 
 
 def rel(p: Path) -> str:
@@ -147,17 +142,19 @@ C_COMMANDS = {n: fm for n, fm in C_SKILLS.items() if fm.get("disable-model-invoc
 
 # -------------------------------------------------------------------- checks
 
-def check_descriptions() -> None:
+def check_descriptions() -> str:
+    n = 0
     for label, inv in (("claude skill", C_SKILLS), ("opencode skill", O_SKILLS),
                        ("claude agent", C_AGENTS), ("opencode agent", O_AGENTS),
                        ("opencode command", O_COMMANDS)):
         for name, fm in inv.items():
+            n += 1
             if not fm.get("description"):
                 fail(f"{label} '{name}': missing a description")
-    ok("every artifact carries a description")
+    return f"{n} artifacts carry a description"
 
 
-def check_identifiers() -> None:
+def check_identifiers() -> str:
     for name, fm in C_AGENTS.items():
         if fm.get("name") and fm["name"] != name:
             fail(f"claude agent '{name}.md': name: is '{fm['name']}', must match the filename")
@@ -166,21 +163,24 @@ def check_identifiers() -> None:
     for name, fm in O_SKILLS.items():
         if fm.get("name") != name:
             fail(f"opencode skill '{name}': name: is {fm.get('name')!r}, must match the directory")
-    ok("identifiers match filenames and directory names")
+    return (f"{len(C_AGENTS)} claude agent files, {len(O_SKILLS)} opencode skill dirs "
+            f"match their identifiers")
 
 
-def check_agent_skill_refs() -> None:
+def check_agent_skill_refs() -> str:
+    n = 0
     for name, fm in C_AGENTS.items():
         for s in fm.get("skills") or []:
+            n += 1
             if s not in C_SKILLS:
                 fail(f"claude agent '{name}' preloads unknown skill '{s}'")
             elif C_SKILLS[s].get("disable-model-invocation"):
                 fail(f"claude agent '{name}' preloads '{s}', which sets "
                      f"disable-model-invocation — workflow skills cannot be preloaded")
-    ok("agent skills: references resolve and are preloadable")
+    return f"{n} preload refs across {len(C_AGENTS)} claude agents resolve and are preloadable"
 
 
-def check_command_agent_refs() -> None:
+def check_command_agent_refs() -> str:
     for name, fm in C_COMMANDS.items():
         a = fm.get("agent")
         if a and a not in C_AGENTS and a not in BUILTIN_AGENTS:
@@ -189,24 +189,31 @@ def check_command_agent_refs() -> None:
         a = fm.get("agent")
         if a and a not in O_AGENTS and a not in BUILTIN_AGENTS:
             fail(f"opencode command '{name}' routes to unknown agent '{a}'")
-    ok("command agent: references resolve")
+    total = len(C_COMMANDS) + len(O_COMMANDS)
+    routed = sum(1 for fm in list(C_COMMANDS.values()) + list(O_COMMANDS.values()) if fm.get("agent"))
+    return (f"{routed} of {total} commands name an agent, all resolving "
+            f"({len(C_COMMANDS)} claude workflow skills + {len(O_COMMANDS)} opencode commands)")
 
 
-def check_reference_pointers() -> None:
+def check_reference_pointers() -> str:
+    n_files = n_ptr = n_link = 0
     pat_scoped = re.compile(r"\b([a-z][a-z0-9-]*)/reference/([a-z0-9-]+\.md)\b")
     pat_link = re.compile(r"\]\(([A-Za-z0-9_./-]+\.md)\)")
     for root in (CLAUDE / "skills", OPENCODE / "skills"):
         for f in sorted(root.rglob("*.md")):
             text = f.read_text()
+            n_files += 1
             for skill, fname in set(pat_scoped.findall(text)):
+                n_ptr += 1
                 if not (root / skill / "reference" / fname).is_file():
                     fail(f"{rel(f)}: pointer to missing {skill}/reference/{fname}")
             for target in set(pat_link.findall(text)):
                 if target.startswith(("http", "/")):
                     continue
+                n_link += 1
                 if not (f.parent / target).resolve().is_file():
                     fail(f"{rel(f)}: markdown link to missing {target}")
-    ok("in-skill reference pointers and markdown links resolve")
+    return f"{n_ptr} reference pointers + {n_link} markdown links across {n_files} files resolve"
 
 
 def index_tokens(path: Path) -> tuple[set[str], set[str], set[str]]:
@@ -226,7 +233,7 @@ def index_tokens(path: Path) -> tuple[set[str], set[str], set[str]]:
     return skills, agents, commands
 
 
-def check_index(index: Path, skills: dict, agents: dict, commands: dict, label: str) -> None:
+def check_index(index: Path, skills: dict, agents: dict, commands: dict) -> str:
     named_s, named_a, named_c = index_tokens(index)
     for s in sorted(named_s):
         if s not in skills:
@@ -250,28 +257,42 @@ def check_index(index: Path, skills: dict, agents: dict, commands: dict, label: 
     for c in sorted(commands):
         if c not in text:
             fail(f"{rel(index)}: command '{c}' exists but is never mentioned")
-    ok(f"{label} index names only real artifacts, and mentions all of them")
+    return (f"{len(named_s)}/{len(named_a)}/{len(named_c)} skills/agents/commands named all exist; "
+            f"{len(skills)}/{len(agents)}/{len(commands)} on disk all mentioned")
 
 
-def check_countable_claims(index: Path, skills: dict, root: Path) -> None:
-    """Catch index prose that states a phase count the skill contradicts."""
+def check_countable_claims(index: Path, skills: dict, root: Path) -> str:
+    """Catch index prose stating a phase count or range the skill contradicts."""
+    n = 0
     for line in index.read_text().splitlines():
         m = re.match(r"^\|\s*`([a-z][a-z0-9-]*)`\s*\|(.*)$", line)
         if not m:
             continue
         name, desc = m.group(1), m.group(2)
-        claim = re.search(r"(\d+)[- ]phase", desc)
-        if not claim or name not in skills:
+        if name not in skills:
             continue
         body = (root / name / "SKILL.md").read_text()
-        actual = len(re.findall(r"^##\s+Phase\b", body, re.M))
-        if actual and int(claim.group(1)) != actual:
-            fail(f"{rel(index)}: describes '{name}' as {claim.group(1)}-phase, "
-                 f"but the skill has {actual} phase headings")
-    ok(f"{rel(index)}: phase counts in descriptions match the skills")
+        actual = {int(x) for x in re.findall(r"^##\s+Phase\s+(\d+)", body, re.M)}
+        if not actual:
+            continue
+
+        claimed = {int(x) for x in re.findall(r"\bPhase\s+(\d+)", desc)}
+        for lo, hi in re.findall(r"\bphases\s+(\d+)\s*[\u2013\u2014-]\s*(\d+)", desc, re.I):
+            claimed |= set(range(int(lo), int(hi) + 1))
+        total = re.search(r"(\d+)[- ]phase\b", desc)
+
+        if total and int(total.group(1)) != len(actual):
+            fail(f"{rel(index)}: describes '{name}' as {total.group(1)}-phase, "
+                 f"but the skill defines {len(actual)} phases")
+        if not claimed <= actual:
+            fail(f"{rel(index)}: describes '{name}' as having phase(s) "
+                 f"{sorted(claimed - actual)}, which the skill does not define")
+        if claimed or total:
+            n += 1
+    return f"{n} phase claim(s) in {rel(index)} match their skill's headings"
 
 
-def check_index_description_parity() -> None:
+def check_index_description_parity() -> str:
     """A shared skill should carry the same description in both index documents.
 
     The sync script regenerates skill files but not the indexes, so a change made
@@ -285,67 +306,85 @@ def check_index_description_parity() -> None:
         m = re.search(r"^\| `" + re.escape(skill) + r"` \| (.*?) \| .*$", text, re.M)
         return m.group(1).strip() if m else None
 
+    n = 0
     for name in sorted(O_SKILLS):
         c_desc, o_desc = desc(c_text, name), desc(o_text, name)
         if c_desc is None or o_desc is None:
             continue  # coverage is already enforced by check_index
+        n += 1
         if c_desc != o_desc:
-            fail(f"index descriptions disagree for shared skill '{name}': "
-                 f"claude says {c_desc[:60]!r}, opencode says {o_desc[:60]!r}")
-    ok("shared skills carry the same description in both indexes")
+            # Show the divergence, not the first 60 chars — the two often share a
+            # long prefix, which makes a head-truncated message look identical.
+            i = next((k for k, (a, b) in enumerate(zip(c_desc, o_desc)) if a != b),
+                     min(len(c_desc), len(o_desc)))
+            start = max(0, i - 15)
+            fail(f"index descriptions disagree for shared skill '{name}' at char {i}: "
+                 f"claude {'...' if start else ''}{c_desc[start:i + 45]!r}, "
+                 f"opencode {'...' if start else ''}{o_desc[start:i + 45]!r}")
+    return f"{n} shared skills carry the same description in both indexes"
 
 
-def check_parity() -> None:
+def check_parity() -> str:
     script = ROOT / "scripts/sync-skills.sh"
     if not script.is_file():
         fail("scripts/sync-skills.sh is missing — cannot verify claude<->opencode parity")
-        return
+        return ""
     r = subprocess.run([str(script), "--check"], capture_output=True, text=True, cwd=ROOT)
     if r.returncode != 0:
         for line in r.stdout.splitlines():
             if "DRIFT" in line or "ORPHAN" in line:
                 fail(f"shared-skill drift: {line.split(None, 1)[-1].strip()}")
         fail("run scripts/sync-skills.sh to regenerate the opencode copies")
-    else:
-        ok("shared skills are in sync with their canonical claude/ source")
+        return ""
+    m = re.search(r"checked: (\d+) in sync", r.stdout)
+    return f"{m.group(1) if m else '?'} generated files match their canonical claude/ source"
 
 
 # ---------------------------------------------------------------------- main
 
 def main() -> int:
-    verbose = "-v" in sys.argv or "--verbose" in sys.argv
+    quiet = "-q" in sys.argv or "--quiet" in sys.argv
 
+    print(f"validating {rel(CLAUDE)} and {rel(OPENCODE)}\n")
     if yaml is None:
-        print("note: PyYAML not installed — frontmatter validity check skipped\n")
+        print("  note: PyYAML not installed — frontmatter validity check skipped\n")
+    print(f"  inventory  claude: {len(C_SKILLS)} skills ({len(C_COMMANDS)} of them commands), "
+          f"{len(C_AGENTS)} agents")
+    print(f"             opencode: {len(O_SKILLS)} skills, {len(O_AGENTS)} agents, "
+          f"{len(O_COMMANDS)} commands\n")
 
-    check_descriptions()
-    check_identifiers()
-    check_agent_skill_refs()
-    check_command_agent_refs()
-    check_reference_pointers()
-    check_index(CLAUDE / "CLAUDE.md", C_SKILLS, C_AGENTS, C_COMMANDS, "claude")
-    check_index(OPENCODE / "AGENTS.md", O_SKILLS, O_AGENTS, O_COMMANDS, "opencode")
-    check_countable_claims(CLAUDE / "CLAUDE.md", C_SKILLS, CLAUDE / "skills")
-    check_countable_claims(OPENCODE / "AGENTS.md", O_SKILLS, OPENCODE / "skills")
-    check_index_description_parity()
-    check_parity()
+    checks = [
+        ("descriptions", check_descriptions),
+        ("identifiers", check_identifiers),
+        ("agent skill refs", check_agent_skill_refs),
+        ("command agent refs", check_command_agent_refs),
+        ("reference pointers", check_reference_pointers),
+        ("claude index", lambda: check_index(CLAUDE / "CLAUDE.md", C_SKILLS, C_AGENTS, C_COMMANDS)),
+        ("opencode index", lambda: check_index(OPENCODE / "AGENTS.md", O_SKILLS, O_AGENTS, O_COMMANDS)),
+        ("claude phase counts",
+         lambda: check_countable_claims(CLAUDE / "CLAUDE.md", C_SKILLS, CLAUDE / "skills")),
+        ("opencode phase counts",
+         lambda: check_countable_claims(OPENCODE / "AGENTS.md", O_SKILLS, OPENCODE / "skills")),
+        ("index description parity", check_index_description_parity),
+        ("shared-skill parity", check_parity),
+    ]
 
-    print(f"inventory: {len(C_SKILLS)} claude skills ({len(C_COMMANDS)} of them commands), "
-          f"{len(C_AGENTS)} claude agents; "
-          f"{len(O_SKILLS)} opencode skills, {len(O_AGENTS)} opencode agents, "
-          f"{len(O_COMMANDS)} opencode commands\n")
-
-    if verbose:
-        for p in passes:
-            print(f"  ok      {p}")
-        print()
+    for label, fn in checks:
+        before = len(problems)
+        detail = fn() or ""
+        added = len(problems) - before
+        if added:
+            print(f"  FAIL  {label:<24}  {added} problem{'' if added == 1 else 's'}")
+        elif not quiet:
+            print(f"  ok    {label:<24}  {detail}")
 
     if problems:
-        for p in problems:
-            print(f"  PROBLEM {p}")
-        print(f"\n{len(problems)} problem(s) found.")
+        print("\nproblems:")
+        for problem in problems:
+            print(f"  - {problem}")
+        print(f"\n{len(problems)} problem(s) found across {len(checks)} checks.")
         return 1
-    print(f"all {len(passes)} checks passed.")
+    print(f"\nall {len(checks)} checks passed.")
     return 0
 
 
