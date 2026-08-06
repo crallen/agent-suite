@@ -148,7 +148,7 @@ These principles should guide every spec.
 
 ### Isolation and Clarity
 
-Break the system into smaller units that each have one clear purpose, communicate through well-defined interfaces, and can be understood and tested independently.
+Divide the system by interface: each unit has one clear purpose, communicates through a well-defined interface, and can be understood and tested through it.
 
 For each unit, you should be able to answer:
 - What does it do?
@@ -157,8 +157,10 @@ For each unit, you should be able to answer:
 
 Litmus tests:
 - Can someone understand what a unit does without reading its internals? If not, the interface leaks implementation detail.
-- Can you change the internals without breaking consumers? If not, the boundary is in the wrong place.
-- Is the file small enough to hold in context? Large files are usually doing too much.
+- Can you change the internals without breaking consumers? If not, the seam is in the wrong place.
+- Is the interface small next to what sits behind it? A large implementation behind a small interface is the goal; a unit whose interface is nearly as complex as its body is the problem.
+
+Prefer few units with small interfaces over many units that each expose nearly everything they do. A unit may be composed internally of small parts — keeping those parts out of its interface is what makes the unit **deep**. `architecture-review/reference/vocabulary.md` holds the full vocabulary for this, and `/architecture` measures finished designs by it.
 
 ### YAGNI — You Aren't Gonna Need It
 
@@ -195,4 +197,4 @@ Every non-trivial claim in the spec should be backed by something you've read. I
 
 ## Handoff
 
-The terminal state of this workflow is delivering an approved spec back to the main conversation (the tech lead) for execution. Do not begin implementation yourself. If the user wants the spec saved as a file, ask for confirmation and write it to disk with a date-stamped filename like `docs/specs/YYYY-MM-DD-<topic>.md` (or follow the project's existing convention if one exists). For greenfield projects or early-stage work, a top-level `DESIGN.md` is also appropriate.
+The terminal state of this workflow is delivering an approved spec to the executor for implementation. Do not begin implementation yourself. If the user wants the spec saved as a file, ask for confirmation and write it to disk with a date-stamped filename like `docs/specs/YYYY-MM-DD-<topic>.md` (or follow the project's existing convention if one exists). For greenfield projects or early-stage work, a top-level `DESIGN.md` is also appropriate.
