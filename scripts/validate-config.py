@@ -271,6 +271,33 @@ def check_countable_claims(index: Path, skills: dict, root: Path) -> None:
     ok(f"{rel(index)}: phase counts in descriptions match the skills")
 
 
+def check_index_description_parity() -> None:
+    """A shared skill should carry the same description in both index documents.
+
+    The sync script regenerates skill files but not the indexes, so a change made
+    on the claude side alone leaves opencode's table stale and its agents reading
+    a description that no longer matches the skill.
+    """
+    # Mirrors RENAME in scripts/sync-skills.sh — keep the two in step.
+    rename = {"grill": "grill-methodology"}
+    c_text = (CLAUDE / "CLAUDE.md").read_text()
+    o_text = (OPENCODE / "AGENTS.md").read_text()
+
+    def desc(text: str, skill: str) -> str | None:
+        m = re.search(r"^\| `" + re.escape(skill) + r"` \| (.*?) \| .*$", text, re.M)
+        return m.group(1).strip() if m else None
+
+    for name in sorted(O_SKILLS):
+        c_name = rename.get(name, name)
+        c_desc, o_desc = desc(c_text, c_name), desc(o_text, name)
+        if c_desc is None or o_desc is None:
+            continue  # coverage is already enforced by check_index
+        if c_desc != o_desc:
+            fail(f"index descriptions disagree for shared skill '{name}': "
+                 f"claude says {c_desc[:60]!r}, opencode says {o_desc[:60]!r}")
+    ok("shared skills carry the same description in both indexes")
+
+
 def check_parity() -> None:
     script = ROOT / "scripts/sync-skills.sh"
     if not script.is_file():
@@ -303,6 +330,7 @@ def main() -> int:
     check_index(OPENCODE / "AGENTS.md", O_SKILLS, O_AGENTS, O_COMMANDS, "opencode")
     check_countable_claims(CLAUDE / "CLAUDE.md", C_SKILLS, CLAUDE / "skills")
     check_countable_claims(OPENCODE / "AGENTS.md", O_SKILLS, OPENCODE / "skills")
+    check_index_description_parity()
     check_parity()
 
     print(f"inventory: {len(C_SKILLS)} claude skills ({len(C_COMMANDS)} of them commands), "
