@@ -1,158 +1,98 @@
 ---
 name: docker-best-practices
-description: Docker image optimization, multi-stage builds, security hardening, layer caching, and Compose patterns for development and production
+description: Docker image design — the static-binary vs runtime base-image decision, multi-stage builds, layer caching, security hardening, and Compose patterns. Load when writing or reviewing a Dockerfile or Compose file, or shrinking an image.
 ---
 
 # Docker Best Practices
 
-Patterns for building secure, efficient Docker images and Compose configurations: multi-stage builds, layer caching, hardening, and dev/prod parity.
+Build images that are small, cache well, and carry no more attack surface than the process needs.
 
-## Dockerfile Best Practices
+The judgment lives here; the concrete Dockerfiles live in `reference/`. Read the file for the project's stack:
 
-### Use Multi-Stage Builds
+| Reference | Contents |
+|---|---|
+| `docker-best-practices/reference/go.md` | Static binary → `scratch` / distroless, numeric UID |
+| `docker-best-practices/reference/rust.md` | `cargo-chef` dependency caching → distroless |
+| `docker-best-practices/reference/node.md` | Runtime image, dependency-manifest-first caching |
+| `docker-best-practices/reference/compose.md` | Development and production Compose patterns |
 
-Separate build dependencies from the runtime image. The final image should contain only what's needed to run the application.
+Working in a stack with no file above? Settle the base-image decision below, then follow the closest reference file — the one that shares its answer, not its syntax.
 
-```dockerfile
-# Stage 1: Build
-FROM node:22-slim AS build
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
+## The Base-Image Decision
 
-# Stage 2: Production
-FROM node:22-slim
-WORKDIR /app
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/node_modules ./node_modules
-USER node
-CMD ["node", "dist/index.js"]
-```
+Everything else follows from one question: **does the built artifact need a runtime, or is it a self-contained binary?**
 
-### Choose the Right Base Image
+| Artifact | Final base | Typical size | Why |
+|---|---|---|---|
+| Static binary (Go, Rust, Zig, C) | `scratch`, or `gcr.io/distroless/static` | 10–30MB | No shell, no package manager, no libc CVEs to patch |
+| Dynamically linked binary | `gcr.io/distroless/base` or `*-slim` | 30–80MB | Needs libc and certificates, nothing more |
+| Needs a language runtime (Node, Python, Ruby, JVM) | `*-slim`, or `*-alpine` where the ecosystem tolerates musl | 80–250MB | The interpreter or VM must ship with the app |
 
-| Need | Image | Why |
-|------|-------|-----|
-| Minimal size | `*-alpine` or `distroless` | Smallest attack surface, fewest CVEs |
-| Compatibility | `*-slim` (Debian) | Good balance of size and compatibility |
-| Build tools needed | Full image (e.g., `node:22`) | Only for build stages, not production |
+Reaching for `*-slim` when the language emits a static binary is the most common miss — it costs an order of magnitude in size and leaves a userland you now have to patch.
 
-Always pin to a specific version tag. Never use `latest` in production.
+Two consequences for the static-binary case that catch people out:
 
-```dockerfile
-# Good
-FROM node:22.12-slim
+- **`scratch` has no `/etc/passwd`**, so `USER appuser` fails. Use a numeric UID (`USER 65532:65532`) — distroless images already define `nonroot` at 65532.
+- **`scratch` has no CA certificates**, so outbound TLS fails. Copy them from the build stage, or use `distroless/static`, which includes them.
 
-# Bad
-FROM node:latest
-```
+Always pin the base to a specific version. Never `latest` in production.
 
-### Optimize Layer Caching
+## Multi-Stage Builds
 
-Docker caches layers top-down. Put things that change less frequently earlier.
+Separate build dependencies from the runtime image. The final stage should contain only what the process needs to run — never a compiler, package manager, or test tooling.
 
-```dockerfile
-# 1. Base image (rarely changes)
-FROM node:22-slim
+This matters most where the build toolchain is large relative to the artifact: a Rust or Go toolchain is hundreds of megabytes producing a binary of tens.
 
-# 2. System dependencies (changes infrequently)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+## Layer Caching
 
-# 3. Application dependencies (changes when deps change)
-COPY package.json package-lock.json ./
-RUN npm ci --production
+Docker caches layers top-down, so order them by how often they change:
 
-# 4. Application code (changes most frequently)
-COPY . .
-```
+1. Base image — rarely
+2. System packages — infrequently
+3. **Dependencies, resolved from the manifest alone** — when dependencies change
+4. Application source — most often
 
-### Reduce Image Size
+Step 3 is the one that pays. Copy only the dependency manifest, resolve dependencies, *then* copy source — so editing a source file doesn't re-resolve the dependency graph. Every ecosystem has a form of this, and the compiled languages need a trick to achieve it because their dependency and source builds are one command; the stack files show each.
+
+## Reduce Image Size
 
 - Use `--no-install-recommends` with `apt-get`.
-- Clean up package manager caches in the same `RUN` layer: `rm -rf /var/lib/apt/lists/*`.
-- Use `.dockerignore` to exclude unnecessary files (node_modules, .git, tests, docs).
-- Don't install development dependencies in the production image.
+- Clean package manager caches in the same `RUN` layer: `rm -rf /var/lib/apt/lists/*`.
+- Keep a `.dockerignore` (see below) — it shrinks the build context and stops local artifacts leaking into the image.
+- Never install development or test dependencies in the production stage.
 - Combine related `RUN` commands to reduce layers.
 
-### Security Hardening
+## Security Hardening
 
-```dockerfile
-# Run as non-root user
-RUN groupadd -r appuser && useradd -r -g appuser appuser
-USER appuser
-
-# Don't store secrets in the image
-# Use build secrets for private package registries:
-RUN --mount=type=secret,id=npm_token \
-    NPM_TOKEN=$(cat /run/secrets/npm_token) npm ci
-
-# Set read-only filesystem where possible
-# (in docker-compose or runtime)
-```
+- **Run as non-root.** Create a user in the runtime stage, or use a numeric UID where the base has no user database.
+- **Never bake secrets into the image.** Layers persist even when a later layer deletes the file. Use build secrets (`RUN --mount=type=secret,...`) for private registries.
+- **Set a read-only root filesystem** at runtime, via Compose or the orchestrator.
 
 **Security checklist:**
 - [ ] Runs as non-root user
-- [ ] No secrets baked into the image
+- [ ] No secrets baked into the image, including in deleted layers
 - [ ] Base image is pinned and regularly updated
 - [ ] Only necessary ports are exposed
 - [ ] No unnecessary capabilities (drop all, add specific)
 - [ ] `.dockerignore` excludes sensitive files (.env, .git, credentials)
+- [ ] Final stage contains no compiler, package manager, or shell it doesn't need
 
-### Health Checks
+## Health Checks
 
 ```dockerfile
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
 ```
 
-## Docker Compose Patterns
+A `scratch` or distroless image has no `curl` and no shell. Either build a health endpoint the orchestrator probes directly (Kubernetes `httpGet`), or compile a tiny health subcommand into the binary itself and use `CMD ["/app", "healthcheck"]`.
 
-### Development Environment
+## .dockerignore
 
-```yaml
-services:
-  app:
-    build:
-      context: .
-      target: development    # Use dev stage of multi-stage build
-    volumes:
-      - .:/app               # Mount source for hot reload
-      - /app/node_modules    # Don't overwrite container's node_modules
-    environment:
-      - NODE_ENV=development
-    ports:
-      - "3000:3000"
-
-  db:
-    image: postgres:16-alpine
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_PASSWORD=devpassword
-
-volumes:
-  db-data:
-```
-
-### Production Considerations
-
-- Don't mount source code. Copy it into the image.
-- Use `restart: unless-stopped` for resilience.
-- Set memory and CPU limits.
-- Use named volumes for persistent data.
-- Don't expose unnecessary ports.
-
-## .dockerignore Template
+Start from this and add the project's build output and dependency directories:
 
 ```
 .git
 .gitignore
-node_modules
-npm-debug.log
 Dockerfile*
 docker-compose*
 .dockerignore
@@ -163,9 +103,6 @@ LICENSE
 .vscode
 .idea
 coverage
-dist
-build
-test
-tests
-__tests__
 ```
+
+Then add what the stack generates locally and must not enter the image — `node_modules` for Node, `target/` for Rust, `__pycache__` for Python, `vendor/` for Go when not vendoring deliberately.

@@ -77,7 +77,7 @@ Skills are loaded on-demand via `/skill-name` or automatically when relevant, an
 | `security-analysis` | Vulnerability taxonomy, data flow analysis, dependency auditing, remediation patterns | security-analyst |
 | `debugging-methodology` | Phased debugging workflow — Phase 0 builds a feedback loop, phases 1–5 reproduce/gather/hypothesize/test/fix, Phase 6 is cleanup and post-mortem | debugger |
 | `doc-templates` | Templates for READMEs, API docs, changelogs, code comments — ADRs defer to `domain-modeling` | documenter |
-| `docker-best-practices` | Multi-stage builds, security hardening, layer caching, Compose patterns | devops-engineer |
+| `docker-best-practices` | The static-binary vs runtime base-image decision, multi-stage builds, layer caching, hardening, and per-stack reference Dockerfiles | devops-engineer |
 | `ci-pipeline` | CI/CD stage order, architecture and coverage enforcement gates, per-stack reference workflows, and a discovery procedure for unfamiliar stacks | devops-engineer |
 | `backend-patterns` | Backend application patterns for handlers, services, validation, auth/authz, integrations, and app-layer refactors | backend-engineer |
 | `database-patterns` | Database design and performance patterns for schemas, migrations, indexes, constraints, transactions, and query behavior | database-specialist |
