@@ -60,7 +60,7 @@ For each remaining behavior: one test → minimal code to pass. Never anticipate
 
 ### Refactor
 
-After all tests pass, look for cleanup: extract duplication, deepen shallow modules, apply SOLID where natural. **Never refactor while RED.** Get to GREEN first.
+After all tests pass, look for cleanup: extract duplication, deepen shallow modules, give the concept an honest name. When nothing obvious stands out, the smell baseline in `code-review-checklist` is the fuller checklist. **Never refactor while RED.** Get to GREEN first.
 
 ### Checklist per Cycle
 
