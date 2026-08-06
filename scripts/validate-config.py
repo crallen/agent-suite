@@ -278,8 +278,6 @@ def check_index_description_parity() -> None:
     on the claude side alone leaves opencode's table stale and its agents reading
     a description that no longer matches the skill.
     """
-    # Mirrors RENAME in scripts/sync-skills.sh — keep the two in step.
-    rename = {"grill": "grill-methodology"}
     c_text = (CLAUDE / "CLAUDE.md").read_text()
     o_text = (OPENCODE / "AGENTS.md").read_text()
 
@@ -288,8 +286,7 @@ def check_index_description_parity() -> None:
         return m.group(1).strip() if m else None
 
     for name in sorted(O_SKILLS):
-        c_name = rename.get(name, name)
-        c_desc, o_desc = desc(c_text, c_name), desc(o_text, name)
+        c_desc, o_desc = desc(c_text, name), desc(o_text, name)
         if c_desc is None or o_desc is None:
             continue  # coverage is already enforced by check_index
         if c_desc != o_desc:

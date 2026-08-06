@@ -23,24 +23,14 @@ DST_ROOT="opencode/.config/opencode/skills"
 
 # Never synced:
 #   agent-authoring - documents each platform's own frontmatter schemas and layout
-#   grill           - claude's is a command skill; its name collides with opencode's
-#                     grill reference skill (claude keeps that in grill-methodology)
-SKIP="agent-authoring grill"
+SKIP="agent-authoring"
 
-# claude-dir:opencode-dir, where the packages name the same skill differently.
-RENAME="grill-methodology:grill"
+# Both packages use the same directory name for every shared skill, so there is no
+# name mapping. claude's `grill` workflow skill has no opencode counterpart and is
+# excluded by the opt-in-by-existence rule below, not by SKIP.
 
 CHECK=0
 [ "${1:-}" = "--check" ] && CHECK=1
-
-dest_name() {
-  for pair in $RENAME; do
-    case "$pair" in
-      "$1":*) printf '%s' "${pair#*:}"; return ;;
-    esac
-  done
-  printf '%s' "$1"
-}
 
 is_skipped() {
   for s in $SKIP; do [ "$s" = "$1" ] && return 0; done
@@ -79,16 +69,15 @@ for src in "$SRC_ROOT"/*/; do
   is_skipped "$name" && continue
   [ -f "$src/SKILL.md" ] || continue
 
-  dst_name=$(dest_name "$name")
-  dst="$DST_ROOT/$dst_name"
+  dst="$DST_ROOT/$name"
   if [ ! -d "$dst" ]; then
     unshared="$unshared $name"
     continue
   fi
 
   tmp=$(mktemp)
-  render_skill "$src/SKILL.md" "$dst_name" > "$tmp"
-  emit "$tmp" "$dst/SKILL.md" "$dst_name/SKILL.md"
+  render_skill "$src/SKILL.md" "$name" > "$tmp"
+  emit "$tmp" "$dst/SKILL.md" "$name/SKILL.md"
   rm -f "$tmp"
 
   # Sibling docs at the skill root (e.g. GLOSSARY.md) and reference/ files are
@@ -103,7 +92,7 @@ for src in "$SRC_ROOT"/*/; do
     esac
     tmp=$(mktemp)
     platformize "$extra" > "$tmp"
-    emit "$tmp" "$dst/$rel" "$dst_name/$rel"
+    emit "$tmp" "$dst/$rel" "$name/$rel"
     rm -f "$tmp"
   done
 
@@ -115,7 +104,7 @@ for src in "$SRC_ROOT"/*/; do
       *"/reference/"*) counterpart="$src/reference/$base" ;;
       *)               counterpart="$src/$base" ;;
     esac
-    [ -f "$counterpart" ] || printf '  ORPHAN  %s/%s (no source in claude)\n' "$dst_name" "$base"
+    [ -f "$counterpart" ] || printf '  ORPHAN  %s/%s (no source in claude)\n' "$name" "$base"
   done
 done
 

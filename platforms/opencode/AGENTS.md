@@ -55,7 +55,7 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 | `code-review-checklist` | Structured review rubric across core review categories, spec fidelity, and a Fowler design-smell baseline, with severity levels | code-reviewer |
 | `security-analysis` | Vulnerability taxonomy, data flow analysis, dependency auditing, remediation patterns | security-analyst |
 | `debugging-methodology` | Phased debugging workflow — Phase 0 builds a feedback loop (10 strategies), phases 1–5 reproduce/gather/hypothesize/test/fix, Phase 6 is cleanup and post-mortem | debugger |
-| `doc-templates` | Templates for READMEs, API docs, changelogs, code comments, plus register and naming rules | documenter |
+| `doc-templates` | Templates for READMEs, API docs, changelogs, code comments, plus register and naming rules — ADRs defer to `domain-modeling` | documenter |
 | `docker-best-practices` | The static-binary vs runtime base-image decision, multi-stage builds, layer caching, hardening, and per-stack reference Dockerfiles | devops-engineer |
 | `ci-pipeline` | CI/CD stage order, architecture and coverage enforcement gates, auditing an inherited pipeline, per-stack reference workflows, and a discovery procedure for unfamiliar stacks | devops-engineer |
 | `backend-patterns` | Backend application patterns for handlers, services, validation, auth/authz, integrations, and app-layer refactors | backend-engineer, tech-lead |
@@ -63,7 +63,7 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 | `frontend-patterns` | Frontend router for product context gathering, work-mode selection, escalation, and targeted reference selection | frontend-engineer, frontend-auditor |
 | `agent-authoring` | Schemas, templates, and conventions for creating agents, skills, and commands | agent-builder, agent-reviewer |
 | `domain-modeling` | Active domain-model maintenance: terminology sharpening, CONTEXT.md glossary upkeep, which terms earn a type, and minimal ADRs — both gated by a three-part test | architect, documenter |
-| `grill` | One-at-a-time Socratic interrogation of a plan: assumption challenging, recommendation-first questions, codebase cross-referencing, and a shared-understanding gate — pairs with `domain-modeling` | architect |
+| `grill-methodology` | One-at-a-time Socratic interrogation of a plan: assumption challenging, recommendation-first questions, codebase cross-referencing, and a shared-understanding gate — pairs with `domain-modeling` | architect |
 | `architecture-review` | Architecture deepening workflow: find shallow modules, propose depth-increasing refactors, present markdown report of candidates, then grill on the chosen one with CONTEXT.md / ADR integration | architect |
 | `prototype-methodology` | Throwaway prototype workflow — routes between a terminal app for logic/state questions and multiple UI variants for visual questions | architect, backend-engineer, frontend-engineer |
 
