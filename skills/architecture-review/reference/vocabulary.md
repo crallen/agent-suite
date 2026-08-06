@@ -6,7 +6,7 @@ Shared language for every suggestion the `architecture-review` skill makes. Use 
 
 **Module**
 Anything with an interface and an implementation. Deliberately scale-agnostic — applies equally to a function, class, package, or tier-spanning slice.
-_Avoid_: unit, component, service.
+_Avoid_: component, service — and "unit" in review output. One blessed exception: `spec-writing`'s Design Principles says "unit" for this same concept at design time; in architecture-review reports, write "module".
 
 **Interface**
 Everything a caller must know to use the module correctly. Includes the type signature, but also invariants, ordering constraints, error modes, required configuration, and performance characteristics.

@@ -67,7 +67,7 @@ _Avoid_: Client, buyer, account
 
 ## Terms That Earn a Type
 
-A glossary entry names a concept; a type makes the code agree. When a term is resolved, ask once whether it should exist in the type system — but hold the line, because wrapping every noun is the **Speculative Generality** that `coding-guardrails` warns against.
+A glossary entry names a concept; a type makes the code agree. When a term is resolved, ask once whether it should exist in the type system — but hold the line, because wrapping every noun is **Speculative Generality** — the smell named in `code-review-checklist`'s baseline, the same speculative abstraction `coding-guardrails` warns against.
 
 A term earns its own type when all three hold:
 

@@ -28,7 +28,7 @@ Walk the codebase. Don't follow rigid heuristics — explore organically and not
 
 Apply the **deletion test** to anything you suspect is shallow: would deleting it concentrate complexity, or just move it? "Yes, concentrates" is the signal.
 
-**Shallowness is an interface property.** A unit is shallow when its interface is nearly as complex as its body — a short file is not itself the signal, and neither is decomposition a spec chose. `spec-writing` divides systems by the same measure, and **depth** already permits a deep module composed of small internal parts.
+**Shallowness is an interface property.** A module is shallow when its interface is nearly as complex as its body — a short file is not itself the signal, and neither is decomposition a spec chose. `spec-writing` divides systems by the same measure, and **depth** already permits a deep module composed of small internal parts.
 
 ### 3. Present Candidates
 

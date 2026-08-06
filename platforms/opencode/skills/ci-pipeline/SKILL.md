@@ -178,6 +178,6 @@ Pin the major in templates (`node:24-slim`, `go-version: '1.26'`) so patch relea
 
 - **Never echo secrets**. Use masked variables.
 - **Prefer full SHA pinning** for third-party or security-sensitive actions. Major-version tags can be acceptable for official actions when your org accepts that tradeoff, but use them intentionally and review updates regularly.
-- **Audit dependencies** as a CI step: `npm audit`, `go vuln check`, `cargo audit`.
+- **Audit dependencies** as a CI step: `npm audit`, `govulncheck ./...`, `cargo audit`.
 - **Use OIDC** for cloud deployments instead of long-lived credentials.
 - **Limit permissions** per job: `permissions: { contents: read }`.
