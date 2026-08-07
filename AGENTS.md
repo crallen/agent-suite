@@ -85,7 +85,7 @@ Skills are loaded on-demand via `/skill-name` or automatically when relevant, an
 | `agent-authoring` | Schemas, templates, and conventions for creating agents, skills, and commands | agent-builder, agent-reviewer |
 | `skill-design` | Design principles for writing and reviewing skills: predictability, information hierarchy, leading words, progressive disclosure, and failure modes (glossary disclosed) | agent-builder, agent-reviewer |
 | `domain-modeling` | Active domain-model maintenance: terminology sharpening, CONTEXT.md glossary upkeep, which terms earn a type, and minimal ADRs — both gated by a three-part test | architect, documenter |
-| `grill-methodology` | One-at-a-time Socratic interrogation of a plan: assumption challenging, recommendation-first questions, codebase cross-referencing, and a shared-understanding gate — pairs with `domain-modeling` | architect |
+| `grill-methodology` | Round-by-round Socratic interrogation of a plan: frontier questioning, recommendation-first questions, codebase cross-referencing, and a shared-understanding gate — pairs with `domain-modeling` | architect |
 | `prototype-methodology` | Throwaway prototype workflow — routes between a terminal app for logic/state questions and multiple UI variants for visual questions | architect, backend-engineer, frontend-engineer |
 | `architecture-review` | Architecture deepening workflow: find shallow modules, propose depth-increasing refactors, present markdown report of candidates, then grill on the chosen one with CONTEXT.md / ADR integration | architect |
 
@@ -113,7 +113,7 @@ Quick-access commands for common workflows. Each is a user-invocable workflow sk
 | `/agent-builder` | Create or modify an agent, skill, or command | agent-builder |
 | `/agent-review` | Review agents, skills, and commands for correctness and consistency | agent-reviewer |
 | `/spec` | Research a goal and produce a design spec with task checklist | — (inline, as architect) |
-| `/grill` | Stress-test a plan with relentless one-at-a-time interrogation, sharpening domain language and writing CONTEXT.md / ADRs as decisions crystallize | — (inline, as architect) |
+| `/grill` | Stress-test a plan with relentless round-by-round interrogation, sharpening domain language and writing CONTEXT.md / ADRs as decisions crystallize | — (inline, as architect) |
 | `/prototype` | Build a throwaway prototype to explore a design question — logic branch for state/data-model questions, UI branch for visual layout questions | backend-engineer, frontend-engineer |
 | `/architecture` | Find deepening opportunities in the codebase, present a markdown report of candidates, then grill on the chosen one | — (inline, as architect) |
 | `/zoom-out` | Get a map of relevant modules and callers when unfamiliar with an area, using the project's domain vocabulary | — |
