@@ -71,7 +71,7 @@ Skills are loaded on-demand via `/skill-name` or automatically when relevant, an
 |---|---|---|
 | `coding-guardrails` | Cross-cutting execution guardrails for implementation work: assumptions, simplicity, surgical diffs, verification, and naming over comments | code-reviewer, tester, debugger, devops-engineer, frontend-engineer, backend-engineer, database-specialist |
 | `spec-writing` | Scope decomposition, clarifying dialogue, approach exploration, staged design presentation, and spec self-review | architect-level planning |
-| `git-conventions` | Conventional Commits format, branching model, commit hygiene | git-manager |
+| `git-conventions` | Conventional Commits format, branching model, commit hygiene, short-summary commit and PR style | git-manager |
 | `test-strategy` | Test type selection, coverage targets, mocking guidelines, fixture-data hygiene | tester |
 | `code-review-checklist` | Structured review rubric across core review categories, spec fidelity, and a Fowler design-smell baseline, with severity levels | code-reviewer |
 | `security-analysis` | Vulnerability taxonomy, data flow analysis, dependency auditing, remediation patterns | security-analyst |
@@ -145,4 +145,5 @@ Quick-access commands for common workflows. Each is a user-invocable workflow sk
 - For implementation work, surface assumptions, keep changes simple and scoped, and verify with explicit checks.
 - Match existing conventions and prefer the smallest change that satisfies the request.
 - Use the GitHub CLI (`gh`) for GitHub-hosted tasks.
+- Keep commit messages and PR descriptions to short summaries: a subject line plus a few lines of why. The diff carries the detail.
 - Never read `.env` files or other secret-bearing files. `.env.example` is the exception — it holds placeholder values and may be read and edited (never put real secrets in it).

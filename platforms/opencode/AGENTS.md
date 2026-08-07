@@ -52,7 +52,7 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 |---|---|---|
 | `coding-guardrails` | Cross-cutting execution guardrails for implementation work: assumptions, simplicity, surgical diffs, verification, and naming over comments | tech-lead, code-reviewer, tester, debugger, devops-engineer, frontend-engineer, backend-engineer, database-specialist |
 | `spec-writing` | Scope decomposition, clarifying dialogue, approach exploration, staged design presentation, and spec self-review | architect |
-| `git-conventions` | Conventional Commits format, branching model, commit hygiene | git-manager, tech-lead |
+| `git-conventions` | Conventional Commits format, branching model, commit hygiene, short-summary commit and PR style | git-manager, tech-lead |
 | `test-strategy` | Test type selection, coverage targets, mocking guidelines, fixture-data hygiene | tester, tech-lead |
 | `code-review-checklist` | Structured review rubric across core review categories, spec fidelity, and a Fowler design-smell baseline, with severity levels | code-reviewer |
 | `security-analysis` | Vulnerability taxonomy, data flow analysis, dependency auditing, remediation patterns | security-analyst |
@@ -129,5 +129,6 @@ These are common starting points, not rigid rules. Pick the smallest workflow th
 - For implementation work, surface assumptions, keep changes simple and scoped, and verify with explicit checks.
 - Match existing conventions and prefer the smallest change that satisfies the request.
 - Use the GitHub CLI (`gh`) for GitHub-hosted tasks when shell access is appropriate.
+- Keep commit messages and PR descriptions to short summaries: a subject line plus a few lines of why. The diff carries the detail.
 - Use `/code-review`, `/security`, `/test`, `/docs`, and `/commit` as appropriate to keep quality, docs, and history clean.
 - Never read `.env` files via any method. `.env.example` is the exception — it holds placeholder values and may be read and edited (never put real secrets in it).

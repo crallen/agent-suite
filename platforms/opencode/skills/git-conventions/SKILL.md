@@ -1,6 +1,6 @@
 ---
 name: git-conventions
-description: Conventional Commits format, branching model, and git workflow rules for clean version control history
+description: Conventional Commits format, branching model, short-summary commit and PR style, and git workflow rules for clean version control history
 ---
 
 # Git Conventions
@@ -39,7 +39,7 @@ Every commit message must follow this format:
 
 1. **Subject line**: `<type>(scope): description` — max 72 characters, lowercase, imperative mood, no period.
 2. **Scope** (optional): The area of the codebase affected. Use consistent scope names within a project (e.g., `auth`, `api`, `ui`, `db`).
-3. **Body** (optional): Explain WHY the change was made. Wrap at 72 characters. Separate from subject with a blank line.
+3. **Body** (optional): A short summary of WHY — a few lines at most, and only when the subject alone doesn't carry it. Most commits need no body. Wrap at 72 characters. Separate from subject with a blank line.
 4. **Footer** (optional): Reference issues (`Closes #42`), note breaking changes (`BREAKING CHANGE: description`), or add metadata.
 5. **Breaking changes**: Add `!` after type/scope (`feat!: remove legacy API`) AND/OR add a `BREAKING CHANGE:` footer with migration instructions.
 
@@ -98,6 +98,12 @@ Examples:
 - Feature branches branch from and merge back to the main development branch.
 - Delete branches after merging.
 - Keep branches short-lived. Long-lived branches cause merge conflicts.
+
+## Pull Requests
+
+- Title follows the same `<type>(scope): description` format as a commit subject.
+- The description is a short summary: a few sentences — or a handful of bullets — covering what changed and why. The diff and commit list already tell the detailed story; the description orients the reviewer, it doesn't retell the work.
+- Skip boilerplate sections (test plans, checklists, headings) unless the repo's PR template asks for them.
 
 ## Commit Hygiene
 
