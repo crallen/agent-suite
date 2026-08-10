@@ -1,6 +1,6 @@
 ---
 name: grill-methodology
-description: Structured interrogation workflow for stress-testing a plan — round-by-round frontier questioning with a recommendation per question, codebase-grounded answers, and a shared-understanding gate before any action. Load when the user wants to grill a plan or design; pairs with domain-modeling for terminology and ADR writes.
+description: Structured interrogation workflow for stress-testing a plan — one frontier question at a time with a recommendation, codebase-grounded answers, and a shared-understanding gate before any action. Load when the user wants to grill a plan or design; pairs with domain-modeling for terminology and ADR writes.
 ---
 
 # Grill Methodology
@@ -11,9 +11,11 @@ Load `domain-modeling` alongside this skill: grilling reshapes the domain model 
 
 ## Interrogation Workflow
 
-Map the plan as a **design tree**: every decision branches into the decisions that hang off it. Work the tree in **rounds**. The **frontier** is every decision whose prerequisites are already settled — the questions you can ask *now* without guessing at answers you haven't heard yet. Ask the whole frontier in one round: number each question and give your recommended answer. Then wait for the user's answers before the next round.
+Map the plan as a **design tree**: every decision branches into the decisions that hang off it. The **frontier** is every decision whose prerequisites are already settled — the questions you can ask *now* without guessing at answers you haven't heard yet.
 
-Format each question like so:
+Ask **one frontier question per message**, always. Batching lets the user skim past the hard ones. Pick the frontier question that constrains the most of what's left — the one whose answer reshapes the largest part of the tree — and put that one, with your recommended answer. Then wait.
+
+Format the question like so:
 
 ```
 ❓ **Q1** - **<question title>**: <question body, possibly multiple paragraphs, including multiple choices>
@@ -23,9 +25,11 @@ Format each question like so:
 
 Never pose a neutral question — you're stress-testing, not surveying.
 
-Each round the user answers reshapes the tree: settled decisions push the frontier outward and unblock the questions that depended on them. Anchor each agreed answer as a resolved decision, recompute the frontier, and ask the next round. A question whose answer depends on another question still open in this round belongs to a *later* round, not this one. If an answer reveals a contradiction or gap, that branch stays on the frontier until it's resolved.
+Number the questions consecutively across the whole session, so an earlier decision can be referred to by its number.
 
-Finding **facts** is your job, never the user's. When a frontier question needs a fact from the environment, read the relevant files — or dispatch a subagent for anything sizable — instead of asking. Don't block a round on it: a running exploration is an unsettled prerequisite, so only the questions downstream of it wait for the report — ask the rest of the frontier now. **Decisions** belong to the user: put each one to them and wait.
+Each answer reshapes the tree: a settled decision pushes the frontier outward and unblocks the questions that depended on it. Anchor the agreed answer as a resolved decision, recompute the frontier, then ask the next question. Do not move on while the current question is unsettled — if an answer reveals a contradiction or gap, stay on that branch until it's resolved.
+
+Finding **facts** is your job, never the user's. When a frontier question needs a fact from the environment, read the relevant files — or dispatch a subagent for anything sizable — instead of asking. Don't block on it: a running exploration is an unsettled prerequisite, so ask a frontier question that doesn't depend on it while the report comes back. **Decisions** belong to the user: put each one to them and wait.
 
 The session is done when the frontier is empty: every branch of the design tree visited, nothing left silently assumed. Implementation starts only after the user confirms shared understanding.
 
