@@ -41,6 +41,7 @@ Every commit message must follow this format:
 3. **Body** (optional): A short summary of WHY — a few lines at most, and only when the subject alone doesn't carry it. Most commits need no body. Wrap at 72 characters. Separate from subject with a blank line.
 4. **Footer** (optional): Reference issues (`Closes #42`), note breaking changes (`BREAKING CHANGE: description`), or add metadata.
 5. **Breaking changes**: Add `!` after type/scope (`feat!: remove legacy API`) AND/OR add a `BREAKING CHANGE:` footer with migration instructions.
+6. **No tool attribution**: never add a `Co-Authored-By: Claude` trailer, a "Generated with Claude Code" line, or a session link. The footer in rule 4 is for issue references and breaking changes only.
 
 ### Examples
 
@@ -103,6 +104,7 @@ Examples:
 - Title follows the same `<type>(scope): description` format as a commit subject.
 - The description is a short summary: a few sentences — or a handful of bullets — covering what changed and why. The diff and commit list already tell the detailed story; the description orients the reviewer, it doesn't retell the work.
 - Skip boilerplate sections (test plans, checklists, headings) unless the repo's PR template asks for them.
+- The description ends on its last real line. Never append a "Generated with Claude Code" footer or a session link — the body passed to `gh pr create` gets no attribution.
 
 ## Commit Hygiene
 
