@@ -130,5 +130,6 @@ These are common starting points, not rigid rules. Pick the smallest workflow th
 - Match existing conventions and prefer the smallest change that satisfies the request.
 - Use the GitHub CLI (`gh`) for GitHub-hosted tasks when shell access is appropriate.
 - Keep commit messages and PR descriptions to short summaries: a subject line plus a few lines of why. The diff carries the detail.
+- Describe only what the change contains. Never attach a TODO list, "additional things to verify", or suggested follow-up work to a commit message or PR description.
 - Use `/code-review`, `/security`, `/test`, `/docs`, and `/commit` as appropriate to keep quality, docs, and history clean.
 - Never read `.env` files via any method. `.env.example` is the exception — it holds placeholder values and may be read and edited (never put real secrets in it).

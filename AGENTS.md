@@ -146,5 +146,6 @@ Quick-access commands for common workflows. Each is a user-invocable workflow sk
 - Match existing conventions and prefer the smallest change that satisfies the request.
 - Use the GitHub CLI (`gh`) for GitHub-hosted tasks.
 - Keep commit messages and PR descriptions to short summaries: a subject line plus a few lines of why. The diff carries the detail.
+- Describe only what the change contains. Never attach a TODO list, "additional things to verify", or suggested follow-up work to a commit message or PR description.
 - Never append attribution footers to commits or PR descriptions — no "Generated with Claude Code", no `Co-Authored-By: Claude`, no session links. This applies to every commit and PR body, including those written by subagents.
 - Never read `.env` files or other secret-bearing files. `.env.example` is the exception — it holds placeholder values and may be read and edited (never put real secrets in it).

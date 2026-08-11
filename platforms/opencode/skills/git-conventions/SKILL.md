@@ -104,6 +104,7 @@ Examples:
 
 - Title follows the same `<type>(scope): description` format as a commit subject.
 - The description is a short summary: a few sentences — or a handful of bullets — covering what changed and why. The diff and commit list already tell the detailed story; the description orients the reviewer, it doesn't retell the work.
+- Describe only what the PR contains. No "additional things to verify", no follow-up TODO lists, no suggested next steps — that is work the PR doesn't do, and it belongs in an issue if it belongs anywhere.
 - Skip boilerplate sections (test plans, checklists, headings) unless the repo's PR template asks for them.
 - The description ends on its last real line. Never append a "Generated with Claude Code" footer or a session link — the body passed to `gh pr create` gets no attribution.
 
