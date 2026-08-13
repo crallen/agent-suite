@@ -31,7 +31,7 @@ Ask instead of guessing when scope, data shape, UX, security, performance, or po
 
 ## 2. Simplicity First
 
-Solve the current problem with the minimum code and structure necessary.
+Understand the real constraint, then fight for the smallest model that makes the correct behavior unsurprising.
 
 - No features beyond what was asked.
 - No abstraction layers for a single implementation.
@@ -52,6 +52,8 @@ Touch only what the request requires. Keep the diff narrow and local.
 - Match the existing style and conventions, even if you would prefer a different style.
 - Clean up imports, variables, and functions only when **your** change made them unused.
 - If you notice unrelated issues, mention them separately instead of fixing them in the same change.
+
+These bound your **reach** — which code you may touch — not the **shape** of code the request already puts you inside. There, write what the change actually needs rather than mirroring the surrounding complexity; that something is already complicated is not a reason to add to it. This is about structure, not style: the conventions above still hold. Reaching outside the request to simplify something you merely noticed is still a drive-by refactor.
 
 ### Diff Discipline Checklist
 
