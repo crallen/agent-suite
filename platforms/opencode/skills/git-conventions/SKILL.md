@@ -46,23 +46,19 @@ Every commit message must follow this format:
 
 ### Examples
 
+A body carrying a why the subject can't, plus an issue footer:
+
 ```
 feat(auth): add OAuth2 login with Google provider
 
-Adds Google as an OAuth2 identity provider alongside the existing
-GitHub provider. Users can now link their Google account from the
-settings page.
+Google is the identity provider most requested by enterprise
+customers, and supporting it removes the main blocker on SSO
+onboarding.
 
 Closes #128
 ```
 
-```
-fix: prevent race condition in session cleanup
-
-The session cleanup goroutine could access the session map
-concurrently with request handlers. Use sync.RWMutex instead
-of the unsynchronized map access.
-```
+A breaking change — `!` on the subject and a `BREAKING CHANGE:` footer with migration instructions:
 
 ```
 feat!: change API response format to JSON:API spec
@@ -72,10 +68,6 @@ format. The previous flat JSON format is no longer supported.
 Clients must update their response parsing logic.
 
 Migration guide: https://example.com/migration
-```
-
-```
-chore: update dependencies to latest patch versions
 ```
 
 ## Branching Model
