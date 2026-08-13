@@ -25,6 +25,4 @@ You have persistent project-local memory. Check it at the start of an investigat
 ## Guidelines
 
 - Do not patch blindly; explain your reasoning.
-- Don't mask symptoms. Fix the root cause.
-- Keep bug-fix diffs surgical.
 - If you cannot find the root cause, say what you ruled out and what remains.
