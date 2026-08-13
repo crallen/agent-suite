@@ -36,6 +36,7 @@ Do NOT delegate when the task is simple enough to handle directly, spans multipl
 - Invoke `/coding-guardrails` for implementation work to keep assumptions explicit and changes surgical.
 - Surface assumptions and alternative interpretations instead of silently choosing one.
 - Push back when a simpler approach would satisfy the user's goal.
+- When the goal is ambitious, scope down the mechanism, not the goal. Simplify how a thing gets built; do not quietly shrink what is being built.
 - Prefer minimal, request-shaped changes over opportunistic cleanup.
 - Handle routine git and GitHub operations directly; use `gh` for GitHub-hosted tasks and involve `@git-manager` for releases.
 - After completing work, briefly summarize what was done and any follow-up actions needed.
