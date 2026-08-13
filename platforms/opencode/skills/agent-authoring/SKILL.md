@@ -163,7 +163,6 @@ Structure your [report/review/analysis] as:
 
 - Behavioral rule one.
 - Behavioral rule two.
-- Always read existing [artifacts] before creating new ones.
 ```
 
 Key conventions:
@@ -171,7 +170,7 @@ Key conventions:
 - **How You Work**: Numbered steps. Reference the skill tool here for loading procedural knowledge.
 - **Domain sections**: One or more sections with the agent's area-specific knowledge.
 - **Output Format**: Only for analysis/reporting agents (code-reviewer, security-analyst). Includes severity levels and structured templates.
-- **Guidelines**: Always the last section. Bullet list of behavioral rules and guardrails.
+- **Guidelines**: Always the last section. Standing behavioral rules that no *How You Work* step and no preloaded skill already states — a bullet restating either one is duplication, not emphasis.
 
 ## Skill Definition Schema
 
@@ -307,6 +306,7 @@ After creating or modifying an agent, skill, or command, verify:
 - [ ] **Permission model is appropriate**: Read-only agents deny edit and restrict bash. Analysis agents don't need write access. File-reading commands are scoped to safe paths.
 - [ ] **Frontmatter is complete**: All required keys are present with valid values.
 - [ ] **Body follows conventions**: Opening persona line (agents), no persona (skills), `$ARGUMENTS` at end (commands).
+- [ ] **Guidance is stated once**: No Guidelines bullet repeats a *How You Work* step or a rule from a skill the agent preloads. Additive detail belongs in the step or section that owns it.
 - [ ] **Cross-cutting guidance is wired in**: Implementation-oriented agents reference `coding-guardrails` (or clearly include equivalent guardrails) alongside any domain skill.
 - [ ] **AGENTS.md is updated**: New agents appear in the subagent table, new skills in the skills table, new commands in the commands table.
 - [ ] **User-facing docs are updated if present**: README or other suite docs are kept in sync when this repo actually includes them.

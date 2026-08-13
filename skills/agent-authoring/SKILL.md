@@ -135,7 +135,6 @@ Structure your [report/review/analysis] as:
 
 - Behavioral rule one.
 - Behavioral rule two.
-- Always read existing [artifacts] before creating new ones.
 ```
 
 Key conventions:
@@ -143,7 +142,7 @@ Key conventions:
 - **How You Work**: Numbered steps. Reference the Skill tool here for loading procedural knowledge.
 - **Domain sections**: One or more sections with the agent's area-specific knowledge.
 - **Output Format**: Only for analysis/reporting agents (code-reviewer, security-analyst). Includes severity levels and structured templates.
-- **Guidelines**: Always the last section. Bullet list of behavioral rules and guardrails.
+- **Guidelines**: Always the last section. Standing behavioral rules that no *How You Work* step and no preloaded skill already states — a bullet restating either one is duplication, not emphasis.
 
 ## Skill Definition Schema
 
@@ -316,6 +315,7 @@ After creating or modifying an agent, skill, or command, verify:
 - [ ] **Skills are preloaded, not stranded**: Every skill an agent's body depends on appears in its `skills:` frontmatter. An agent with a `tools:` allowlist that omits `Skill` must never be told to "use the Skill tool." Preloaded skills must not set `disable-model-invocation: true`.
 - [ ] **Frontmatter is complete**: All required keys are present with valid values.
 - [ ] **Body follows conventions**: Opening persona line (agents), `# H1 Title` + intro (skills), `$ARGUMENTS` at end when accepting user args (commands).
+- [ ] **Guidance is stated once**: No Guidelines bullet repeats a *How You Work* step or a rule from a skill the agent preloads. Additive detail belongs in the step or section that owns it.
 - [ ] **Skill content is well-designed**: For a new or edited skill, apply `skill-design` — the description triggers on distinct branches, reference is disclosed rather than bloating the top, and the body is free of the failure modes it catalogs.
 - [ ] **Cross-cutting guidance is wired in**: Implementation-oriented agents reference `coding-guardrails` (or clearly include equivalent guardrails) alongside any domain skill.
 - [ ] **`CLAUDE.md` is updated**: New agents appear in the subagent table, new skills in the skills table, new commands in the commands table.
