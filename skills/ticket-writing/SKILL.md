@@ -25,6 +25,8 @@ Turn a spec, a set of requirements, or a conversation into JIRA or Linear ticket
 
 Most bug fixes and small features are a single ticket — splitting is for specs and multi-outcome requirements, never a quota.
 
+When drafting more than one ticket, separate the drafts with a horizontal rule (`---`) so each reads as its own paste-ready unit.
+
 ## Story/Task Template
 
 ```
