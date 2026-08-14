@@ -52,6 +52,7 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 |---|---|---|
 | `coding-guardrails` | Cross-cutting execution guardrails for implementation work: assumptions, simplicity, surgical diffs, verification, and naming over comments | tech-lead, code-reviewer, tester, debugger, devops-engineer, frontend-engineer, backend-engineer, database-specialist |
 | `spec-writing` | Scope decomposition, clarifying dialogue, approach exploration, staged design presentation, and spec self-review | architect |
+| `ticket-writing` | Spec-to-ticket splitting, story/task and bug templates, testable acceptance-criteria rules, and JIRA/Linear platform notes | architect, documenter |
 | `git-conventions` | Conventional Commits format, branching model, commit hygiene, short-summary commit and PR style | git-manager, tech-lead |
 | `test-strategy` | Test type selection, coverage targets, mocking guidelines, fixture-data hygiene | tester, tech-lead |
 | `code-review-checklist` | Structured review rubric across core review categories, spec fidelity, and a Fowler design-smell baseline, with severity levels | code-reviewer |
@@ -93,6 +94,7 @@ Quick-access commands for common workflows:
 | `/agent-review` | Review agents, skills, and commands for correctness and consistency | agent-reviewer |
 | `/spec` | Research a goal and produce a design spec with task checklist | architect |
 | `/grill <plan or topic>` | Stress-test a plan through relentless questioning, sharpen domain language, and write CONTEXT.md and ADRs inline | architect |
+| `/ticket <spec or requirements>` | Turn a spec, requirements, or the conversation into paste-ready JIRA/Linear tickets | architect |
 | `/ship` | Commit and push in one step — same logic as `/commit`, then pushes to the remote | git-manager |
 | `/architecture` | Find deepening opportunities in the codebase, present a markdown report of candidates, then grill on the chosen one | architect |
 | `/prototype` | Build a throwaway prototype to explore a design question — logic branch for state/data-model questions, UI branch for visual layout questions | tech-lead |
@@ -116,6 +118,7 @@ These are common starting points, not rigid rules. Pick the smallest workflow th
 | Agent/skill/command changes | `/agent-review` → `/agent-builder` → `/agent-review` → `/commit` |
 | Release preparation | `/code-review` or `/test` as needed → `/release` |
 | Stress-testing a plan or sharpening domain language | `/grill <plan>` → specialist implementation command → `/commit` |
+| Turning a spec into tracker tickets | `/spec` → `/ticket` |
 | Exploring a design before committing to it | `/prototype` → `/spec` if needed → specialist implementation command → `/commit` |
 | Improving codebase architecture or testability | `/zoom-out` (orient first) → `/architecture` → specialist implementation command → `/test` → `/commit` |
 

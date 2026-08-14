@@ -72,6 +72,7 @@ Skills are loaded on-demand via `/skill-name` or automatically when relevant, an
 |---|---|---|
 | `coding-guardrails` | Cross-cutting execution guardrails for implementation work: assumptions, simplicity, surgical diffs, verification, and naming over comments | code-reviewer, tester, debugger, devops-engineer, frontend-engineer, backend-engineer, database-specialist |
 | `spec-writing` | Scope decomposition, clarifying dialogue, approach exploration, staged design presentation, and spec self-review | architect-level planning |
+| `ticket-writing` | Spec-to-ticket splitting, story/task and bug templates, testable acceptance-criteria rules, and JIRA/Linear platform notes | architect, documenter |
 | `git-conventions` | Conventional Commits format, branching model, commit hygiene, short-summary commit and PR style | git-manager |
 | `test-strategy` | Test type selection, coverage targets, mocking guidelines, fixture-data hygiene | tester |
 | `code-review-checklist` | Structured review rubric across core review categories, spec fidelity, and a Fowler design-smell baseline, with severity levels | code-reviewer |
@@ -115,6 +116,7 @@ Quick-access commands for common workflows. Each is a user-invocable workflow sk
 | `/agent-review` | Review agents, skills, and commands for correctness and consistency | agent-reviewer |
 | `/spec` | Research a goal and produce a design spec with task checklist | — (inline, as architect) |
 | `/grill` | Stress-test a plan with relentless one-question-at-a-time interrogation, sharpening domain language and writing CONTEXT.md / ADRs as decisions crystallize | — (inline, as architect) |
+| `/ticket` | Turn a spec, requirements, or the conversation into paste-ready JIRA/Linear tickets | — (inline) |
 | `/prototype` | Build a throwaway prototype to explore a design question — logic branch for state/data-model questions, UI branch for visual layout questions | backend-engineer, frontend-engineer |
 | `/architecture` | Find deepening opportunities in the codebase, present a markdown report of candidates, then grill on the chosen one | — (inline, as architect) |
 | `/zoom-out` | Get a map of relevant modules and callers when unfamiliar with an area, using the project's domain vocabulary | — |
@@ -125,6 +127,7 @@ Quick-access commands for common workflows. Each is a user-invocable workflow sk
 |---|---|
 | Ambiguous feature or cross-cutting change | `/spec` → specialist implementation command → `/code-review` or `/security` as needed → `/test` → `/commit` |
 | Stress-testing a plan or sharpening domain language | `/grill` → specialist implementation command → `/commit` |
+| Turning a spec into tracker tickets | `/spec` → `/ticket` |
 | Exploring a design before committing to it | `/prototype` → `/spec` if needed → specialist implementation command → `/commit` |
 | Improving codebase architecture or testability | `/zoom-out` (orient first) → `/architecture` → specialist implementation command → `/test` → `/commit` |
 | Straightforward backend work | `/backend-engineer` → `/test` → `/code-review` → `/commit` |
