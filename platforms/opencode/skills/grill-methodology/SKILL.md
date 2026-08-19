@@ -13,7 +13,7 @@ Load `domain-modeling` alongside this skill: grilling reshapes the domain model 
 
 Map the plan as a **design tree**: every decision branches into the decisions that hang off it. The **frontier** is every decision whose prerequisites are already settled — the questions you can ask *now* without guessing at answers you haven't heard yet.
 
-Ask **one frontier question per message**, always. Batching lets the user skim past the hard ones. Pick the frontier question that constrains the most of what's left — the one whose answer reshapes the largest part of the tree — and put that one, with your recommended answer. Then wait.
+Ask **one frontier question per message**, always. Batching lets the user skim past the hard ones. Pick the frontier question that constrains the most of what's left — the one whose answer reshapes the largest part of the tree — and put that one to the user. Then wait.
 
 Present each question in two parts: the reasoning as prose, then the decision through the cleanest control the harness offers.
 
