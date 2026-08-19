@@ -7,6 +7,19 @@ description: Templates and structure for READMEs, API documentation, changelogs,
 
 Reusable templates for common documentation artifacts: READMEs, API docs, changelogs, and inline code comments. ADRs defer to the `domain-modeling` skill.
 
+## Diátaxis: Pick the Document Type First
+
+Four documentation types, each serving one distinct need. Mixing them in a single document is the most common structural failure — a tutorial that detours into reference, an explanation that slides into how-to. Decide which one you are writing before you draft it.
+
+| Type | Serves | Shape |
+|---|---|---|
+| Tutorial | Learning by doing | A guided lesson that succeeds end to end. Concrete, no choices offered, no digression. |
+| How-to guide | A goal the reader already has | Numbered steps to an outcome. Assumes competence; omits theory. |
+| Reference | Looking something up | Dry, complete, consistent. Describes the machinery; argues nothing. |
+| Explanation | Understanding why | Design, tradeoffs, background. The place for rationale. |
+
+The templates below are mostly how-to and reference; ADRs and design docs are explanation. When a page tries to be two types at once, split it.
+
 ## README Template
 
 ```markdown
@@ -202,6 +215,26 @@ const maxRequestsPerMinute = 80
 // Set max requests to 80
 const maxRequestsPerMinute = 80
 ```
+
+## Writing for a Global Audience
+
+Much technical prose is read by non-native English speakers and by translation
+tools. Simplified Technical English and Global English converge on the same
+rules:
+
+- One instruction per sentence, and keep sentences short (aim under ~25 words).
+- Prefer active voice and the imperative for instructions: "Run the migration",
+  not "The migration should be run".
+- One term for one concept — no synonym cycling. If it is a "container", it is
+  always a "container", never sometimes an "instance".
+- Avoid idiom, phrasal verbs, and culture-bound metaphor ("kick off", "out of
+  the box", "in the ballpark"). Write "start", "with no configuration",
+  "roughly".
+- Keep pronoun references explicit — an "it" or "this" with no clear antecedent
+  breaks a translator and a reader alike.
+
+This reinforces the Register rules below and pairs with the `unslop` skill for
+cutting AI tells from anything a human will read.
 
 ## Register
 

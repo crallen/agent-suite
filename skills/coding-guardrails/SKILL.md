@@ -1,5 +1,5 @@
 ---
-description: "Cross-cutting execution guardrails for coding tasks: surface assumptions, prefer simple solutions, make surgical changes, define verifiable success criteria, shape code with sound structure/error/safety defaults, and prefer a clear name over a comment that explains it"
+description: "Cross-cutting execution guardrails for coding tasks: surface assumptions, prefer simple solutions, make surgical changes, define verifiable success criteria, shape code with sound structure/error/safety defaults, and prefer a clear name over a comment that explains it — plus on-demand principle references for type-system discipline, idempotency, building the lever, and encoding lessons in structure"
 ---
 
 # Coding Guardrails
@@ -112,6 +112,17 @@ a metaphor for it — "raises `SettingsError`", not "blows up".
 
 `doc-templates` holds the full register and naming rules. Load it when writing
 comments, docstrings, or identifiers a human will read.
+
+## Principle Deep-Dives
+
+The four guardrails above apply to every task and stay in context. These references hold sharper, situational depth — load the one the task in front of you calls for, and only then:
+
+| Load | When |
+|---|---|
+| `coding-guardrails/reference/type-system-discipline.md` | Designing types or a function signature; deciding how to model data or states in a typed language |
+| `coding-guardrails/reference/idempotency.md` | Writing a command, lifecycle step, or loop that mutates state amid crashes, restarts, or retries |
+| `coding-guardrails/reference/build-the-lever.md` | Facing non-trivial work — a migration, a bulk edit, an analysis or check worth making rerunnable |
+| `coding-guardrails/reference/encode-lessons-in-structure.md` | Writing the same instruction a second time, or noticing a recurring correction |
 
 ## Anti-Patterns
 
