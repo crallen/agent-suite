@@ -70,7 +70,7 @@ Skills are loaded on-demand via `/skill-name` or automatically when relevant, an
 
 | Skill | Description | Primary users |
 |---|---|---|
-| `coding-guardrails` | Cross-cutting execution guardrails for implementation work: assumptions, simplicity, surgical diffs, verification, and naming over comments | code-reviewer, tester, debugger, devops-engineer, frontend-engineer, backend-engineer, database-specialist |
+| `coding-guardrails` | Cross-cutting execution guardrails for implementation work: assumptions, simplicity, surgical diffs, verification, structure/error/safety defaults, and naming over comments | code-reviewer, tester, debugger, devops-engineer, frontend-engineer, backend-engineer, database-specialist |
 | `spec-writing` | Scope decomposition, clarifying dialogue, approach exploration, staged design presentation, and spec self-review | architect-level planning |
 | `ticket-writing` | Spec-to-ticket splitting, story/task and bug templates, testable acceptance-criteria rules, and JIRA/Linear platform notes | architect, documenter |
 | `git-conventions` | Conventional Commits format, branching model, commit hygiene, short-summary commit and PR style | git-manager |

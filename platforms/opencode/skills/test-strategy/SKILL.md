@@ -113,6 +113,7 @@ Prioritize tests from bottom to top — more unit tests, fewer E2E tests:
 - Trivial getters/setters with no logic
 - Generated code (protobuf stubs, ORM models)
 - Third-party library internals
+- Language or framework behavior itself (that a derived equality works, that the stdlib does its job)
 - Private helper functions (test them through public interfaces)
 - Pure configuration (test it through integration tests instead)
 

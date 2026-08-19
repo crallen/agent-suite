@@ -1,6 +1,6 @@
 ---
 name: coding-guardrails
-description: "Cross-cutting execution guardrails for coding tasks: surface assumptions, prefer simple solutions, make surgical changes, define verifiable success criteria, and prefer a clear name over a comment that explains it"
+description: "Cross-cutting execution guardrails for coding tasks: surface assumptions, prefer simple solutions, make surgical changes, define verifiable success criteria, shape code with sound structure/error/safety defaults, and prefer a clear name over a comment that explains it"
 ---
 
 # Coding Guardrails
@@ -34,10 +34,13 @@ Ask instead of guessing when scope, data shape, UX, security, performance, or po
 Understand the real constraint, then fight for the smallest model that makes the correct behavior unsurprising.
 
 - No features beyond what was asked.
-- No abstraction layers for a single implementation.
+- No abstraction layer unless something real varies across it — a second implementation, or a seam a test genuinely needs.
 - No configurability or "future-proofing" nobody requested.
+- No ceremony without payoff: a builder for a one- or two-field struct, generics with a single caller, or dependencies and feature flags pulled in ahead of need.
 - No complex failure handling for scenarios with no evidence they matter.
 - If 200 lines could be 50 without losing clarity, simplify.
+
+Simplicity governs *ceremony*, not *architecture*. Build the system properly — reach for the seam, port, or layer when it earns its keep; abstraction with a payoff is not speculative. Strip only the indirection that buys nothing. When a seam's payoff is unclear, `architecture-review` holds the test: one adapter is a hypothetical seam, two is a real one.
 
 ### Simplicity Test
 
@@ -91,6 +94,16 @@ Translate work into explicit proof, not vague motion.
 | New feature | Clarify → smallest useful slice → verify |
 | Refactor | Capture behavior → change in steps → confirm behavior holds |
 
+## Structure, Errors, and Safety
+
+Defaults for how code is shaped — starting points, not straitjackets. Match the repo, and reach for `architecture-review` (structure) or `backend-patterns` (layer boundaries) when a decision needs depth.
+
+- **Thin composition root.** `main`/entry wires dependencies and delegates to a `run()`-style function. Business logic does not live in the entrypoint.
+- **Modules as facades.** Expose a curated public surface; keep the parts a caller doesn't need private. The public API is the seam, not the internals.
+- **Errors carry context and cause.** Wrap as they cross a boundary ("failed to X"), chained to the source; don't swallow. Model the distinctions callers act on — retriable vs fatal, the status you'll return — and no error types nothing inspects.
+- **Guard clauses.** Handle the failing case and return early; keep the happy path flat and unindented.
+- **No panics on recoverable paths.** Propagate errors instead. Reserve `panic`/`unwrap`/`expect`-style aborts for provable startup invariants (with a message) or tests.
+
 ## Naming and Comments
 
 Both get read far more often than they get written, so a vague one charges every
@@ -104,7 +117,8 @@ comments, docstrings, or identifiers a human will read.
 ## Anti-Patterns
 
 - Silent assumption
-- Speculative architecture
+- Speculative architecture (a seam nothing varies across)
+- Panic on a recoverable path
 - Drive-by refactor
 - Vague success criteria
 - Comment standing in for a name that could have been clearer

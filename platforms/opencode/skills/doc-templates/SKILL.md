@@ -182,6 +182,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Don't leave commented-out code. Delete it; git has the history.
 - Don't use comments as section dividers where functions would be better.
 - Don't write TODOs without an associated issue or ticket number.
+- Don't narrate steps the code already shows (`// load config`, `// open the connection`). A run of step labels is noise.
+- Don't banner-comment the sections of a struct or object literal (`// financial fields`); if the grouping matters, give it a type.
+- Don't document every field, getter, or self-evident item to satisfy a "document everything" lint. Document what a caller can't infer from the signature.
+
+### Keep It Lean
+
+Prose in code is read on every pass, so keep it minimal. When an explanation outgrows a couple of lines — design rationale, trade-offs, background — move it to a README, an ADR, or a design doc and link it from the code. The code carries the load-bearing *why*; the documents carry the depth.
 
 ### Format
 
@@ -233,3 +240,14 @@ there, because a reader cannot skip a name the way they can skip a comment.
   patching.
 - If an assertion refers to an identifier by name, the name should make the
   assertion self-explanatory without a comment.
+
+## Accuracy
+
+Docs describe what the code does now, not what it might do.
+
+- Keep docs true to the code. When a change alters behavior, update the docs that
+  describe it in the same change.
+- Prefer under-claiming. Don't describe features, commands, or guarantees that
+  aren't built — aspirational docs read as false the moment a reader tries them.
+- When a documented claim turns out wrong, retract it with evidence — what you
+  checked and where — rather than quietly leaving it in place.

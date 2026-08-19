@@ -58,7 +58,9 @@ Two rules govern every item:
 - [ ] Are functions small and focused? (single responsibility)
 - [ ] Could a clearer name remove the need for the comment? Where a comment earns its place, does it name the mechanism rather than a metaphor for it?
 - [ ] Are identifiers named for the scenario they represent, rather than for a failure or a vaguer alias? (`raise_access_denied`, not `_boom`)
-- [ ] Are abstractions at the right level? (not too abstract, not too concrete)
+- [ ] Is in-code prose lean? (no step-narration, no banner comments inside struct/object literals, no documenting trivial items for a lint; depth belongs in docs, not long comment blocks)
+- [ ] Do docs and comments the change touches stay true to the code, without aspirational or stale claims?
+- [ ] Are abstractions at the right level? (not too abstract, not too concrete — a seam earns its place when something real varies across it)
 - [ ] Is the module/package structure logical?
 - [ ] Do dependencies point one way? (business logic free of transport, framework, and persistence types)
 - [ ] Does the change introduce an import cycle between modules or packages?
@@ -74,6 +76,8 @@ Duplication and structural design problems are covered by the smell baseline in 
 - [ ] Is cleanup performed on error paths? (defer/finally, resource release, transaction rollback)
 - [ ] Are retries implemented with backoff for transient failures?
 - [ ] Are error types specific enough for callers to handle different cases?
+- [ ] Are there error types or variants nothing branches on? (model the distinctions callers act on, not more)
+- [ ] Are recoverable errors propagated rather than panicking? (panic/abort reserved for startup invariants or tests)
 
 ### 6. Testing
 
