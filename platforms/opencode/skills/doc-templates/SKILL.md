@@ -1,6 +1,6 @@
 ---
 name: doc-templates
-description: Templates and structure for READMEs, API documentation, changelogs, and inline code documentation, plus the register and naming rules for prose humans read (name the mechanism, not a metaphor for it) — ADRs defer to the domain-modeling skill
+description: Templates and structure for READMEs, API documentation, changelogs, and inline code documentation, plus Diátaxis document-type selection (tutorial / how-to / reference / explanation), global-audience prose rules, and the register and naming rules for prose humans read (name the mechanism, not a metaphor for it) — ADRs defer to the domain-modeling skill
 ---
 
 # Documentation Templates
@@ -219,22 +219,18 @@ const maxRequestsPerMinute = 80
 ## Writing for a Global Audience
 
 Much technical prose is read by non-native English speakers and by translation
-tools. Simplified Technical English and Global English converge on the same
-rules:
+tools. Simplified Technical English and Global English add rules on top of the
+general prose hygiene the `unslop` skill owns — active voice, one idea per
+sentence, one term per concept all apply here too:
 
-- One instruction per sentence, and keep sentences short (aim under ~25 words).
-- Prefer active voice and the imperative for instructions: "Run the migration",
-  not "The migration should be run".
-- One term for one concept — no synonym cycling. If it is a "container", it is
-  always a "container", never sometimes an "instance".
+- Keep sentences short — aim under ~25 words.
 - Avoid idiom, phrasal verbs, and culture-bound metaphor ("kick off", "out of
   the box", "in the ballpark"). Write "start", "with no configuration",
   "roughly".
 - Keep pronoun references explicit — an "it" or "this" with no clear antecedent
   breaks a translator and a reader alike.
 
-This reinforces the Register rules below and pairs with the `unslop` skill for
-cutting AI tells from anything a human will read.
+These reinforce the Register rules below.
 
 ## Register
 
