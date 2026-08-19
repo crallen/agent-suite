@@ -15,17 +15,13 @@ Map the plan as a **design tree**: every decision branches into the decisions th
 
 Ask **one frontier question per message**, always. Batching lets the user skim past the hard ones. Pick the frontier question that constrains the most of what's left — the one whose answer reshapes the largest part of the tree — and put that one, with your recommended answer. Then wait.
 
-Format the question like so:
+Present each question in two parts: the reasoning as prose, then the decision through the cleanest control the harness offers.
 
-```
-❓ **Q1** - **<question title>**: <question body, possibly multiple paragraphs, including multiple choices>
+**Lead with prose.** A short bold title carrying the question's number (`**Q3 — <title>**`), the challenge and any context, then your recommended answer on its own line, clearly marked. Rich reasoning lives here, where markdown renders it properly. Do not use decorative emoji.
 
-➡️ <your recommended answer and the reasoning behind it>
-```
+**Then take the answer** with the harness's structured question tool when it has one — for example `AskUserQuestion` in Claude Code and T3 Code: a concise restatement of the choice, concise option labels, the recommended option first and tagged "(Recommended)". The options capture the decision; the argument stays in the prose above, never crammed into an option label. When the harness offers no such tool, list the options inline and wait.
 
-Never pose a neutral question — you're stress-testing, not surveying.
-
-Number the questions consecutively across the whole session, so an earlier decision can be referred to by its number.
+Never pose a neutral question — you're stress-testing, not surveying, so a recommendation is mandatory. Number questions consecutively across the whole session, so an earlier decision can be referred to by its number.
 
 Each answer reshapes the tree: a settled decision pushes the frontier outward and unblocks the questions that depended on it. Anchor the agreed answer as a resolved decision, recompute the frontier, then ask the next question. Do not move on while the current question is unsettled — if an answer reveals a contradiction or gap, stay on that branch until it's resolved.
 
