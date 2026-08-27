@@ -1,5 +1,5 @@
 ---
-description: Chart an effort too big for one session as a map of decision tickets in the repo, then resolve them one per session — destination, fog of war, frontier, and the four ticket types. Load when planning work that spans multiple sessions, or when working through an existing wayfinder map.
+description: Chart an effort too big for one session as a map of decision tickets in the repo, then resolve one decision per session — destination, fog of war, frontier, and the four ticket types. Load when planning work that spans multiple sessions, or when working through an existing wayfinder map.
 ---
 
 # Wayfinder Methodology
@@ -137,7 +137,9 @@ The user arrives with a loose idea. Charting is one session's work and hand-reso
 
 ## Work through the map
 
-The user arrives with a map, and optionally a ticket. Without one, you pick the next decision, not the user. **Never resolve more than one ticket per session** — research tickets excepted, since they are AFK and parallel.
+The user arrives with a map, and optionally a ticket. Without one, you pick the next decision, not the user.
+
+**Resolve at most one decision-bearing ticket per session** — one `grilling` or one `prototype`. The limit is anchoring, not effort: a second decision worked in the same context gets argued by an agent that just spent the session building the case for the first, and the fresh-context boundary is what buys each decision an independent look. `task` and `research` tickets do not count against it, since a task reaches no decision to anchor on and research runs AFK in a subagent that never touches this context.
 
 1. **Read the map**, and orient to the destination before choosing anything.
 2. **Choose the ticket.** Use the one the user named, otherwise the first unblocked ticket under **Tickets**. If nothing is unblocked, say so rather than picking a blocked one.
