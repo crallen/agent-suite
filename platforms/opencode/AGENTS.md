@@ -72,6 +72,7 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 | `grill-methodology` | One-question-at-a-time Socratic interrogation of a plan: frontier questioning, recommendation-first questions, codebase cross-referencing, and a shared-understanding gate — pairs with `domain-modeling` | architect |
 | `architecture-review` | Architecture deepening workflow: find shallow modules, propose depth-increasing refactors, present markdown report of candidates, then grill on the chosen one with CONTEXT.md / ADR integration | architect |
 | `prototype-methodology` | Throwaway prototype workflow — routes between a terminal app for logic/state questions and multiple UI variants for visual questions | architect, backend-engineer, frontend-engineer |
+| `wayfinder-methodology` | Multi-session effort mapping: chart a destination plus decision tickets in-repo, work the frontier one ticket per session, hold unsharpened work as fog of war | architect |
 
 ### Slash Commands
 
