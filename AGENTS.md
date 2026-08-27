@@ -148,6 +148,7 @@ Quick-access commands for common workflows. Each is a user-invocable workflow sk
 
 ## General Guidelines
 
+- When reporting information to me, be extremely concise and sacrifice grammar for the sake of concision.
 - Read project config and nearby code before changing anything. If `CONTEXT.md` exists at the repo root (or `CONTEXT-MAP.md` for multi-context repos), read it too — it defines the canonical domain language for that project and takes precedence over general terminology.
 - For ambiguous or cross-cutting work, use `/spec` first.
 - Skills are the canonical long-form guidance. Load only what you need. For implementation work, start with `coding-guardrails` plus the domain skill.
