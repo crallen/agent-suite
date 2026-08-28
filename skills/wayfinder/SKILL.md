@@ -1,7 +1,6 @@
 ---
 description: Chart a large effort as a map of decision tickets in the repo, then resolve one decision per session until the way is clear
 argument-hint: [loose idea, or a path to an existing map]
-disable-model-invocation: true
 ---
 
 Wayfind the effort below, operating as the architect: decisions only, no implementation. Use the Skill tool to load `wayfinder-methodology` for the map format, ticket types, and both workflows. This runs inline in the main conversation — grilling and prototype tickets are worked *with* the user, and a forked subagent cannot pause for their answers.

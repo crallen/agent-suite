@@ -1,7 +1,6 @@
 ---
 description: Prepare a release with changelog, version bump, and release notes
 argument-hint: [version hint (optional)]
-disable-model-invocation: true
 ---
 
 Use the `@git-manager` subagent to prepare a release for this project. Analyze the commit history since the last tag to determine the appropriate version bump and generate release notes.

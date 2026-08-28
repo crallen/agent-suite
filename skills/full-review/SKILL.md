@@ -2,7 +2,6 @@
 description: Run a code quality review and security audit in parallel — pending changes, changes since a base ref, or the full codebase when the tree is clean
 argument-hint: [files or scope to focus on, or a base ref like main (optional)]
 context: fork
-disable-model-invocation: true
 ---
 
 <!-- No `agent:` key by design: this fork orchestrates two subagents (@code-reviewer and @security-analyst) in parallel rather than routing to a single named agent. -->

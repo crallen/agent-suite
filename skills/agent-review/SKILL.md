@@ -3,7 +3,6 @@ description: Review agents, skills, and commands for correctness, consistency, a
 argument-hint: [artifacts to focus on (optional)]
 agent: agent-reviewer
 context: fork
-disable-model-invocation: true
 ---
 
 Review the existing agents, skills, and slash commands for correctness, consistency, and adherence to conventions. Check structural correctness, cross-references, permission models, and quality.

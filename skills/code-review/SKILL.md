@@ -3,7 +3,6 @@ description: Review code for quality, security, and best practices — pending c
 argument-hint: [files to focus on, or a base ref like main (optional)]
 agent: code-reviewer
 context: fork
-disable-model-invocation: true
 ---
 
 Review code for quality, security, performance, and maintainability issues.

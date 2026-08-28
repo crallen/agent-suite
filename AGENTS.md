@@ -97,7 +97,9 @@ Skills are loaded on-demand via `/skill-name` or automatically when relevant, an
 
 ### Slash Commands
 
-Quick-access commands for common workflows. Each is a user-invocable workflow skill (`skills/<name>/SKILL.md` with `disable-model-invocation: true`):
+Quick-access commands for common workflows. Each is a workflow skill (`skills/<name>/SKILL.md`, a short task prompt with no `# H1` heading — that absence is what distinguishes it from a reference skill).
+
+**Invoke a workflow skill only when I name one.** These deliberately omit `disable-model-invocation`, so you *can* reach them through the Skill tool — that is a transport concession, not permission. Some clients mangle `/name` into `$name` on send; treat `$name`, `/name`, and a bare command name as the same explicit invocation and run the skill. Never start one on your own initiative because a task seems to call for it. Recommending one in prose is always fine.
 
 | Command | Action | Agent |
 |---|---|---|

@@ -3,7 +3,6 @@ description: Critique frontend UX and visual direction, then suggest targeted im
 argument-hint: [surface to critique]
 agent: frontend-auditor
 context: fork
-disable-model-invocation: true
 ---
 
 Critique the requested frontend surface without editing files. Focus on task clarity, hierarchy, interaction tone, copy quality, and whether the UI feels product-specific rather than generic. If implementation is needed afterward, recommend `/frontend`.

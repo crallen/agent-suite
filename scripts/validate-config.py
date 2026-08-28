@@ -136,8 +136,18 @@ C_AGENTS = md_files(CLAUDE / "agents")
 O_AGENTS = md_files(OPENCODE / "agent")
 O_COMMANDS = md_files(OPENCODE / "commands")
 
-# claude implements slash commands as workflow skills.
-C_COMMANDS = {n: fm for n, fm in C_SKILLS.items() if fm.get("disable-model-invocation")}
+# claude implements slash commands as workflow skills. They used to be marked by
+# disable-model-invocation, but the suite dropped that key (see the invocation
+# note in claude/.claude/CLAUDE.md), so the discriminator is now structural: a
+# reference skill opens its body with an `# H1 Title`, a workflow skill is a
+# short task prompt with no heading. A misclassification is self-catching —
+# check_index fails on the /name row the index still lists.
+def is_workflow_skill(name: str) -> bool:
+    _, body = split_frontmatter(CLAUDE / "skills" / name / "SKILL.md")
+    return not re.search(r"^# ", body, re.M)
+
+
+C_COMMANDS = {n: fm for n, fm in C_SKILLS.items() if is_workflow_skill(n)}
 
 
 # -------------------------------------------------------------------- checks

@@ -3,7 +3,6 @@ description: Audit frontend quality, states, responsiveness, and anti-patterns w
 argument-hint: [surface to audit]
 agent: frontend-auditor
 context: fork
-disable-model-invocation: true
 ---
 
 Audit the requested frontend surface without editing files. Focus on screen intent, hierarchy, states, accessibility, responsiveness, and anti-patterns. If implementation is needed afterward, recommend `/frontend`.

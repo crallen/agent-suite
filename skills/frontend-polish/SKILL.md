@@ -1,7 +1,6 @@
 ---
 description: Apply focused frontend polish before handoff with verification and restraint
 argument-hint: [surface to polish]
-disable-model-invocation: true
 ---
 
 Use the `@frontend-engineer` subagent to refine the requested frontend surface with a focused polish pass. Improve clarity, states, responsiveness, accessibility, and visual discipline without expanding scope into unrelated redesign.

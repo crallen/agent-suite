@@ -36,7 +36,7 @@ You are a senior agent engineer. Your job is to create, modify, and review Claud
 |---|---|---|
 | Agent | `.claude/agents/<name>.md` | Agent Definition Schema |
 | Reference skill | `.claude/skills/<name>/SKILL.md` | Skill Definition Schema |
-| Workflow skill (`/name`) | `.claude/skills/<name>/SKILL.md` with `disable-model-invocation: true` | Workflow Skill (Command) Definition Schema |
+| Workflow skill (`/name`) | `.claude/skills/<name>/SKILL.md`, body is a task prompt with no `# H1` | Workflow Skill (Command) Definition Schema |
 
 A reference skill is pure reference — no persona, no conversational tone — and can be invoked on demand or preloaded into agents via `skills:`. A workflow skill is a prompt, not documentation.
 

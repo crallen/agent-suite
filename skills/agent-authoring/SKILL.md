@@ -16,7 +16,7 @@ Paths below are relative to the Claude Code config root at `~/.claude/`. In a do
 | Skill (reference) | `skills/<name>/SKILL.md` | kebab-case directory name | Directory name |
 | Skill (workflow/command) | `skills/<name>/SKILL.md` | kebab-case directory name | Directory name (becomes `/name`) |
 
-This suite has no `commands/` directory: slash commands are implemented as **workflow skills** — `skills/<name>/SKILL.md` with `disable-model-invocation: true`. Legacy `commands/<name>.md` files still work in Claude Code but should not be created here. When naming a workflow skill, avoid shadowing bundled skills (`/debug`, `/review`, `/security-review`, `/run`, `/verify`, `/init`, `/loop`, `/batch`, `/simplify`, `/schedule`, `/claude-api`); when a workflow delegates to one agent and the natural verb is taken, name it after the agent (e.g., `/debugger`). One deliberate exception: this suite **intentionally claims** `/code-review` with its own workflow skill (which forks to `@code-reviewer`). The bundled `/code-review` still appears in the menu, but the personal skill lists above it and is selected by default — so `/code-review` runs ours. Do not rename it to dodge the bundled name; the collision is intentional.
+This suite has no `commands/` directory: slash commands are implemented as **workflow skills** — `skills/<name>/SKILL.md` whose body is a short task prompt with no `# H1` heading. (That missing heading is the only thing separating them from reference skills; `scripts/validate-config.py` uses it to tell the two apart.) Legacy `commands/<name>.md` files still work in Claude Code but should not be created here. When naming a workflow skill, avoid shadowing bundled skills (`/debug`, `/review`, `/security-review`, `/run`, `/verify`, `/init`, `/loop`, `/batch`, `/simplify`, `/schedule`, `/claude-api`); when a workflow delegates to one agent and the natural verb is taken, name it after the agent (e.g., `/debugger`). One deliberate exception: this suite **intentionally claims** `/code-review` with its own workflow skill (which forks to `@code-reviewer`). The bundled `/code-review` still appears in the menu, but the personal skill lists above it and is selected by default — so `/code-review` runs ours. Do not rename it to dodge the bundled name; the collision is intentional.
 
 Identifiers must be consistent across all references:
 - Commands route to agents via the `agent:` frontmatter key (filename without `.md`) and/or via prose ("Use the `@name` subagent ...").
@@ -161,7 +161,7 @@ description: One-sentence description of the skill's content and when to load it
 | `description` | string | Recommended | What the skill does and when to use it. Drives auto-routing. Put the key use case first — combined `description` + `when_to_use` text is truncated at 1,536 characters in the skill listing. |
 | `when_to_use` | string | No | Extra routing context: trigger phrases or example requests. Appended to `description` in the listing. |
 | `name` | string | No | Display name in skill listings only. The directory name remains the `/command` identifier — this suite omits `name:` and relies on the directory name. |
-| `disable-model-invocation` | boolean | No | Set `true` so only the user can invoke it (use for side-effectful workflows like commit/release). Also blocks preloading via an agent's `skills:` field — never set it on skills that agents preload. |
+| `disable-model-invocation` | boolean | No | Set `true` so only the user can invoke it. **This suite does not use it** — see the workflow-skill schema below. Also blocks preloading via an agent's `skills:` field, so never set it on skills that agents preload. |
 | `user-invocable` | boolean | No | Set `false` to hide from the `/` menu. Use for background knowledge that isn't a meaningful user action. |
 | `argument-hint` | string | No | Autocomplete hint for expected arguments, e.g. `[issue-number]`. |
 | `arguments` | list | No | Named positional arguments usable as `$name` substitutions in the body. |
@@ -240,7 +240,7 @@ Wire cross-cutting skills into agents via the `skills:` preload field rather tha
 
 ## Workflow Skill (Command) Definition Schema
 
-Custom commands have been **merged into skills**: a skill at `skills/<name>/SKILL.md` creates `/name`. This suite implements every slash command as a workflow skill with `disable-model-invocation: true` (user-triggered only). Unlike reference skills, workflow skills are short task prompts — they keep the command conventions below rather than the reference-skill body structure (no `# H1 Title` requirement).
+Custom commands have been **merged into skills**: a skill at `skills/<name>/SKILL.md` creates `/name`. This suite implements every slash command as a workflow skill. Unlike reference skills, workflow skills are short task prompts — they keep the command conventions below rather than the reference-skill body structure (no `# H1 Title` requirement).
 
 ### Frontmatter
 
@@ -250,9 +250,10 @@ description: Short description of what the command does.
 argument-hint: [free-form request]
 agent: agent-identifier
 context: fork
-disable-model-invocation: true
 ---
 ```
+
+**Do not add `disable-model-invocation: true`.** It reads as the natural fit — these *are* user-triggered workflows — but the key is a hard block, not a hint: the Skill tool refuses the skill outright and tells the agent not to replicate the workflow by other means. Some clients mangle `/name` into `$name` on send, which then leaves the command unreachable by either party. The suite keeps workflow skills model-invocable and enforces user-only invocation by convention instead, stated in `CLAUDE.md` under Slash Commands.
 
 | Key | Type | Required | Description |
 |---|---|---|---|
@@ -260,7 +261,7 @@ disable-model-invocation: true
 | `argument-hint` | string | No | Autocomplete hint shown after the command name, e.g. `[issue description]`. Add it whenever the command accepts `$ARGUMENTS`. |
 | `agent` | string | No | Agent identifier (filename without `.md`) to route the command to. When paired with `context: fork`, the command runs in that agent's isolated subagent context. |
 | `context` | string | No | Set to `fork` to run the command in an isolated subagent context with no access to the conversation history. Pair with `agent:`. Only use when the body is a self-contained task (inject any needed state via `` !`command` ``). A fork cannot pause for user input — `AskUserQuestion` is stripped from every subagent — so dialogue-driven workflows must run inline. |
-| `disable-model-invocation` | boolean | No | Set `true` to prevent the command from being auto-invoked by Claude — it becomes user-triggered only. |
+| `disable-model-invocation` | boolean | No | Prevents auto-invocation by Claude. **Deliberately unused here** — see the note above the table. |
 | `allowed-tools` | comma-separated string | No | Tools pre-approved while this command is running. Supports rule specifiers like `Bash(git commit *)`. |
 
 ### Body Structure

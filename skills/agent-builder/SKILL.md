@@ -1,7 +1,6 @@
 ---
 description: Create or modify a Claude Code agent, skill, or slash command
 argument-hint: [what to create or change]
-disable-model-invocation: true
 ---
 
 Use the `@agent-builder` subagent to create or modify a Claude Code agent, skill, or slash command. Follow the established schemas and conventions.
