@@ -16,19 +16,19 @@ How a skill is reached — and the two loads you pay for the choice.
 
 ### Reference Skill (model-invoked)
 
-A skill that keeps its **description**, so the agent can see it and fire it autonomously — and the human can still type its name, so this kind always *includes* human reach. It can be preloaded whole into an agent via `skills:`. Pays a permanent **context load** on every turn in exchange for that discoverability. Reachable by other skills, because the description that makes it agent-discoverable makes it invocable. A reference skill whose content is all **reference** is also a home for shared reference: another skill can invoke it, so reference needed by several skills lives in one place. Pick this kind when the agent must reach the skill on its own or an agent must preload it. Dropping the description via `disable-model-invocation` is what would avoid the context load, but this suite does not use that key — see **workflow skill**.
+A skill that keeps its **description**, so the agent can see it and fire it autonomously — and the human can still type its name, so this kind always *includes* human reach. It can be preloaded whole into an agent via `skills:`. Pays a permanent **context load** on every turn in exchange for that discoverability. Reachable by other skills, because the description that makes it agent-discoverable makes it invocable. A reference skill whose content is all **reference** is also a home for shared reference: another skill can invoke it, so reference needed by several skills lives in one place. Pick this kind when the agent must reach the skill on its own or an agent must preload it. Dropping the description is what avoids the context load, and that is what a **workflow skill** does.
 
 *Avoid*: ability, tool, capability
 
 ### Workflow Skill (user-invoked)
 
-A skill the human starts by typing its `/`-name — an action they decide to take, where a **reference skill** is knowledge the agent reaches for. `disable-model-invocation: true` is the key that enforces this, hiding the skill from the agent for zero **context load**; this suite leaves it off, because the block is absolute and a client that sends `/name` as `$name` then leaves the command unreachable by anyone. So workflow skills here keep an agent-facing description, pay context load, and are held to human-only invocation by the convention stated in `CLAUDE.md`. Preloading one makes no sense either way — it is a task prompt, not knowledge.
+A skill the human starts by typing its `/`-name — an action they decide to take, where a **reference skill** is knowledge the agent reaches for. Hiding it from the agent is what makes the distinction real, and it costs zero **context load**. In this suite these are the `/`-commands: plain files each harness keeps outside the skill tree, carrying whatever key that harness offers for human-only invocation (`disable-model-invocation: true` in Claude Code). Preloading one makes no sense — it is a task prompt, not knowledge.
 
 *Avoid*: procedure, workflow, command
 
 ### Description
 
-The skill's machine-readable trigger, and the one **context pointer** a **reference skill** keeps loaded at all times. Its reach *is* the invocation axis: an agent-facing description makes the skill model-invoked and reachable by other skills; `disable-model-invocation` would make it human-facing and reachable only by the human, a key this suite leaves off — see **workflow skill**. The source of a reference skill's **context load**.
+The skill's machine-readable trigger, and the one **context pointer** a **reference skill** keeps loaded at all times. Its reach *is* the invocation axis: an agent-facing description makes the skill model-invoked and reachable by other skills; withholding it from the agent makes the skill human-facing and reachable only by the human — see **workflow skill**. The source of a reference skill's **context load**.
 
 *Avoid*: frontmatter, summary
 
@@ -40,7 +40,7 @@ A reference held in the agent's context that names some out-of-context material 
 
 ### Context Load
 
-The cost a **reference skill** imposes on the agent's context window — its **description**, always loaded, plus a preloaded body injected whole, spending both tokens and attention. What `disable-model-invocation` escapes by stripping the agent-facing description — an escape this suite forgoes, so its **workflow skills** pay it too. The brake on splitting into more skills of either kind.
+The cost a **reference skill** imposes on the agent's context window — its **description**, always loaded, plus a preloaded body injected whole, spending both tokens and attention. What a **workflow skill** escapes by keeping no agent-facing description at all. The brake on splitting into more reference skills.
 
 *Avoid*: token cost, context bloat
 

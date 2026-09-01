@@ -12,7 +12,7 @@ operating instructions; those live in `platforms/<harness>/`.
 agents/                 canonical agent definitions
 skills/                 canonical skills — the single source of truth
 platforms/
-  claude/CLAUDE.md      Claude Code's index
+  claude/               Claude Code's index and its commands
   codex/                Codex's index, plus its skill links
   opencode/             OpenCode's index, its own agents and commands, plus skill links
 scripts/                validate-config.py
@@ -23,7 +23,14 @@ index document, skill directories symlinked back to `skills/`, and anything the
 harness needs in a shape the canonical tree does not provide.
 
 Claude Code has no skill or agent directory of its own because it consumes the
-canonical trees whole — only its index is platform-specific.
+canonical trees whole. Its index and its commands are the platform-specific part.
+
+Commands are not skills. A command is a single `.md` file under
+`platforms/<harness>/commands/`, invoked only by the user as `/name`, and it is
+platform-specific by nature — it names that harness's agents and uses its
+invocation syntax. Claude Code's set carries `disable-model-invocation: true`, which
+is the whole point of keeping them as commands: the harness enforces explicit-only
+invocation rather than an index asking the model nicely.
 
 ## Editing skills
 
@@ -46,8 +53,9 @@ Two rules follow:
 canonical and OpenCode sides, because it documents each harness's own schemas.
 
 Sharing a skill with a platform is opt-in by existence: create
-`platforms/<harness>/skills/<name>` as a symlink to `../../../skills/<name>`. The
-Claude-only workflow skills (the `/`-commands) are shared with no platform.
+`platforms/<harness>/skills/<name>` as a symlink to `../../../skills/<name>`.
+`skill-design` is shared with no platform: it is guidance for writing the skills in
+this repo, not for doing work with them.
 
 ## Index documents
 

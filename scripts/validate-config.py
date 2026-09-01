@@ -154,19 +154,7 @@ O_SKILLS = opencode_skills()
 C_AGENTS = md_files(CORE / "agents")
 O_AGENTS = md_files(OPENCODE / "agent")
 O_COMMANDS = md_files(OPENCODE / "commands")
-
-# claude implements slash commands as workflow skills. They used to be marked by
-# disable-model-invocation, but the suite dropped that key (see the invocation
-# note in claude/.claude/CLAUDE.md), so the discriminator is now structural: a
-# reference skill opens its body with an `# H1 Title`, a workflow skill is a
-# short task prompt with no heading. A misclassification is self-catching —
-# check_index fails on the /name row the index still lists.
-def is_workflow_skill(name: str) -> bool:
-    _, body = split_frontmatter(CORE / "skills" / name / "SKILL.md")
-    return not re.search(r"^# ", body, re.M)
-
-
-C_COMMANDS = {n: fm for n, fm in C_SKILLS.items() if is_workflow_skill(n)}
+C_COMMANDS = md_files(CLAUDE / "commands")
 
 
 # -------------------------------------------------------------------- checks
@@ -175,6 +163,7 @@ def check_descriptions() -> str:
     n = 0
     for label, inv in (("claude skill", C_SKILLS), ("opencode skill", O_SKILLS),
                        ("claude agent", C_AGENTS), ("opencode agent", O_AGENTS),
+                       ("claude command", C_COMMANDS),
                        ("opencode command", O_COMMANDS)):
         for name, fm in inv.items():
             n += 1
@@ -216,7 +205,7 @@ def check_command_agent_refs() -> str:
     for name, fm in C_COMMANDS.items():
         a = fm.get("agent")
         if a and a not in C_AGENTS and a not in BUILTIN_AGENTS:
-            fail(f"claude workflow skill '{name}' routes to unknown agent '{a}'")
+            fail(f"claude command '{name}' routes to unknown agent '{a}'")
     for name, fm in O_COMMANDS.items():
         a = fm.get("agent")
         if a and a not in O_AGENTS and a not in BUILTIN_AGENTS:
@@ -224,7 +213,30 @@ def check_command_agent_refs() -> str:
     total = len(C_COMMANDS) + len(O_COMMANDS)
     routed = sum(1 for fm in list(C_COMMANDS.values()) + list(O_COMMANDS.values()) if fm.get("agent"))
     return (f"{routed} of {total} commands name an agent, all resolving "
-            f"({len(C_COMMANDS)} claude workflow skills + {len(O_COMMANDS)} opencode commands)")
+            f"({len(C_COMMANDS)} claude + {len(O_COMMANDS)} opencode commands)")
+
+
+def check_command_invocation() -> str:
+    """Every claude command is explicit-only, and no skill masquerades as one.
+
+    These were workflow skills once, which cost them disable-model-invocation:
+    a skill that sets it cannot be reached by /name at all, so the key had to go
+    and an index paragraph asked the model not to self-invoke instead. Restoring
+    them as commands restored the frontmatter switch. Enforce it here so the
+    guarantee is structural rather than a habit.
+    """
+    for name, fm in C_COMMANDS.items():
+        if fm.get("disable-model-invocation") is not True:
+            fail(f"claude command '{name}': must set disable-model-invocation: true")
+        if fm.get("name"):
+            fail(f"claude command '{name}': carries a name: key, but a command is "
+                 f"identified by its filename")
+    for name in C_SKILLS:
+        if name in C_COMMANDS:
+            fail(f"'{name}' exists as both a skill and a claude command; "
+                 f"/{name} would be ambiguous")
+    return (f"{len(C_COMMANDS)} claude commands are explicit-only, "
+            f"none colliding with a skill name")
 
 
 def check_reference_pointers() -> str:
@@ -400,8 +412,8 @@ def main() -> int:
     print("validating the core suite and its three platform views\n")
     if yaml is None:
         print("  note: PyYAML not installed — frontmatter validity check skipped\n")
-    print(f"  inventory  claude: {len(C_SKILLS)} skills ({len(C_COMMANDS)} of them commands), "
-          f"{len(C_AGENTS)} agents")
+    print(f"  inventory  claude: {len(C_SKILLS)} skills, {len(C_AGENTS)} agents, "
+          f"{len(C_COMMANDS)} commands")
     print(f"             opencode: {len(O_SKILLS)} skills, {len(O_AGENTS)} agents, "
           f"{len(O_COMMANDS)} commands")
     print(f"             codex: {len(X_SKILLS)} skills\n")
@@ -411,6 +423,7 @@ def main() -> int:
         ("identifiers", check_identifiers),
         ("agent skill refs", check_agent_skill_refs),
         ("command agent refs", check_command_agent_refs),
+        ("command invocation", check_command_invocation),
         ("reference pointers", check_reference_pointers),
         ("claude index", lambda: check_index(CLAUDE / "CLAUDE.md", C_SKILLS, C_AGENTS, C_COMMANDS)),
         ("opencode index", lambda: check_index(OPENCODE / "AGENTS.md", O_SKILLS, O_AGENTS, O_COMMANDS)),
