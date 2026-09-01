@@ -1,9 +1,9 @@
-# Software Engineering Skills
+# Codex
 
-A suite of skills for building software across any tech stack. Each one packages the
-procedural knowledge for a particular kind of task.
+Software engineering skills, for any language or stack. Each skill packages the procedural
+knowledge for a particular kind of task.
 
-## How to use them
+## How I Work
 
 - A skill loads **automatically** when its description matches the work at hand.
 - Invoke one **explicitly** with `$skill-name` — `$why`, `$unslop`, `$blast-radius`.
@@ -13,7 +13,7 @@ procedural knowledge for a particular kind of task.
 Load the smallest useful set. For implementation work that is `coding-guardrails`
 plus the one domain skill that fits; adding more crowds out the actual task.
 
-## Available Skills
+## Skills
 
 | Skill | Description | Reach for it when |
 |---|---|---|
@@ -40,9 +40,9 @@ plus the one domain skill that fits; adding more crowds out the actual task.
 | `wayfinder-methodology` | Multi-session effort mapping: chart a destination plus decision tickets in-repo, work the frontier one decision per session, hold unsharpened work as fog of war | Planning an effort too big for one session |
 | `why` | Reconstruct why code is shaped as it is — recover rationale from git history, PRs, issues, comments, and ADRs, each claim cited with stated confidence and gaps named | The intent behind existing code is unclear |
 
-## Suggested Workflows
+## Workflows
 
-| Goal | Skills, in order |
+| Goal | Suggested flow |
 |---|---|
 | Ambiguous or cross-cutting change | `spec-writing` → `coding-guardrails` + the domain skill → `test-strategy` → `code-review-checklist` |
 | Effort spanning many sessions | `wayfinder-methodology` → `spec-writing` → implementation |
@@ -74,5 +74,4 @@ plus the one domain skill that fits; adding more crowds out the actual task.
   why. The diff carries the detail. Never attach a TODO list or suggested follow-up
   work to either.
 - Never append attribution footers to commits or PR descriptions.
-- Never read `.env` files or other secret-bearing files. `.env.example` is the
-  exception — it holds placeholders and may be read and edited.
+- Never read `.env` files or other secret-bearing files, by any method. `.env.example` is the exception — it holds placeholder values and may be read and edited (never put real secrets in it).

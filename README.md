@@ -1,7 +1,7 @@
 # agent-suite
 
-A custom suite of software engineering agents, skills, and commands, shared across
-Claude Code, OpenCode, and Codex.
+Software engineering agents, skills, and commands, shared across Claude Code,
+OpenCode, and Codex.
 
 Extracted from the `dotfiles` repo — it was `claude/.claude/` and the agent-suite
 half of `opencode/.config/opencode/`, with its history intact.

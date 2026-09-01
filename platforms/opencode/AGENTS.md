@@ -1,8 +1,8 @@
 # OpenCode
 
-A custom suite of software engineering agents, skills, and commands designed for building software across any tech stack.
+Software engineering agents, skills, and commands, for any language or stack.
 
-## Agent Suite
+## Agents
 
 ### Primary Agents
 
@@ -44,7 +44,7 @@ Plus the built-in subagents:
 | `@explore` | Fast read-only codebase search and file discovery |
 | `@general` | General-purpose multi-step research and tasks |
 
-### Available Skills
+## Skills
 
 Skills are loaded on-demand by agents via the `skill` tool. They provide detailed procedural knowledge without consuming context until needed.
 
@@ -74,7 +74,7 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 | `prototype-methodology` | Throwaway prototype workflow — routes between a terminal app for logic/state questions and multiple UI variants for visual questions | architect, backend-engineer, frontend-engineer |
 | `wayfinder-methodology` | Multi-session effort mapping: chart a destination plus decision tickets in-repo, work the frontier one decision per session, hold unsharpened work as fog of war | architect |
 
-### Slash Commands
+## Commands
 
 Quick-access commands for common workflows:
 
@@ -105,7 +105,7 @@ Quick-access commands for common workflows:
 | `/zoom-out` | Get a map of relevant modules and callers when unfamiliar with an area, using the project's domain vocabulary | — |
 | `/loop [interval] <prompt>` | Re-run a prompt or command on a fixed interval, or self-paced when no interval is given — requires the `opencode-loop-plugin` reference in `opencode.json`, whose `file:` path is machine-specific — update it per machine | — |
 
-### Suggested Workflows
+## Workflows
 
 These are common starting points, not rigid rules. Pick the smallest workflow that fits the request.
 
@@ -139,4 +139,5 @@ These are common starting points, not rigid rules. Pick the smallest workflow th
 - Keep commit messages and PR descriptions to short summaries: a subject line plus a few lines of why. The diff carries the detail.
 - Describe only what the change contains. Never attach a TODO list, "additional things to verify", or suggested follow-up work to a commit message or PR description.
 - Use `/code-review`, `/security`, `/test`, `/docs`, and `/commit` as appropriate to keep quality, docs, and history clean.
-- Never read `.env` files via any method. `.env.example` is the exception — it holds placeholder values and may be read and edited (never put real secrets in it).
+- Never append attribution footers to commits or PR descriptions — no "Generated with Claude Code", no `Co-Authored-By: Claude`, no session links. This applies to every commit and PR body, including those written by subagents.
+- Never read `.env` files or other secret-bearing files, by any method. `.env.example` is the exception — it holds placeholder values and may be read and edited (never put real secrets in it).

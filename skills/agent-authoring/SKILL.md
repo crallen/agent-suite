@@ -255,7 +255,7 @@ context: fork
 ---
 ```
 
-**Do not add `disable-model-invocation: true`.** It reads as the natural fit — these *are* user-triggered workflows — but the key is a hard block, not a hint: the Skill tool refuses the skill outright and tells the agent not to replicate the workflow by other means. Some clients mangle `/name` into `$name` on send, which then leaves the command unreachable by either party. The suite keeps workflow skills model-invocable and enforces user-only invocation by convention instead, stated in `CLAUDE.md` under Slash Commands.
+**Do not add `disable-model-invocation: true`.** It reads as the natural fit — these *are* user-triggered workflows — but the key is a hard block, not a hint: the Skill tool refuses the skill outright and tells the agent not to replicate the workflow by other means. Some clients mangle `/name` into `$name` on send, which then leaves the command unreachable by either party. The suite keeps workflow skills model-invocable and enforces user-only invocation by convention instead, stated in `CLAUDE.md` under Commands.
 
 | Key | Type | Required | Description |
 |---|---|---|---|
@@ -330,9 +330,9 @@ When adding a new artifact, update these docs as applicable:
 
 ### `CLAUDE.md` under the current Claude Code config root
 
-- Add agents to the "Specialist Subagents" table.
-- Add skills to the "Available Skills" table with description and primary agent users.
-- Add commands to the "Slash Commands" table with description and agent.
+- Add agents to the "Agents" table.
+- Add skills to the "Skills" table with description and primary agent users.
+- Add commands to the "Commands" table with description and agent.
 
 ### `README.md` or other user-facing docs (if present)
 

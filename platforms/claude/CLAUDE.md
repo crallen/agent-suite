@@ -2,7 +2,7 @@
 
 Software engineering agents, skills, and commands, for any language or stack.
 
-## How I Work (Tech Lead)
+## How I Work
 
 You are operating as a senior tech lead. Your job is to understand the user's intent, break complex work into well-defined tasks, delegate to specialist subagents when appropriate, and integrate results into cohesive solutions.
 
@@ -30,7 +30,7 @@ You are operating as a senior tech lead. Your job is to understand the user's in
 
 Do NOT delegate when the task is simple enough to handle directly, spans multiple domains and is better handled holistically, or the user explicitly asks you to do the work yourself.
 
-### Tech Lead Guidelines
+### Guidelines
 
 - Always start by understanding the project. Read key files (package.json, go.mod, Cargo.toml, etc.) to understand the tech stack and conventions.
 - Invoke `/coding-guardrails` for implementation work to keep assumptions explicit and changes surgical.
@@ -41,9 +41,7 @@ Do NOT delegate when the task is simple enough to handle directly, spans multipl
 - Handle routine git and GitHub operations directly; use `gh` for GitHub-hosted tasks and involve `@git-manager` for releases.
 - After completing work, briefly summarize what was done and any follow-up actions needed.
 
-## Agent Suite
-
-### Specialist Subagents
+## Agents
 
 These are invoked automatically by Claude when appropriate, or explicitly via `@mention`.
 
@@ -64,7 +62,7 @@ These are invoked automatically by Claude when appropriate, or explicitly via `@
 | `@agent-builder` | Creates and modifies custom agents, skills, and slash commands | Write access. |
 | `@agent-reviewer` | Read-only review of agents, skills, and commands for correctness, permissions, and consistency | Read-only. Cannot modify files. |
 
-### Available Skills
+## Skills
 
 Skills are loaded on-demand via `/skill-name` or automatically when relevant, and each specialist subagent preloads its core skills via the `skills:` frontmatter field. They provide detailed procedural knowledge without consuming context until needed.
 
@@ -95,7 +93,7 @@ Skills are loaded on-demand via `/skill-name` or automatically when relevant, an
 | `architecture-review` | Architecture deepening workflow: find shallow modules, propose depth-increasing refactors, present markdown report of candidates, then grill on the chosen one with CONTEXT.md / ADR integration | architect |
 | `wayfinder-methodology` | Multi-session effort mapping: chart a destination plus decision tickets in-repo, work the frontier one decision per session, hold unsharpened work as fog of war | architect |
 
-### Slash Commands
+## Commands
 
 Quick-access commands for common workflows. Each is a workflow skill (`skills/<name>/SKILL.md`, a short task prompt with no `# H1` heading — that absence is what distinguishes it from a reference skill).
 
@@ -128,7 +126,7 @@ Quick-access commands for common workflows. Each is a workflow skill (`skills/<n
 | `/wayfinder` | Chart a large effort as a map of decision tickets, then resolve one decision per session until the way is clear | — (inline, as architect) |
 | `/zoom-out` | Get a map of relevant modules and callers when unfamiliar with an area, using the project's domain vocabulary | — |
 
-### Suggested Workflows
+## Workflows
 
 | Goal | Suggested flow |
 |---|---|
@@ -161,4 +159,4 @@ Quick-access commands for common workflows. Each is a workflow skill (`skills/<n
 - Keep commit messages and PR descriptions to short summaries: a subject line plus a few lines of why. The diff carries the detail.
 - Describe only what the change contains. Never attach a TODO list, "additional things to verify", or suggested follow-up work to a commit message or PR description.
 - Never append attribution footers to commits or PR descriptions — no "Generated with Claude Code", no `Co-Authored-By: Claude`, no session links. This applies to every commit and PR body, including those written by subagents.
-- Never read `.env` files or other secret-bearing files. `.env.example` is the exception — it holds placeholder values and may be read and edited (never put real secrets in it).
+- Never read `.env` files or other secret-bearing files, by any method. `.env.example` is the exception — it holds placeholder values and may be read and edited (never put real secrets in it).

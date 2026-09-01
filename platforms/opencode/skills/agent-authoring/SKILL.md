@@ -317,9 +317,9 @@ When adding a new artifact, update these docs as applicable:
 
 ### `AGENTS.md` under the current OpenCode config root
 
-- Add agents to the "Specialist Subagents" table.
-- Add skills to the "Available Skills" table with description and primary agent users.
-- Add commands to the "Slash Commands" table with description and agent.
+- Add agents to the "Agents" table.
+- Add skills to the "Skills" table with description and primary agent users.
+- Add commands to the "Commands" table with description and agent.
 
 ### `README.md` or other user-facing docs (if present)
 
