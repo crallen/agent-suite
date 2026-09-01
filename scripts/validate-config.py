@@ -3,9 +3,9 @@
 
 Checks that identifiers match filenames, that every cross-reference resolves
 (agent -> skill, command -> agent, skill -> reference file), that the index
-documents (claude/.claude/CLAUDE.md, opencode/.../AGENTS.md) neither name
+documents (AGENTS.md, platforms/opencode/AGENTS.md) neither name
 artifacts that don't exist nor omit ones that do, and that the shared skills
-are in sync with their canonical claude/ source.
+are in sync with their canonical top-level source.
 
     scripts/validate-config.py          list every check and what it covered
     scripts/validate-config.py -q       print only failures and the summary
@@ -33,8 +33,10 @@ ROOT = Path(
     ).stdout.strip()
 )
 
-CLAUDE = ROOT / "claude/.claude"
-OPENCODE = ROOT / "opencode/.config/opencode"
+# The repo root holds the canonical (Claude-flavoured) suite; platforms/ holds
+# the per-platform copies. Neutralising the core is a later migration step.
+CLAUDE = ROOT
+OPENCODE = ROOT / "platforms/opencode"
 
 # Agent identifiers provided by the harness, so no file backs them.
 BUILTIN_AGENTS = {"explore", "general", "plan", "build"}
@@ -309,7 +311,7 @@ def check_index_description_parity() -> str:
     on the claude side alone leaves opencode's table stale and its agents reading
     a description that no longer matches the skill.
     """
-    c_text = (CLAUDE / "CLAUDE.md").read_text()
+    c_text = (CLAUDE / "AGENTS.md").read_text()
     o_text = (OPENCODE / "AGENTS.md").read_text()
 
     def desc(text: str, skill: str) -> str | None:
@@ -355,7 +357,7 @@ def check_parity() -> str:
 def main() -> int:
     quiet = "-q" in sys.argv or "--quiet" in sys.argv
 
-    print(f"validating {rel(CLAUDE)} and {rel(OPENCODE)}\n")
+    print(f"validating the core suite and {rel(OPENCODE)}\n")
     if yaml is None:
         print("  note: PyYAML not installed — frontmatter validity check skipped\n")
     print(f"  inventory  claude: {len(C_SKILLS)} skills ({len(C_COMMANDS)} of them commands), "
@@ -369,10 +371,10 @@ def main() -> int:
         ("agent skill refs", check_agent_skill_refs),
         ("command agent refs", check_command_agent_refs),
         ("reference pointers", check_reference_pointers),
-        ("claude index", lambda: check_index(CLAUDE / "CLAUDE.md", C_SKILLS, C_AGENTS, C_COMMANDS)),
+        ("claude index", lambda: check_index(CLAUDE / "AGENTS.md", C_SKILLS, C_AGENTS, C_COMMANDS)),
         ("opencode index", lambda: check_index(OPENCODE / "AGENTS.md", O_SKILLS, O_AGENTS, O_COMMANDS)),
         ("claude phase counts",
-         lambda: check_countable_claims(CLAUDE / "CLAUDE.md", C_SKILLS, CLAUDE / "skills")),
+         lambda: check_countable_claims(CLAUDE / "AGENTS.md", C_SKILLS, CLAUDE / "skills")),
         ("opencode phase counts",
          lambda: check_countable_claims(OPENCODE / "AGENTS.md", O_SKILLS, OPENCODE / "skills")),
         ("index description parity", check_index_description_parity),

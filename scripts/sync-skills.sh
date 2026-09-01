@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# Sync shared skills from the canonical claude/ package into opencode/.
+# Sync shared skills from the canonical top-level skills/ into platforms/opencode/.
 #
-# claude/.claude/skills/<name>/ is the single source of truth for every skill the
-# two packages share. opencode's copies are generated: identical bodies, plus the
-# `name:` frontmatter key its loader requires.
+# skills/<name>/ is the single source of truth for every skill the two suites
+# share. opencode's copies are generated: identical bodies, plus the `name:`
+# frontmatter key its loader requires.
 #
 #   scripts/sync-skills.sh           write the opencode copies
 #   scripts/sync-skills.sh --check   report drift and exit 1 (for CI / pre-commit)
@@ -18,8 +18,8 @@ set -euo pipefail
 
 cd "$(git rev-parse --show-toplevel)"
 
-SRC_ROOT="claude/.claude/skills"
-DST_ROOT="opencode/.config/opencode/skills"
+SRC_ROOT="skills"
+DST_ROOT="platforms/opencode/skills"
 
 # Never synced:
 #   agent-authoring - documents each platform's own frontmatter schemas and layout
@@ -104,7 +104,7 @@ for src in "$SRC_ROOT"/*/; do
       *"/reference/"*) counterpart="$src/reference/$base" ;;
       *)               counterpart="$src/$base" ;;
     esac
-    [ -f "$counterpart" ] || printf '  ORPHAN  %s/%s (no source in claude)\n' "$name" "$base"
+    [ -f "$counterpart" ] || printf '  ORPHAN  %s/%s (no source in skills/)\n' "$name" "$base"
   done
 done
 
