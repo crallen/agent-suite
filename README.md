@@ -56,8 +56,9 @@ workflow skills need no SKIP entry.
 
 ## Installation
 
-Nothing here is wired into a live config yet. `dotfiles` still carries its own copy
-under `claude/` and `opencode/`, and remains the thing that gets stowed.
+Consumed as a git submodule by the `dotfiles` repo, which symlinks these directories
+into the paths each harness expects and applies them with GNU Stow. Nothing here is
+stowed directly.
 
 ## Conventions
 
@@ -65,6 +66,20 @@ under `claude/` and `opencode/`, and remains the thing that gets stowed.
 - Changes to a shared skill touch both the canonical and platform copies, and must be
   committed together under the `skills` scope.
 - Never read or commit secret-bearing files (`.env`, keys, credentials).
+
+## Acknowledgments
+
+The suite draws inspiration from Matt Pocock's
+[skills](https://github.com/mattpocock/skills) repo (MIT) — several skills (`skill-design`,
+`code-review-checklist`, `domain-modeling`, the grill skills, and the wayfinder skills)
+adapt material from it directly.
+
+It also draws on Cursor's [pstack](https://github.com/cursor/plugins/tree/main/pstack)
+skills. The `unslop`, `why`, and `blast-radius` skills, the `coding-guardrails` principle
+references (type-system discipline, idempotency, build-the-lever, encode-lessons-in-structure),
+and the `doc-templates` framework guidance (Diátaxis, Simplified Technical English) are
+independent reimplementations of ideas from it — reworked in our own words, since that repo
+carries no license.
 
 ## License
 
