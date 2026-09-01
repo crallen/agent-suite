@@ -1,14 +1,9 @@
-# Agent Suite (Codex)
+# Software Engineering Skills
 
-A custom suite of software engineering skills for building software across any tech stack.
-The same skills back Claude Code and OpenCode; this document is Codex's view of them.
+A suite of skills for building software across any tech stack. Each one packages the
+procedural knowledge for a particular kind of task.
 
-## How the suite works here
-
-Codex has no roster of named specialist agents to hand work to — there is no
-`@code-reviewer` to delegate a review to. You do the work yourself, and the suite
-shows up as **skills**: packaged procedural knowledge you load when a task calls
-for it.
+## How to use them
 
 - A skill loads **automatically** when its description matches the work at hand.
 - Invoke one **explicitly** with `$skill-name` — `$why`, `$unslop`, `$blast-radius`.
