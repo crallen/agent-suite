@@ -3,7 +3,7 @@
 
 Checks that identifiers match filenames, that every cross-reference resolves
 (agent -> skill, command -> agent, skill -> reference file), that the index
-documents (AGENTS.md, platforms/opencode/AGENTS.md) neither name
+documents (one per platform under platforms/) neither name
 artifacts that don't exist nor omit ones that do, and that the shared skills
 are symlinked to their canonical top-level source.
 
@@ -34,9 +34,11 @@ ROOT = Path(
     ).stdout.strip()
 )
 
-# The repo root holds the canonical (Claude-flavoured) suite; platforms/ holds
-# the per-platform copies. Neutralising the core is a later migration step.
-CLAUDE = ROOT
+# The repo root holds the canonical suite — the agents and skills every platform
+# draws from. Each platform under platforms/ contributes its own index document,
+# and whatever else that harness needs in its own shape.
+CORE = ROOT
+CLAUDE = ROOT / "platforms/claude"
 OPENCODE = ROOT / "platforms/opencode"
 CODEX = ROOT / "platforms/codex"
 
@@ -110,7 +112,7 @@ def parse_frontmatter(path: Path) -> dict | None:
 
 def claude_skills() -> dict[str, dict]:
     out = {}
-    for d in sorted((CLAUDE / "skills").iterdir()):
+    for d in sorted((CORE / "skills").iterdir()):
         f = d / "SKILL.md"
         if d.is_dir() and f.is_file():
             out[d.name] = parse_frontmatter(f) or {}
@@ -149,7 +151,7 @@ def md_files(directory: Path) -> dict[str, dict]:
 C_SKILLS = claude_skills()
 X_SKILLS = codex_skills()
 O_SKILLS = opencode_skills()
-C_AGENTS = md_files(CLAUDE / "agents")
+C_AGENTS = md_files(CORE / "agents")
 O_AGENTS = md_files(OPENCODE / "agent")
 O_COMMANDS = md_files(OPENCODE / "commands")
 
@@ -160,7 +162,7 @@ O_COMMANDS = md_files(OPENCODE / "commands")
 # short task prompt with no heading. A misclassification is self-catching —
 # check_index fails on the /name row the index still lists.
 def is_workflow_skill(name: str) -> bool:
-    _, body = split_frontmatter(CLAUDE / "skills" / name / "SKILL.md")
+    _, body = split_frontmatter(CORE / "skills" / name / "SKILL.md")
     return not re.search(r"^# ", body, re.M)
 
 
@@ -229,7 +231,7 @@ def check_reference_pointers() -> str:
     n_files = n_ptr = n_link = 0
     pat_scoped = re.compile(r"\b([a-z][a-z0-9-]*)/reference/([a-z0-9-]+\.md)\b")
     pat_link = re.compile(r"\]\(([A-Za-z0-9_./-]+\.md)\)")
-    for root in (CLAUDE / "skills", OPENCODE / "skills"):
+    for root in (CORE / "skills", OPENCODE / "skills"):
         for f in sorted(root.rglob("*.md")):
             text = f.read_text()
             n_files += 1
@@ -329,7 +331,7 @@ def check_index_description_parity() -> str:
     are separate documents. A description sharpened in one and not the others
     leaves a platform advertising a skill by a blurb that no longer matches it.
     """
-    c_text = (CLAUDE / "AGENTS.md").read_text()
+    c_text = (CLAUDE / "CLAUDE.md").read_text()
 
     def desc(text: str, skill: str) -> str | None:
         m = re.search(r"^\| `" + re.escape(skill) + r"` \| (.*?) \| .*$", text, re.M)
@@ -395,7 +397,7 @@ def check_shared_links() -> str:
 def main() -> int:
     quiet = "-q" in sys.argv or "--quiet" in sys.argv
 
-    print(f"validating the core suite and {rel(OPENCODE)}\n")
+    print("validating the core suite and its three platform views\n")
     if yaml is None:
         print("  note: PyYAML not installed — frontmatter validity check skipped\n")
     print(f"  inventory  claude: {len(C_SKILLS)} skills ({len(C_COMMANDS)} of them commands), "
@@ -410,10 +412,10 @@ def main() -> int:
         ("agent skill refs", check_agent_skill_refs),
         ("command agent refs", check_command_agent_refs),
         ("reference pointers", check_reference_pointers),
-        ("claude index", lambda: check_index(CLAUDE / "AGENTS.md", C_SKILLS, C_AGENTS, C_COMMANDS)),
+        ("claude index", lambda: check_index(CLAUDE / "CLAUDE.md", C_SKILLS, C_AGENTS, C_COMMANDS)),
         ("opencode index", lambda: check_index(OPENCODE / "AGENTS.md", O_SKILLS, O_AGENTS, O_COMMANDS)),
         ("claude phase counts",
-         lambda: check_countable_claims(CLAUDE / "AGENTS.md", C_SKILLS, CLAUDE / "skills")),
+         lambda: check_countable_claims(CLAUDE / "CLAUDE.md", C_SKILLS, CORE / "skills")),
         ("opencode phase counts",
          lambda: check_countable_claims(OPENCODE / "AGENTS.md", O_SKILLS, OPENCODE / "skills")),
         ("codex index", lambda: check_index(CODEX / "AGENTS.md", X_SKILLS, {}, {})),

@@ -10,10 +10,11 @@ half of `opencode/.config/opencode/`, with its history intact.
 
 ```text
 agent-suite/
-├── AGENTS.md               # The suite's global operating instructions and index
+├── AGENTS.md               # How to work on this repo (not any harness's instructions)
 ├── agents/                 # Specialist subagent definitions
 ├── skills/                 # Skills — methodology skills plus the /-command workflows
 ├── platforms/
+│   ├── claude/             # Claude Code's view: CLAUDE.md (it uses the canonical trees)
 │   ├── codex/              # Codex's view: AGENTS.md + skills/ (symlinks into skills/)
 │   └── opencode/           # OpenCode's view: agent/, commands/, AGENTS.md, skills/ (symlinks)
 └── scripts/
@@ -21,9 +22,10 @@ agent-suite/
 ```
 
 The top level is the canonical suite. `platforms/` holds each harness's view of it:
-the skill directories are symlinks back into `skills/`, alongside whatever that
-harness needs in its own shape — OpenCode keeps commands in their own tree rather
-than as skills, and has its own agent definitions and index document.
+an index document written for that harness, skill directories symlinked back into
+`skills/`, and whatever else it needs in its own shape — OpenCode keeps commands in
+their own tree rather than as skills, and has its own agent definitions. Claude Code
+consumes the canonical trees whole, so only its index is platform-specific.
 
 ## Working here
 
@@ -36,7 +38,7 @@ treats it as a display name, and Codex falls back to the directory name.
 Editing `skills/<name>/SKILL.md` changes it everywhere at once.
 
 `scripts/validate-config.py` is the broader check — reference integrity (agent → skill,
-command → agent, skill → reference file), index accuracy across all three index documents, frontmatter validity, and shared-skill link integrity. It runs
+command → agent, skill → reference file), index accuracy across the three index documents, frontmatter validity, and shared-skill link integrity. It runs
 in CI via `.github/workflows/validate.yml`. Run it after any change to an agent, skill,
 command, or either index document:
 
