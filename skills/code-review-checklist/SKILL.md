@@ -1,4 +1,5 @@
 ---
+name: code-review-checklist
 description: Structured code review rubric covering spec fidelity, correctness, security, performance, maintainability, error handling, testing, and a design-smell baseline
 ---
 

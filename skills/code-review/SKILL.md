@@ -1,4 +1,5 @@
 ---
+name: code-review
 description: Review code for quality, security, and best practices — pending changes, changes since a base ref, or the full codebase when the tree is clean
 argument-hint: [files to focus on, or a base ref like main (optional)]
 agent: code-reviewer

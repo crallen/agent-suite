@@ -1,4 +1,5 @@
 ---
+name: frontend-audit
 description: Audit frontend quality, states, responsiveness, and anti-patterns without editing files
 argument-hint: [surface to audit]
 agent: frontend-auditor

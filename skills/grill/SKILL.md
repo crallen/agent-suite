@@ -1,4 +1,5 @@
 ---
+name: grill
 description: Stress-test a plan with relentless one-question-at-a-time interrogation — sharpens domain language and writes CONTEXT.md / ADRs as decisions crystallize
 argument-hint: [plan or topic to grill]
 ---

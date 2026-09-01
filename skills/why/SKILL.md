@@ -1,4 +1,5 @@
 ---
+name: why
 description: Reconstruct why code is shaped the way it is — recover the rationale behind a decision from git history, PRs, issues, comments, and ADRs, every claim cited and confidence stated. Load when asked why code exists in its current form, before changing code whose intent is unclear, or on /why against a file, symbol, or decision.
 argument-hint: [file, symbol, or decision to explain]
 ---

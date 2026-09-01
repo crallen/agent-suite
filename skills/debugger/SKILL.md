@@ -1,4 +1,5 @@
 ---
+name: debugger
 description: Start a systematic debugging session for a described issue
 argument-hint: [issue description]
 ---

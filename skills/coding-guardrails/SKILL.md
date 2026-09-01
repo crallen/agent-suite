@@ -1,4 +1,5 @@
 ---
+name: coding-guardrails
 description: "Cross-cutting execution guardrails for coding tasks: surface assumptions, prefer simple solutions, make surgical changes, define verifiable success criteria, shape code with sound structure/error/safety defaults, and prefer a clear name over a comment that explains it — plus on-demand principle references for type-system discipline, idempotency, building the lever, and encoding lessons in structure"
 ---
 

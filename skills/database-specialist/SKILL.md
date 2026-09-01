@@ -1,4 +1,5 @@
 ---
+name: database-specialist
 description: Design or modify database schemas, migrations, queries, and indexes
 argument-hint: [request]
 ---

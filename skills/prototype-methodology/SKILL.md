@@ -1,4 +1,5 @@
 ---
+name: prototype-methodology
 description: Throwaway prototype workflow — routes between a terminal app for logic/state questions and multiple UI variants for visual questions. Load when building a prototype to answer a design question before committing to it.
 ---
 

@@ -1,4 +1,5 @@
 ---
+name: frontend
 description: Build, update, or fix frontend UI components and pages
 argument-hint: [request]
 ---

@@ -1,4 +1,5 @@
 ---
+name: blast-radius
 description: Find what a change breaks beyond its obvious callers, then prove the one fact that makes it safe by running code rather than asserting it. A pre-commit impact pass — trace downstream effects, rank each safety claim by how it was verified. Load before shipping a risky change, or on /blast-radius against a diff or change.
 argument-hint: [the change or diff to assess]
 ---

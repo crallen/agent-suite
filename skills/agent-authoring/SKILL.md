@@ -1,4 +1,5 @@
 ---
+name: agent-authoring
 description: Schemas, templates, conventions, and validation rules for creating Claude Code agents, skills, and slash commands.
 ---
 
@@ -152,6 +153,7 @@ This section is the **mechanics** of a skill — file layout, frontmatter, body 
 
 ```yaml
 ---
+name: skill-directory-name
 description: One-sentence description of the skill's content and when to load it.
 ---
 ```
@@ -160,7 +162,7 @@ description: One-sentence description of the skill's content and when to load it
 |---|---|---|---|
 | `description` | string | Recommended | What the skill does and when to use it. Drives auto-routing. Put the key use case first — combined `description` + `when_to_use` text is truncated at 1,536 characters in the skill listing. |
 | `when_to_use` | string | No | Extra routing context: trigger phrases or example requests. Appended to `description` in the listing. |
-| `name` | string | No | Display name in skill listings only. The directory name remains the `/command` identifier — this suite omits `name:` and relies on the directory name. |
+| `name` | string | Yes (this suite) | Display name in skill listings. Claude Code treats it as optional and the directory name remains the `/command` identifier, but this suite sets it on every skill and requires it to match the directory — OpenCode's loader needs it, and it is what lets all three platforms read one file. |
 | `disable-model-invocation` | boolean | No | Set `true` so only the user can invoke it. **This suite does not use it** — see the workflow-skill schema below. Also blocks preloading via an agent's `skills:` field, so never set it on skills that agents preload. |
 | `user-invocable` | boolean | No | Set `false` to hide from the `/` menu. Use for background knowledge that isn't a meaningful user action. |
 | `argument-hint` | string | No | Autocomplete hint for expected arguments, e.g. `[issue-number]`. |

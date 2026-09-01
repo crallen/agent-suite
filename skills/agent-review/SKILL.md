@@ -1,4 +1,5 @@
 ---
+name: agent-review
 description: Review agents, skills, and commands for correctness, consistency, and best practices
 argument-hint: [artifacts to focus on (optional)]
 agent: agent-reviewer

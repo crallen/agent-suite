@@ -1,4 +1,5 @@
 ---
+name: debugging-methodology
 description: Systematic debugging workflow covering reproduction, evidence gathering, hypothesis testing, root cause analysis, and fix verification
 ---
 

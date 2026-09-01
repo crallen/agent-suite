@@ -1,4 +1,5 @@
 ---
+name: backend-engineer
 description: Implement or modify backend application code
 argument-hint: [request]
 ---

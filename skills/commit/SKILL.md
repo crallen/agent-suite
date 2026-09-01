@@ -1,4 +1,5 @@
 ---
+name: commit
 description: Stage logical changes when needed and create well-formed Conventional Commits
 argument-hint: [instructions (optional)]
 ---

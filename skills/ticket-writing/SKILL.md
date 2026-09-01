@@ -1,4 +1,5 @@
 ---
+name: ticket-writing
 description: Ticket writing for JIRA/Linear — turn a spec, requirements, or conversation into tickets a human can scan quickly. Load when drafting stories, tasks, or bug reports, or when splitting a spec into tracker tickets with testable acceptance criteria.
 ---
 

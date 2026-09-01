@@ -1,4 +1,5 @@
 ---
+name: security-analysis
 description: Structured security assessment methodology covering vulnerability taxonomy, data flow analysis, dependency auditing, and remediation patterns
 ---
 

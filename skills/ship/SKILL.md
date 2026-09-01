@@ -1,4 +1,5 @@
 ---
+name: ship
 description: Commit and push in one step — stages logical changes, creates Conventional Commit(s), then pushes to the remote
 argument-hint: [instructions (optional)]
 ---

@@ -1,4 +1,5 @@
 ---
+name: security
 description: Run a security assessment on code, configuration, and dependencies
 argument-hint: [scope (optional)]
 agent: security-analyst

@@ -1,4 +1,5 @@
 ---
+name: skill-design
 description: Design principles for writing and reviewing skills well — predictability, information hierarchy, leading words, progressive disclosure, and the failure modes that make a skill unpredictable. Load when authoring, refactoring, or critiquing a skill's content (distinct from agent-authoring, which covers file layout and frontmatter schemas).
 ---
 

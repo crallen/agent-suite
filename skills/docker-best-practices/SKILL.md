@@ -1,4 +1,5 @@
 ---
+name: docker-best-practices
 description: Docker image design — the static-binary vs runtime base-image decision, multi-stage builds, layer caching, security hardening, and Compose patterns. Load when writing or reviewing a Dockerfile or Compose file, or shrinking an image.
 ---
 

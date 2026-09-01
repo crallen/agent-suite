@@ -1,4 +1,5 @@
 ---
+name: database-patterns
 description: Database design and performance patterns for schemas, migrations, indexes, constraints, transactions, and query behavior
 ---
 

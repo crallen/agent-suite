@@ -1,4 +1,5 @@
 ---
+name: backend-patterns
 description: Backend application patterns for handlers, services, validation, auth/authz, integrations, and app-layer refactors
 ---
 

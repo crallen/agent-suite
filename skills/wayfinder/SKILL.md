@@ -1,4 +1,5 @@
 ---
+name: wayfinder
 description: Chart a large effort as a map of decision tickets in the repo, then resolve one decision per session until the way is clear
 argument-hint: [loose idea, or a path to an existing map]
 ---

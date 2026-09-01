@@ -1,4 +1,5 @@
 ---
+name: spec-writing
 description: Collaborative workflow for turning ideas into design specs — scope decomposition, clarifying dialogue, approach exploration, staged design presentation, and spec self-review
 ---
 

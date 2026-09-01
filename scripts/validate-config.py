@@ -5,7 +5,7 @@ Checks that identifiers match filenames, that every cross-reference resolves
 (agent -> skill, command -> agent, skill -> reference file), that the index
 documents (AGENTS.md, platforms/opencode/AGENTS.md) neither name
 artifacts that don't exist nor omit ones that do, and that the shared skills
-are in sync with their canonical top-level source.
+are symlinked to their canonical top-level source.
 
     scripts/validate-config.py          list every check and what it covered
     scripts/validate-config.py -q       print only failures and the summary
@@ -16,6 +16,7 @@ check is skipped and a simple key scanner is used instead.
 
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 import sys
@@ -37,6 +38,7 @@ ROOT = Path(
 # the per-platform copies. Neutralising the core is a later migration step.
 CLAUDE = ROOT
 OPENCODE = ROOT / "platforms/opencode"
+CODEX = ROOT / "platforms/codex"
 
 # Agent identifiers provided by the harness, so no file backs them.
 BUILTIN_AGENTS = {"explore", "general", "plan", "build"}
@@ -124,6 +126,18 @@ def opencode_skills() -> dict[str, dict]:
     return out
 
 
+def codex_skills() -> dict[str, dict]:
+    out = {}
+    root = CODEX / "skills"
+    if not root.is_dir():
+        return out
+    for d in sorted(root.iterdir()):
+        f = d / "SKILL.md"
+        if d.is_dir() and f.is_file():
+            out[d.name] = parse_frontmatter(f) or {}
+    return out
+
+
 def md_files(directory: Path) -> dict[str, dict]:
     out = {}
     if directory.is_dir():
@@ -133,6 +147,7 @@ def md_files(directory: Path) -> dict[str, dict]:
 
 
 C_SKILLS = claude_skills()
+X_SKILLS = codex_skills()
 O_SKILLS = opencode_skills()
 C_AGENTS = md_files(CLAUDE / "agents")
 O_AGENTS = md_files(OPENCODE / "agent")
@@ -172,11 +187,14 @@ def check_identifiers() -> str:
             fail(f"claude agent '{name}.md': name: is '{fm['name']}', must match the filename")
         if not fm.get("name"):
             fail(f"claude agent '{name}.md': missing required name: key")
-    for name, fm in O_SKILLS.items():
-        if fm.get("name") != name:
-            fail(f"opencode skill '{name}': name: is {fm.get('name')!r}, must match the directory")
-    return (f"{len(C_AGENTS)} claude agent files, {len(O_SKILLS)} opencode skill dirs "
-            f"match their identifiers")
+    for label, inv in (("skill", C_SKILLS), ("opencode skill", O_SKILLS),
+                       ("codex skill", X_SKILLS)):
+        for name, fm in inv.items():
+            if fm.get("name") != name:
+                fail(f"{label} '{name}': name: is {fm.get('name')!r}, "
+                     f"must match the directory")
+    return (f"{len(C_AGENTS)} agent files, {len(C_SKILLS)} skill dirs, "
+            f"{len(O_SKILLS)} opencode + {len(X_SKILLS)} codex dirs match their identifiers")
 
 
 def check_agent_skill_refs() -> str:
@@ -336,20 +354,36 @@ def check_index_description_parity() -> str:
     return f"{n} shared skills carry the same description in both indexes"
 
 
-def check_parity() -> str:
-    script = ROOT / "scripts/sync-skills.sh"
-    if not script.is_file():
-        fail("scripts/sync-skills.sh is missing — cannot verify claude<->opencode parity")
-        return ""
-    r = subprocess.run([str(script), "--check"], capture_output=True, text=True, cwd=ROOT)
-    if r.returncode != 0:
-        for line in r.stdout.splitlines():
-            if "DRIFT" in line or "ORPHAN" in line:
-                fail(f"shared-skill drift: {line.split(None, 1)[-1].strip()}")
-        fail("run scripts/sync-skills.sh to regenerate the opencode copies")
-        return ""
-    m = re.search(r"checked: (\d+) in sync", r.stdout)
-    return f"{m.group(1) if m else '?'} generated files match their canonical claude/ source"
+def check_shared_links() -> str:
+    """Every platform skill dir is a symlink into the canonical skills/ tree.
+
+    The platforms used to hold generated copies kept in step by a sync script.
+    They are now symlinks, so drift is impossible by construction — what can
+    still break is a dangling link, or a real directory that quietly forked.
+    """
+    n = 0
+    for root, hand_maintained in ((OPENCODE / "skills", {"agent-authoring"}),
+                                  (CODEX / "skills", set())):
+        if not root.is_dir():
+            continue
+        for d in sorted(root.iterdir()):
+            if not (d.is_dir() or d.is_symlink()):
+                continue
+            if d.name in hand_maintained:
+                if d.is_symlink():
+                    fail(f"{rel(d)}: is a symlink but is meant to be hand-maintained")
+                continue
+            if not d.is_symlink():
+                fail(f"{rel(d)}: is a real directory — it should be a symlink into skills/")
+                continue
+            target = d.resolve()
+            if not target.is_dir():
+                fail(f"{rel(d)}: dangling symlink -> {os.readlink(d)}")
+            elif target.parent != (ROOT / "skills").resolve():
+                fail(f"{rel(d)}: resolves outside skills/ -> {target}")
+            else:
+                n += 1
+    return f"{n} platform skill dirs symlink into the canonical skills/ tree"
 
 
 # ---------------------------------------------------------------------- main
@@ -363,7 +397,8 @@ def main() -> int:
     print(f"  inventory  claude: {len(C_SKILLS)} skills ({len(C_COMMANDS)} of them commands), "
           f"{len(C_AGENTS)} agents")
     print(f"             opencode: {len(O_SKILLS)} skills, {len(O_AGENTS)} agents, "
-          f"{len(O_COMMANDS)} commands\n")
+          f"{len(O_COMMANDS)} commands")
+    print(f"             codex: {len(X_SKILLS)} skills\n")
 
     checks = [
         ("descriptions", check_descriptions),
@@ -378,7 +413,7 @@ def main() -> int:
         ("opencode phase counts",
          lambda: check_countable_claims(OPENCODE / "AGENTS.md", O_SKILLS, OPENCODE / "skills")),
         ("index description parity", check_index_description_parity),
-        ("shared-skill parity", check_parity),
+        ("shared skill links", check_shared_links),
     ]
 
     for label, fn in checks:

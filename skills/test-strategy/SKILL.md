@@ -1,4 +1,5 @@
 ---
+name: test-strategy
 description: Guidelines for choosing test types, setting coverage targets, mocking strategies, structuring test suites, and fixture-data hygiene (reserved placeholders, never real accounts or hosts)
 ---
 

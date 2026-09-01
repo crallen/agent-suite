@@ -1,4 +1,5 @@
 ---
+name: zoom-out
 description: Go up a layer of abstraction when unfamiliar with an area — produces a map of relevant modules and callers using the project's domain vocabulary
 ---
 

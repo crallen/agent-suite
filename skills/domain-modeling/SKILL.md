@@ -1,4 +1,5 @@
 ---
+name: domain-modeling
 description: Active domain-model maintenance — sharpen terminology, keep CONTEXT.md as the project glossary, record ADRs for hard-to-reverse decisions, and decide which terms earn their own type. Load when pinning down domain language, deciding whether a concept needs a type, recording an architectural decision, or when a session is changing the domain model; merely reading CONTEXT.md for vocabulary needs no skill.
 ---
 

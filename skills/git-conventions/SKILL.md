@@ -1,4 +1,5 @@
 ---
+name: git-conventions
 description: Conventional Commits format, branching model, short-summary commit and PR style, and git workflow rules for clean version control history
 ---
 

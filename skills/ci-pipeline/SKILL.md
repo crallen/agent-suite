@@ -1,4 +1,5 @@
 ---
+name: ci-pipeline
 description: CI/CD pipeline patterns for GitHub Actions and GitLab CI — stage order, architecture and coverage enforcement gates, auditing an existing pipeline for stages it is missing, and a procedure for determining the toolchain of a stack with no reference file yet. Load when building or reviewing a pipeline, adding quality gates, inheriting a repo whose CI you have not read, or working out which checks a stack needs.
 ---
 

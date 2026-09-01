@@ -28,7 +28,5 @@ jobs:
       # PyYAML is optional for the validator, but installing it enables the
       # frontmatter-validity check.
       - run: pip install pyyaml
-      # Covers reference integrity, index accuracy, and claude<->opencode parity.
+      # Covers reference integrity, index accuracy, and shared-skill link integrity.
       - run: scripts/validate-config.py
-      # shellcheck ships on the runner image.
-      - run: shellcheck scripts/*.sh

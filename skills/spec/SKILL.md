@@ -1,4 +1,5 @@
 ---
+name: spec
 description: Research a goal and produce a design spec with task checklist before any work begins
 argument-hint: [goal]
 ---

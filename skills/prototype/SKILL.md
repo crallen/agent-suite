@@ -1,4 +1,5 @@
 ---
+name: prototype
 description: Build a throwaway prototype to explore a design question — routes to a terminal app for state/logic questions or multiple UI layout variants for visual questions
 argument-hint: [question or design to prototype]
 ---

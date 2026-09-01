@@ -1,4 +1,5 @@
 ---
+name: frontend-patterns
 description: Frontend router for product context gathering, work-mode selection, escalation, and targeted reference selection
 ---
 

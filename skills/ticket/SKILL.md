@@ -1,4 +1,5 @@
 ---
+name: ticket
 description: Turn a spec, requirements, or the current conversation into paste-ready JIRA/Linear tickets
 argument-hint: [spec file, requirements, or feature description]
 ---
