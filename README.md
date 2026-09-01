@@ -14,7 +14,7 @@ agent-suite/
 ├── agents/                 # Specialist subagent definitions
 ├── skills/                 # Skills — methodology skills plus the /-command workflows
 ├── platforms/
-│   ├── codex/              # Codex's view: skills/ (symlinks into skills/)
+│   ├── codex/              # Codex's view: AGENTS.md + skills/ (symlinks into skills/)
 │   └── opencode/           # OpenCode's view: agent/, commands/, AGENTS.md, skills/ (symlinks)
 └── scripts/
     └── validate-config.py  # Reference integrity, index accuracy, shared-skill links
@@ -36,8 +36,7 @@ treats it as a display name, and Codex falls back to the directory name.
 Editing `skills/<name>/SKILL.md` changes it everywhere at once.
 
 `scripts/validate-config.py` is the broader check — reference integrity (agent → skill,
-command → agent, skill → reference file), index accuracy in `AGENTS.md` and
-`platforms/opencode/AGENTS.md`, frontmatter validity, and shared-skill link integrity. It runs
+command → agent, skill → reference file), index accuracy across all three index documents, frontmatter validity, and shared-skill link integrity. It runs
 in CI via `.github/workflows/validate.yml`. Run it after any change to an agent, skill,
 command, or either index document:
 

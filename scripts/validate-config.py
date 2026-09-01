@@ -323,35 +323,39 @@ def check_countable_claims(index: Path, skills: dict, root: Path) -> str:
 
 
 def check_index_description_parity() -> str:
-    """A shared skill should carry the same description in both index documents.
+    """A shared skill carries the same description in the core index and each platform's.
 
-    The sync script regenerates skill files but not the indexes, so a change made
-    on the claude side alone leaves opencode's table stale and its agents reading
-    a description that no longer matches the skill.
+    The skill files themselves are symlinks and cannot drift, but the index tables
+    are separate documents. A description sharpened in one and not the others
+    leaves a platform advertising a skill by a blurb that no longer matches it.
     """
     c_text = (CLAUDE / "AGENTS.md").read_text()
-    o_text = (OPENCODE / "AGENTS.md").read_text()
 
     def desc(text: str, skill: str) -> str | None:
         m = re.search(r"^\| `" + re.escape(skill) + r"` \| (.*?) \| .*$", text, re.M)
         return m.group(1).strip() if m else None
 
     n = 0
-    for name in sorted(O_SKILLS):
-        c_desc, o_desc = desc(c_text, name), desc(o_text, name)
-        if c_desc is None or o_desc is None:
-            continue  # coverage is already enforced by check_index
-        n += 1
-        if c_desc != o_desc:
-            # Show the divergence, not the first 60 chars — the two often share a
-            # long prefix, which makes a head-truncated message look identical.
-            i = next((k for k, (a, b) in enumerate(zip(c_desc, o_desc)) if a != b),
-                     min(len(c_desc), len(o_desc)))
-            start = max(0, i - 15)
-            fail(f"index descriptions disagree for shared skill '{name}' at char {i}: "
-                 f"claude {'...' if start else ''}{c_desc[start:i + 45]!r}, "
-                 f"opencode {'...' if start else ''}{o_desc[start:i + 45]!r}")
-    return f"{n} shared skills carry the same description in both indexes"
+    for label, root, inv in (("opencode", OPENCODE, O_SKILLS), ("codex", CODEX, X_SKILLS)):
+        index = root / "AGENTS.md"
+        if not index.is_file():
+            continue
+        p_text = index.read_text()
+        for name in sorted(inv):
+            c_desc, p_desc = desc(c_text, name), desc(p_text, name)
+            if c_desc is None or p_desc is None:
+                continue  # coverage is already enforced by check_index
+            n += 1
+            if c_desc != p_desc:
+                # Show the divergence, not the first 60 chars — the two often share
+                # a long prefix, which makes a head-truncated message look identical.
+                i = next((k for k, (a, b) in enumerate(zip(c_desc, p_desc)) if a != b),
+                         min(len(c_desc), len(p_desc)))
+                start = max(0, i - 15)
+                fail(f"index descriptions disagree for shared skill '{name}' at char {i}: "
+                     f"core {'...' if start else ''}{c_desc[start:i + 45]!r}, "
+                     f"{label} {'...' if start else ''}{p_desc[start:i + 45]!r}")
+    return f"{n} shared skill descriptions agree with the core index"
 
 
 def check_shared_links() -> str:
@@ -412,6 +416,7 @@ def main() -> int:
          lambda: check_countable_claims(CLAUDE / "AGENTS.md", C_SKILLS, CLAUDE / "skills")),
         ("opencode phase counts",
          lambda: check_countable_claims(OPENCODE / "AGENTS.md", O_SKILLS, OPENCODE / "skills")),
+        ("codex index", lambda: check_index(CODEX / "AGENTS.md", X_SKILLS, {}, {})),
         ("index description parity", check_index_description_parity),
         ("shared skill links", check_shared_links),
     ]
