@@ -1,6 +1,6 @@
-# Custom Agent Suite
+# Claude Code
 
-A custom suite of software engineering agents, skills, and commands designed for building software across any tech stack.
+Software engineering agents, skills, and commands, for any language or stack.
 
 ## How I Work (Tech Lead)
 
