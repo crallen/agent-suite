@@ -346,7 +346,9 @@ def check_index_description_parity() -> str:
     c_text = (CLAUDE / "CLAUDE.md").read_text()
 
     def desc(text: str, skill: str) -> str | None:
-        m = re.search(r"^\| `" + re.escape(skill) + r"` \| (.*?) \| .*$", text, re.M)
+        # Index tables carry two or three columns depending on the platform, so
+        # take the description cell and ignore anything after it.
+        m = re.search(r"^\| `" + re.escape(skill) + r"` \| (.*?) \|(?: .*)?$", text, re.M)
         return m.group(1).strip() if m else None
 
     n = 0
@@ -369,6 +371,9 @@ def check_index_description_parity() -> str:
                 fail(f"index descriptions disagree for shared skill '{name}' at char {i}: "
                      f"core {'...' if start else ''}{c_desc[start:i + 45]!r}, "
                      f"{label} {'...' if start else ''}{p_desc[start:i + 45]!r}")
+    if not n:
+        fail("no shared skill descriptions were compared: the index tables parsed "
+             "as zero rows, so this check is silently passing on nothing")
     return f"{n} shared skill descriptions agree with the core index"
 
 
