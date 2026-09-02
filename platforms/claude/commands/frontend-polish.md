@@ -1,10 +1,11 @@
 ---
 description: Apply focused frontend polish before handoff with verification and restraint
 argument-hint: [surface to polish]
+agent: frontend-engineer
 disable-model-invocation: true
 ---
 
-Use the `@frontend-engineer` subagent to refine the requested frontend surface with a focused polish pass. Improve clarity, states, responsiveness, accessibility, and visual discipline without expanding scope into unrelated redesign.
+Refine the requested frontend surface with a focused polish pass. Improve clarity, states, responsiveness, accessibility, and visual discipline without expanding scope into unrelated redesign.
 
 Use `frontend-patterns` as a router, consult only the references that fit the task, and reuse the existing visual system before inventing new patterns. When finished, report what you verified directly across states, responsiveness, accessibility, and tests/build, plus any remaining uncertainty.
 

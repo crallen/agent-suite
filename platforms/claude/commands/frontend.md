@@ -1,10 +1,11 @@
 ---
 description: Build, update, or fix frontend UI components and pages
 argument-hint: [request]
+agent: frontend-engineer
 disable-model-invocation: true
 ---
 
-Use the `@frontend-engineer` subagent to implement or modify frontend code for the following request. This includes UI components, pages, forms, layouts, styling, state management, accessibility improvements, and responsive design work. Follow the project's existing frontend patterns and conventions.
+Implement or modify frontend code for the following request. This includes UI components, pages, forms, layouts, styling, state management, accessibility improvements, and responsive design work. Follow the project's existing frontend patterns and conventions.
 
 Start by identifying the target screen/component, nearby UI precedent, important states, and any missing product or interaction context. If the request is under-specified in a way that materially changes the result, ask concise clarifying questions. If it is really a broader workflow, IA, or design-direction problem, say so plainly and recommend `/spec`.
 

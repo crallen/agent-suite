@@ -34,9 +34,9 @@ ROOT = Path(
     ).stdout.strip()
 )
 
-# The repo root holds the canonical suite — the agents and skills every platform
-# draws from. Each platform under platforms/ contributes its own index document,
-# and whatever else that harness needs in its own shape.
+# The repo root holds the skills every platform draws from. Each platform under
+# platforms/ contributes its own index document, its own agent roster, and
+# whatever else that harness needs in its own shape.
 CORE = ROOT
 CLAUDE = ROOT / "platforms/claude"
 OPENCODE = ROOT / "platforms/opencode"
@@ -151,7 +151,7 @@ def md_files(directory: Path) -> dict[str, dict]:
 C_SKILLS = claude_skills()
 X_SKILLS = codex_skills()
 O_SKILLS = opencode_skills()
-C_AGENTS = md_files(CORE / "agents")
+C_AGENTS = md_files(CLAUDE / "agents")
 O_AGENTS = md_files(OPENCODE / "agent")
 O_COMMANDS = md_files(OPENCODE / "commands")
 C_COMMANDS = md_files(CLAUDE / "commands")

@@ -9,10 +9,9 @@ operating instructions; those live in `platforms/<harness>/`.
 ## How this repo is structured
 
 ```text
-agents/                 canonical agent definitions
 skills/                 canonical skills — the single source of truth
 platforms/
-  claude/               Claude Code's index and its commands
+  claude/               Claude Code's index, its agents, and its commands
   codex/                Codex's index, plus its skill links
   opencode/             OpenCode's index, its own agents and commands, plus skill links
 scripts/                validate-config.py
@@ -22,8 +21,19 @@ The top level is canonical. A platform directory holds that harness's **view**: 
 index document, skill directories symlinked back to `skills/`, and anything the
 harness needs in a shape the canonical tree does not provide.
 
-Claude Code has no skill or agent directory of its own because it consumes the
-canonical trees whole. Its index and its commands are the platform-specific part.
+Skills are the only canonical tree. Claude Code has no skill directory of its own
+because it consumes that tree whole; its index, agents, and commands are the
+platform-specific part. Agent rosters are per-platform because nothing has ever
+been shared between them — each harness has its own frontmatter schema, and the
+two rosters have diverged in both size and membership.
+
+An agent must earn its slot by a capability, not by a topic. If a definition only
+carries a persona and preloads a skill, it is a skill and a command, not an agent
+— an agent is worth its always-loaded description only when it expresses something
+instructions cannot: tool restrictions the harness enforces, an MCP server,
+persistent memory, or a model pin. Claude Code's roster holds to this. OpenCode's
+does not, deliberately: it routes every command structurally with `agent:` plus
+`subtask: true`, which makes a per-topic agent the unit that routing acts on.
 
 Commands are not skills. A command is a single `.md` file under
 `platforms/<harness>/commands/`, invoked only by the user as `/name`, and it is
