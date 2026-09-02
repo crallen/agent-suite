@@ -7,19 +7,19 @@ description: Backend application patterns for handlers, services, validation, au
 
 Load this skill for backend and application-layer implementation work: handlers, controllers, services, validation, authentication, authorization, external integrations, and request-flow refactors. Use it alongside `coding-guardrails`.
 
-When schema, SQL, migrations, indexes, transaction design, or database-heavy ORM behavior are central to the task, involve `database-specialist` rather than treating the database as an implementation detail.
+When schema, SQL, migrations, indexes, transaction design, or database-heavy ORM behavior are central to the task, load `database-patterns` alongside this skill rather than treating the database as an implementation detail.
 
 ## Scope Boundaries
 
-| Concern | Primary owner |
+| Concern | Guidance lives in |
 |---|---|
-| HTTP handlers, controllers, routes, RPC methods | backend-engineer |
-| Service-layer business logic | backend-engineer |
-| Validation, auth, authz, request orchestration | backend-engineer |
-| External API and queue integrations | backend-engineer |
-| Schema design, migrations, constraints, indexes | database-specialist |
-| Query plans, transaction boundaries, lock behavior | database-specialist |
-| ORM/query-builder code where SQL behavior is the real risk | database-specialist |
+| HTTP handlers, controllers, routes, RPC methods | this skill |
+| Service-layer business logic | this skill |
+| Validation, auth, authz, request orchestration | this skill |
+| External API and queue integrations | this skill |
+| Schema design, migrations, constraints, indexes | `database-patterns` |
+| Query plans, transaction boundaries, lock behavior | `database-patterns` |
+| ORM/query-builder code where SQL behavior is the real risk | `database-patterns` |
 
 ## Request Flow Design
 
@@ -131,9 +131,9 @@ Refactor only when it improves the requested change.
 - Preserve public contracts unless the task includes coordinated caller updates.
 - Pair structural changes with behavior checks.
 
-## When to Pull in `database-specialist`
+## When Database Behavior Takes Over
 
-Involve `database-specialist` when any of the following are true:
+Load `database-patterns` when any of the following are true:
 
 - A migration is required
 - The change depends on new constraints or indexes
@@ -141,6 +141,13 @@ Involve `database-specialist` when any of the following are true:
 - Transaction boundaries or lock behavior could change correctness
 - ORM or query-builder code needs SQL-aware reasoning
 - Data backfills, online migration safety, or rollback plans matter
+
+## Execution Defaults
+
+- Treat auth, validation, and integration boundaries as first-class concerns, not afterthoughts.
+- Match existing error handling, serialization, logging, and dependency wiring patterns.
+- Surface ambiguous API contracts, authorization rules, or side effects before encoding them.
+- Emit structured logs and expose a metrics endpoint as service defaults, not follow-up work.
 
 ## Anti-Patterns
 

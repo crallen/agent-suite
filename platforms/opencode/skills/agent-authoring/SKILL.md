@@ -54,6 +54,8 @@ color: "#hexcode"
 
 ### Permission Patterns
 
+**Least privilege.** Restrict an agent with `tools:` by default. Omit the key only when the agent genuinely needs to write files and run arbitrary commands.
+
 #### Write agent (the suite default for implementation agents)
 
 ```yaml
@@ -136,6 +138,8 @@ permission:
 ```
 
 ### Body Structure
+
+Keep the body to a concise workflow description, roughly 40-80 lines. Detailed procedural knowledge belongs in a skill the agent preloads via `skills:`, not inlined here — the body is read every time the agent runs.
 
 Follow this template for the markdown body (after the `---` closing the frontmatter):
 

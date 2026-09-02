@@ -7,18 +7,18 @@ description: Database design and performance patterns for schemas, migrations, i
 
 Load this skill for schema design, migrations, indexes, query tuning, transaction boundaries, integrity rules, and ORM or query-builder work where database behavior is the primary concern. Use it alongside `coding-guardrails`.
 
-If the task is mostly handlers, services, auth, validation, or integration wiring, let `backend-engineer` own the application-layer work and keep database changes focused.
+If the task is mostly handlers, services, auth, validation, or integration wiring, load `backend-patterns` for that work and keep database changes focused.
 
 ## Scope Boundaries
 
-| Concern | Primary owner |
+| Concern | Guidance lives in |
 |---|---|
-| Tables, columns, types, nullability, defaults | database-specialist |
-| Foreign keys, unique constraints, checks | database-specialist |
-| Migration sequencing and safety | database-specialist |
-| Query plans, indexes, lock behavior | database-specialist |
-| Transaction scoping and isolation tradeoffs | database-specialist |
-| Controllers, services, auth flows, API contracts | backend-engineer |
+| Tables, columns, types, nullability, defaults | this skill |
+| Foreign keys, unique constraints, checks | this skill |
+| Migration sequencing and safety | this skill |
+| Query plans, indexes, lock behavior | this skill |
+| Transaction scoping and isolation tradeoffs | this skill |
+| Controllers, services, auth flows, API contracts | `backend-patterns` |
 
 ## Schema Design Checklist
 
@@ -125,14 +125,15 @@ ORMs are acceptable until they hide the real SQL behavior.
 
 ## Data Integrity Defaults
 
+- Prefer explicit constraints and transaction boundaries over application-only assumptions.
 - Database constraints are the final line of defense.
 - Timestamps, soft deletes, and tenant scoping should follow existing conventions consistently.
 - Backfills should be restartable when practical.
 - Deletion behavior must be explicit; accidental cascades are production incidents.
 
-## Collaboration with `backend-engineer`
+## Where App-Layer Work Meets Database Work
 
-Coordinate with `backend-engineer` when:
+Pair this skill with `backend-patterns` when:
 
 - New schema or constraint work requires endpoint or service changes
 - Dual-write or read-path migrations need app coordination

@@ -13,6 +13,7 @@ Use this skill when deciding how correctness will be proven. Tests are not just 
 - **New features** - Decide up front which unit, integration, end-to-end, or manual checks will prove success.
 - **Refactors** - Establish a behavior baseline before changing structure, then confirm the same behavior afterward.
 - **Multi-step work** - Pair each implementation step with a `verify:` check so progress is observable.
+- **Clarify before encoding** - If the expected behavior is unclear, settle it before cementing it in a test. A test is an assertion about intent, and a wrong one is harder to dislodge than wrong code.
 - **Avoid speculative matrices** - Do not add large suites for hypothetical future behaviors that the code does not implement.
 
 ## TDD Workflow: Vertical Slices via Tracer Bullets

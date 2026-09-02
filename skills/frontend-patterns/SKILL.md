@@ -13,7 +13,7 @@ Load this skill first for frontend work. It is a router: gather the right contex
 - Avoid generic AI-polished UI that ignores the product's actual workflow and tone.
 - Cover the states that matter: loading, empty, error, disabled, focus, and success when relevant.
 - Verify explicitly. Do not stop at "the JSX/CSS looks right."
-- Escalate to `@architect` or `/spec` when the request is really about workflow, information architecture, or product direction.
+- Escalate to `/spec` when the request is really about workflow, information architecture, or product direction.
 
 ## 1. Gather Product and Screen Context
 

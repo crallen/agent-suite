@@ -62,6 +62,8 @@ Subagents are loaded at session start; agents added or edited on disk need a ses
 
 ### Permission Patterns
 
+**Least privilege.** Restrict an agent with `tools:` by default. Omit the key only when the agent genuinely needs to write files and run arbitrary commands.
+
 Claude Code's `tools:` key is an **unrestricted allowlist** — there is no granular per-command Bash scoping like OpenCode supports. Listing `Bash` grants arbitrary shell. Use one of these patterns:
 
 #### Full access (implementation agents)
@@ -109,6 +111,8 @@ tools: Read, Glob, Grep, Edit, Write
 Use when the agent should be able to author files but never run shell commands.
 
 ### Body Structure
+
+Keep the body to a concise workflow description, roughly 40-80 lines. Detailed procedural knowledge belongs in a skill the agent preloads via `skills:`, not inlined here — the body is read every time the agent runs.
 
 Follow this template for the markdown body (after the closing `---` of frontmatter):
 
