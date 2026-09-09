@@ -7,6 +7,10 @@ description: Conventional Commits format, branching model, short-summary commit 
 
 Rules for clean version control history: Conventional Commits format, branching model, and commit hygiene.
 
+## Project Conventions Win
+
+A project with its own commit, branch, or PR conventions overrides this skill — match the repo, not the defaults below. Look for a stated rule in `CLAUDE.md` or `AGENTS.md` first; where none is written down, read `git log` and the existing branch names and follow the pattern already there. Everything that follows is the default for a project that has not settled on its own.
+
 ## Conventional Commits Specification
 
 Every commit message must follow this format:
