@@ -14,7 +14,7 @@ agent-suite/
 ├── agents/                 # Specialist subagent definitions
 ├── skills/                 # Skills — methodology skills plus the /-command workflows
 ├── platforms/
-│   ├── claude/             # Claude Code's view: CLAUDE.md (it uses the canonical trees)
+│   ├── claude/             # Claude Code's view: CLAUDE.md + settings.json.example
 │   ├── codex/              # Codex's view: AGENTS.md + skills/ (symlinks into skills/)
 │   └── opencode/           # OpenCode's view: agent/, commands/, AGENTS.md, skills/ (symlinks)
 └── scripts/
@@ -60,6 +60,30 @@ and `platforms/opencode/commands/`.
 Consumed as a git submodule by the `dotfiles` repo, which symlinks these directories
 into the paths each harness expects and applies them with GNU Stow. Nothing here is
 stowed directly.
+
+### Claude Code settings
+
+`platforms/claude/settings.json.example` is the starting point for
+`~/.claude/settings.json` — the deny list that keeps agents out of `.env` files and
+private keys, the plugin set, and the runtime preferences.
+
+The live file is **not** tracked. It is machine-local on purpose: which plugins and
+marketplaces a machine enables is a property of that machine, and a work laptop
+should be able to register a private marketplace without that path landing in a
+public repo. `dotfiles` gitignores it.
+
+Set up a new machine by copying the example into the Stow package before stowing:
+
+```sh
+cp agent-suite/platforms/claude/settings.json.example claude/.claude/settings.json
+```
+
+Skip that step and Stow silently leaves `~/.claude/settings.json` absent, taking the
+secret-file deny list with it. Check with `ls -l ~/.claude/settings.json` after
+`make install`.
+
+Nothing syncs the two afterwards. Update the example when a setting is worth carrying
+to the next machine, and leave machine-local additions out of it.
 
 ## Conventions
 
