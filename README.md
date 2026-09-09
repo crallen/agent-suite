@@ -72,15 +72,16 @@ marketplaces a machine enables is a property of that machine, and a work laptop
 should be able to register a private marketplace without that path landing in a
 public repo. `dotfiles` gitignores it.
 
-Set up a new machine by copying the example into the Stow package before stowing:
+`dotfiles` seeds it on `make install`, copying the example into the Stow package
+when no settings file is there yet:
 
 ```sh
 cp agent-suite/platforms/claude/settings.json.example claude/.claude/settings.json
 ```
 
-Skip that step and Stow silently leaves `~/.claude/settings.json` absent, taking the
-secret-file deny list with it. Check with `ls -l ~/.claude/settings.json` after
-`make install`.
+That guard is there because Stow is silent about the gap — without it a fresh machine
+stows cleanly and simply has no `~/.claude/settings.json`, secret-file deny list
+included.
 
 Nothing syncs the two afterwards. Update the example when a setting is worth carrying
 to the next machine, and leave machine-local additions out of it.
