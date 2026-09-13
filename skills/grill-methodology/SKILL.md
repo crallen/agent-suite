@@ -15,11 +15,11 @@ Map the plan as a **design tree**: every decision branches into the decisions th
 
 Ask **one frontier question per message**, always. Batching lets the user skim past the hard ones. Pick the frontier question that constrains the most of what's left — the one whose answer reshapes the largest part of the tree — and put that one to the user. Then wait.
 
-Present each question in two parts: the reasoning as prose, then the decision through the cleanest control the harness offers.
+Present each question in two parts: the reasoning as prose, then the decision as a lettered list of options.
 
 **Lead with prose.** A short bold title carrying the question's number (`**Q3 — <title>**`), the challenge and any context, then your recommended answer on its own line, clearly marked. Rich reasoning lives here, where markdown renders it properly. Do not use decorative emoji.
 
-**Then take the answer** with the harness's structured question tool when it has one — for example `AskUserQuestion` in Claude Code and T3 Code: a concise restatement of the choice, concise option labels, the recommended option first and tagged "(Recommended)". The options capture the decision; the argument stays in the prose above, never crammed into an option label. When the harness offers no such tool, list the options inline and wait.
+**Then list the options inline**, in the same message: lettered `A`, `B`, `C`, each a concise label, the recommended option first and tagged "(Recommended)". The options capture the decision; the argument stays in the prose above, never crammed into an option label. Do not use the harness's structured question tool (`AskUserQuestion` in Claude Code and T3 Code) — it detaches the options from the reasoning, so the user is asked to decide without the argument in view. Stop there and wait; the user answers by letter or in their own words.
 
 Never pose a neutral question — you're stress-testing, not surveying, so a recommendation is mandatory. Number questions consecutively across the whole session, so an earlier decision can be referred to by its number.
 

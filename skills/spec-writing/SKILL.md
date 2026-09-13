@@ -38,6 +38,7 @@ Ground the dialogue in the actual codebase before speculating about design.
 Ask questions one at a time. Do not dump a list.
 
 - **Prefer multiple choice** — easier to answer quickly than open-ended questions. Open-ended is fine when the problem is truly exploratory.
+- **Letter the options inline** (`A`, `B`, `C`), recommended option first and tagged "(Recommended)", in the same message as the reasoning. Do not use the harness's structured question tool (`AskUserQuestion`) — it shows the options without the surrounding context. The user answers by letter or in their own words.
 - **One question per message**. If a topic needs more exploration, break it into multiple questions across multiple turns.
 - **Focus on**: purpose (why), constraints (what must be true), and success criteria (how will we know it worked).
 - **Stop when you have enough**. Once purpose, constraints, and success criteria are clear, move on — do not ask more questions for the sake of thoroughness.
@@ -188,7 +189,7 @@ Every non-trivial claim in the spec should be backed by something you've read. I
 ## Anti-Patterns
 
 - **"This is too simple to need a design."** Every project goes through the process. The design can be short, but it cannot be skipped.
-- **Asking five questions at once.** One at a time, multiple choice when possible.
+- **Asking five questions at once.** One at a time, lettered multiple choice inline when possible.
 - **Presenting the full design in one wall of text.** Stage it; confirm direction section by section.
 - **Neutral option surveys with no recommendation.** Always lead with what you think is best and why.
 - **Vague task lists.** "Update the auth module" is not a task. "Modify `src/auth/session.ts` to add a `refresh()` method that returns a new access token" is a task.
