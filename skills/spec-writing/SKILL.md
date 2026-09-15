@@ -38,7 +38,7 @@ Ground the dialogue in the actual codebase before speculating about design.
 Ask questions one at a time. Do not dump a list.
 
 - **Prefer multiple choice** — easier to answer quickly than open-ended questions. Open-ended is fine when the problem is truly exploratory.
-- **Letter the options inline** (`A`, `B`, `C`), recommended option first and tagged "(Recommended)", in the same message as the reasoning. Do not use the harness's structured question tool (`AskUserQuestion`) — it shows the options without the surrounding context. The user answers by letter or in their own words.
+- **Letter the options inline** (`A`, `B`, `C`) as a markdown list, one option per line with a blank line before the list, recommended option first and tagged "(Recommended)", in the same message as the reasoning. Never run the options together in a sentence. Do not use the harness's structured question tool (`AskUserQuestion`) — it shows the options without the surrounding context. The user answers by letter or in their own words.
 - **One question per message**. If a topic needs more exploration, break it into multiple questions across multiple turns.
 - **Focus on**: purpose (why), constraints (what must be true), and success criteria (how will we know it worked).
 - **Stop when you have enough**. Once purpose, constraints, and success criteria are clear, move on — do not ask more questions for the sake of thoroughness.

@@ -19,7 +19,17 @@ Present each question in two parts: the reasoning as prose, then the decision as
 
 **Lead with prose.** A short bold title carrying the question's number (`**Q3 — <title>**`), the challenge and any context, then your recommended answer on its own line, clearly marked. Rich reasoning lives here, where markdown renders it properly. Do not use decorative emoji.
 
-**Then list the options inline**, in the same message: lettered `A`, `B`, `C`, each a concise label, the recommended option first and tagged "(Recommended)". The options capture the decision; the argument stays in the prose above, never crammed into an option label. Do not use the harness's structured question tool (`AskUserQuestion` in Claude Code and T3 Code) — it detaches the options from the reasoning, so the user is asked to decide without the argument in view. Stop there and wait; the user answers by letter or in their own words.
+**Then list the options inline**, in the same message, as a markdown list with **one option per line** — never run together in a sentence. Letter them `A`, `B`, `C`, each a concise label, the recommended option first and tagged "(Recommended)". Leave a blank line before the list so it renders as one:
+
+```markdown
+Which do you want?
+
+- **A.** Keep sessions in Postgres (Recommended)
+- **B.** Move sessions to Redis
+- **C.** Store sessions in signed cookies
+```
+
+The options capture the decision; the argument stays in the prose above, never crammed into an option label. Do not use the harness's structured question tool (`AskUserQuestion` in Claude Code and T3 Code) — it detaches the options from the reasoning, so the user is asked to decide without the argument in view. Stop there and wait; the user answers by letter or in their own words.
 
 Never pose a neutral question — you're stress-testing, not surveying, so a recommendation is mandatory. Number questions consecutively across the whole session, so an earlier decision can be referred to by its number.
 
