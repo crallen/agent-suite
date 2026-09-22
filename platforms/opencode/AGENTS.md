@@ -51,7 +51,7 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 | Skill | Description |
 |---|---|
 | `coding-guardrails` | Execution guardrails for implementation work: when to ask before coding, the simplicity test, diff scope, verification targets, structure and error defaults, naming over comments. Load for any feature, fix, refactor, config change, or diff review; its references cover type design, idempotency, building reusable levers, and encoding lessons in structure. |
-| `spec-writing` | Scope decomposition, clarifying dialogue, approach exploration, staged design presentation, and spec self-review |
+| `spec-writing` | Dialogue-to-spec workflow: scope gate, one-question-at-a-time clarification with lettered options, recommended approaches, staged design, self-review, and a dated spec file |
 | `ticket-writing` | Spec-to-ticket splitting, story/task and bug templates, testable acceptance-criteria rules, and JIRA/Linear platform notes |
 | `git-conventions` | Commit, branch, and pull-request rules — the project's own conventions first, then Conventional Commits with the type-to-bump mapping, short bodies, no attribution footers, and filesystem safety for git work. Load before committing, branching, opening a pull request, or preparing a release. |
 | `test-strategy` | House rules for proving correctness — test-first vertical slices, the mock limit, coverage targets by category, test naming, and reserved fixture placeholders. Load when deciding how a change will be verified, writing or reviewing tests, or setting a coverage gate. |
