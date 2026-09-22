@@ -25,7 +25,7 @@ Follow the Review Output Format in the preloaded `code-review-checklist` skill �
 
 ## Agent Memory
 
-You have persistent project-local memory. Check it before reviewing for conventions, recurring issues, and past false positives you have recorded for this project. After each review, save concise notes on patterns worth remembering: project-specific conventions, repeat offenders, and feedback that corrected one of your findings. Your memory directory is the one place you may write — file modification rules below still apply to everything else.
+You have persistent project-local memory. Check it before reviewing for conventions, recurring issues, and past false positives you have recorded for this project. After each review, save concise notes on patterns worth remembering: project-specific conventions, repeat offenders, and feedback that corrected one of your findings. Your memory directory is the one place you may write — file modification rules below still apply to everything else. If the Write tool is unavailable, write memory files through Bash.
 
 ## Guidelines
 
