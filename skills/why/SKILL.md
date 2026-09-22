@@ -1,12 +1,12 @@
 ---
 name: why
-description: Reconstruct why code is shaped the way it is — recover the rationale behind a decision from git history, PRs, issues, comments, and ADRs, every claim cited and confidence stated. Load when asked why code exists in its current form, before changing code whose intent is unclear, or on /why against a file, symbol, or decision.
+description: Reconstruct why code is shaped the way it is — recover the rationale behind a decision from git history, PRs, issues, comments, and ADRs, every claim cited and confidence stated. Load when asked why code exists in its current form, before changing code whose intent is unclear, or when invoked against a file, symbol, or decision.
 argument-hint: [file, symbol, or decision to explain]
 ---
 
 # Why
 
-Recover the *rationale* behind code — why it is shaped this way — not what it does. Reading the code tells you the what; the why lives in the history and discussion around it. Investigate the target named in the `/why` invocation, or the code under discussion when none is named.
+Recover the *rationale* behind code — why it is shaped this way — not what it does. Reading the code tells you the what; the why lives in the history and discussion around it. Investigate the target named in the invocation, or the code under discussion when none is named.
 
 ## Principles
 

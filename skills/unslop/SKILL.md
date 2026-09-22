@@ -1,6 +1,6 @@
 ---
 name: unslop
-description: Cut AI tells from any writing — puffery, AI vocabulary, em-dash/colon/boldface overuse, inline-header lists, hedging, and voiceless prose — then restore a human voice. Load when editing or finalizing prose (docs, messages, posts, commits, essays), or on /unslop against text or a file.
+description: Cut AI tells from any writing — puffery, AI vocabulary, em-dash/colon/boldface overuse, inline-header lists, hedging, and voiceless prose — then restore a human voice. Load when editing or finalizing prose (docs, messages, posts, commits, essays), or when invoked against text or a file.
 argument-hint: [text or file to clean (optional; defaults to the writing just produced)]
 ---
 
@@ -12,7 +12,7 @@ The audience is a human reader. Skip text written for a model: skill bodies, age
 
 ## Process
 
-Work on the target named in the `/unslop` invocation (text or a file), or on the writing just produced when none is named.
+Work on the target named in the invocation (text or a file), or on the writing just produced when none is named.
 
 1. Scan for the patterns below.
 2. Rewrite. Preserve meaning, match the intended tone.

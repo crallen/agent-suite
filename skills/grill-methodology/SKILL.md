@@ -29,7 +29,7 @@ Which do you want?
 - **C.** Store sessions in signed cookies
 ```
 
-The options capture the decision; the argument stays in the prose above, never crammed into an option label. Do not use the harness's structured question tool (`AskUserQuestion` in Claude Code and T3 Code) — it detaches the options from the reasoning, so the user is asked to decide without the argument in view. Stop there and wait; the user answers by letter or in their own words.
+The options capture the decision; the argument stays in the prose above, never crammed into an option label. Do not use the harness's structured question tool — it detaches the options from the reasoning, so the user is asked to decide without the argument in view. Stop there and wait; the user answers by letter or in their own words.
 
 Never pose a neutral question — you're stress-testing, not surveying, so a recommendation is mandatory. Number questions consecutively across the whole session, so an earlier decision can be referred to by its number.
 
