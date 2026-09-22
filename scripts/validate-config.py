@@ -462,7 +462,7 @@ def check_shared_links() -> str:
     still break is a dangling link, or a real directory that quietly forked.
     """
     n = 0
-    for root, hand_maintained in ((OPENCODE / "skills", {"agent-authoring"}),
+    for root, hand_maintained in ((OPENCODE / "skills", set()),
                                   (CODEX / "skills", set())):
         if not root.is_dir():
             continue

@@ -59,8 +59,8 @@ Two rules follow:
   machinery specific to one harness. Anything that cannot be said neutrally belongs
   in a platform's index, not in a skill.
 
-`agent-authoring` is the one deliberate exception — a real directory on both the
-canonical and OpenCode sides, because it documents each harness's own schemas.
+Harness-specific schemas live in `agent-authoring/reference/<harness>.md`, so
+even that skill is shared; its core stays neutral.
 
 Sharing a skill with a platform is opt-in by existence: create
 `platforms/<harness>/skills/<name>` as a symlink to `../../../skills/<name>`.
