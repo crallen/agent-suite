@@ -50,23 +50,23 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 
 | Skill | Description |
 |---|---|
-| `coding-guardrails` | Cross-cutting execution guardrails for implementation work: assumptions, simplicity, surgical diffs, verification, structure/error/safety defaults, and naming over comments, plus on-demand principle references (type-system discipline, idempotency, build-the-lever, encode-lessons-in-structure) |
+| `coding-guardrails` | Execution guardrails for implementation work: when to ask before coding, the simplicity test, diff scope, verification targets, structure and error defaults, naming over comments. Load for any feature, fix, refactor, config change, or diff review; its references cover type design, idempotency, building reusable levers, and encoding lessons in structure. |
 | `spec-writing` | Scope decomposition, clarifying dialogue, approach exploration, staged design presentation, and spec self-review |
 | `ticket-writing` | Spec-to-ticket splitting, story/task and bug templates, testable acceptance-criteria rules, and JIRA/Linear platform notes |
-| `git-conventions` | Conventional Commits format, branching model, commit hygiene, short-summary commit and PR style |
-| `test-strategy` | Test type selection, coverage targets, mocking guidelines, fixture-data hygiene |
-| `code-review-checklist` | Structured review rubric across core review categories, spec fidelity, and a Fowler design-smell baseline, with severity levels |
-| `security-analysis` | Vulnerability taxonomy, data flow analysis, dependency auditing, remediation patterns |
-| `debugging-methodology` | Phased debugging workflow — Phase 0 builds a feedback loop (10 strategies), phases 1–5 reproduce/gather/hypothesize/test/fix, Phase 6 is cleanup and post-mortem |
+| `git-conventions` | Commit, branch, and pull-request rules — the project's own conventions first, then Conventional Commits with the type-to-bump mapping, short bodies, no attribution footers, and filesystem safety for git work. Load before committing, branching, opening a pull request, or preparing a release. |
+| `test-strategy` | House rules for proving correctness — test-first vertical slices, the mock limit, coverage targets by category, test naming, and reserved fixture placeholders. Load when deciding how a change will be verified, writing or reviewing tests, or setting a coverage gate. |
+| `code-review-checklist` | The review rubric and report format — spec fidelity as its own axis, the house rules for naming and error shape, the Fowler design-smell baseline, and severity calibration. Load when reviewing a diff, a pull request, or a file for quality. |
+| `security-analysis` | The security report format and severity matrix, a source-to-sink method, and the vulnerability categories to cover with their CWE ids. Load when performing a security review, auditing dependencies, or investigating a suspected vulnerability. |
+| `debugging-methodology` | The debugging discipline — build a pass/fail feedback loop before anything else, rank falsifiable hypotheses and show them, tag instrumentation for removal, fix at a correct test seam or record that none exists. Load when investigating a bug, a failing test, or unexplained behavior. |
 | `doc-templates` | Templates for READMEs, API docs, changelogs, code comments, plus Diátaxis document-type selection and global-audience prose rules, and register/naming rules — ADRs defer to `domain-modeling` |
 | `unslop` | Cut AI tells from any writing (puffery, AI vocabulary, punctuation/list overuse, hedging, voiceless prose), then restore a human voice |
 | `why` | Reconstruct why code is shaped as it is — recover rationale from git history, PRs, issues, comments, and ADRs, each claim cited with stated confidence and gaps named |
 | `blast-radius` | Find what a change breaks beyond its obvious callers, then prove the safety-critical fact by running code, ranking each claim on a verification ladder |
 | `docker-best-practices` | The static-binary vs runtime base-image decision, multi-stage builds, layer caching, hardening, and per-stack reference Dockerfiles |
 | `ci-pipeline` | CI/CD stage order, architecture and coverage enforcement gates, auditing an inherited pipeline, per-stack reference workflows, and a discovery procedure for unfamiliar stacks |
-| `backend-patterns` | Backend application patterns for handlers, services, validation, auth/authz, integrations, and app-layer refactors |
-| `database-patterns` | Database design and performance patterns for schemas, migrations, indexes, constraints, transactions, and query behavior |
-| `frontend-patterns` | Frontend router for product context gathering, work-mode selection, escalation, and targeted reference selection |
+| `backend-patterns` | House rules for application-layer code — the request path, inward dependency direction, where each kind of validation lives, constraints before app checks, and structured logs plus a metrics endpoint as defaults. Load for handlers, services, validation, auth, integrations, and app-layer refactors; pair with database-patterns when SQL behavior is the real concern. |
+| `database-patterns` | House rules for database work — expand/migrate/contract migrations, the constraint-per-need table, transaction boundaries chosen by invariant, and evidence-based indexing. Load for schema design, migrations, indexes, query tuning, transaction boundaries, and ORM code where database behavior is the real concern. |
+| `frontend-patterns` | Frontend router — the non-negotiables for UI work, when to infer from precedent versus ask versus escalate, and which reference to load for design direction, anti-patterns, component architecture, accessibility and responsiveness, or verification. Load first for any UI component, page, form, layout, styling, or state-management task. |
 | `agent-authoring` | Conventions and validation checklist for agents, skills, and commands, with per-harness schema references |
 | `domain-modeling` | Active domain-model maintenance: terminology sharpening, CONTEXT.md glossary upkeep, which terms earn a type, and minimal ADRs — both gated by a three-part test |
 | `grill-methodology` | One-question-at-a-time Socratic interrogation of a plan: frontier questioning, recommendation-first questions, codebase cross-referencing, and a shared-understanding gate — pairs with `domain-modeling` |
