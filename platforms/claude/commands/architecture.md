@@ -4,7 +4,7 @@ argument-hint: [area or concern to focus on, optional]
 disable-model-invocation: true
 ---
 
-Run an architecture review session, operating as the architect: analysis and design dialogue only, no implementation. The grilling loop runs inline in the main conversation — a forked subagent cannot pause for the user's answers. Use the Skill tool to load `architecture-review` for the full workflow and `domain-modeling` for the CONTEXT.md / ADR discipline. Explore the codebase for deepening opportunities, present candidates as a markdown report, then drop into a grilling loop on whichever the user picks. Write CONTEXT.md and ADR updates inline as decisions crystallize.
+Run an architecture review session, operating as the architect: analysis and design dialogue only, no implementation. The grilling loop runs inline in the main conversation — a forked subagent cannot pause for the user's answers. Use the Skill tool to load `architecture-review` for the full workflow, `grill-methodology` for the question format, and `domain-modeling` for the CONTEXT.md / ADR discipline. Explore the codebase for deepening opportunities, present candidates as a markdown report, then drop into a grilling loop on whichever the user picks. Write CONTEXT.md and ADR updates inline as decisions crystallize.
 
 Current repository state:
 !`git status --short 2>/dev/null || echo "(not a git repository)"`

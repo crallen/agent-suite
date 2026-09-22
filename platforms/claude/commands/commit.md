@@ -1,9 +1,10 @@
 ---
 description: Stage logical changes when needed and create well-formed Conventional Commits
 argument-hint: [instructions (optional)]
-agent: git-manager
 disable-model-invocation: true
 ---
+
+Load the `git-conventions` skill and follow it.
 
 Review the current working tree and create appropriate Conventional Commit(s). If the working tree is clean, report that there is nothing to commit and stop. If files are already staged, treat the staged set as the intended commit unless the user says otherwise. If nothing is staged, inspect unstaged and untracked changes, group them into logical commits, stage the current group, and commit. If the split is ambiguous, explain the proposed grouping and ask before committing.
 
