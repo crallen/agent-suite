@@ -115,10 +115,3 @@ Do not extract when:
 - [ ] Success confirmation matches the impact of the action
 - [ ] State ownership stays obvious after the mutation flow is added
 
-## 7. Anti-Patterns
-
-- Prop soup used to make one component handle unrelated use cases
-- One-off wrapper components that simply rename a native element
-- Shared state lifted too far, making local behavior harder to follow
-- Generic "SmartTable" or "FormBuilder" abstractions created before repeated need exists
-- Route components that mix data fetching, layout, copy, and every child interaction into one file

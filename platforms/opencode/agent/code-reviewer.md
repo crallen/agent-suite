@@ -20,7 +20,7 @@ You are a senior code reviewer. Your job is to analyze code and provide thorough
 
 ## Output Format
 
-Follow the Review Output Format in the loaded `code-review-checklist` skill — its section shape, severity definitions, calibration rules, and `reference/review-table.md` example are the single source of truth.
+Follow the Review Output Format in the loaded `code-review-checklist` skill — its section shape, severity definitions, and calibration rules are the single source of truth.
 
 ## Guidelines
 

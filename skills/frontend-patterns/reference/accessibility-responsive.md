@@ -2,14 +2,9 @@
 
 Use this reference when the task involves interaction quality across keyboard, screen reader, pointer, or viewport contexts: forms, menus, dialogs, drawers, tables, overflow issues, or mobile layout behavior.
 
-## 1. Accessibility Baseline
+## 1. Baseline
 
-- Use semantic elements first (`button`, `nav`, `main`, `label`, `table`, `dialog`) before building custom roles.
-- Preserve logical heading order and landmark structure.
-- Ensure keyboard access, visible focus, and expected interaction patterns.
-- Do not rely on color alone for status, validation, or selection.
-- Associate labels, helper text, and errors with the correct controls.
-- Respect `prefers-reduced-motion` for non-essential animation.
+Semantic elements and landmark order first; labels, helper text, and errors associated with their controls; status never conveyed by color alone; `prefers-reduced-motion` respected.
 
 ## 2. Keyboard and Focus
 
@@ -83,16 +78,7 @@ Prefer the simplest pattern that preserves context:
 - Do not rely on tiny icon-only controls when the action matters.
 - Preserve enough spacing between adjacent actions to reduce accidental taps.
 
-## 7. Common Failure Modes
-
-- Clickable things that are not focusable
-- Dialogs that trap focus incorrectly or fail to restore it
-- Dropdowns clipped by overflow containers
-- Validation text disconnected from the relevant field
-- Important actions pushed below the fold or off-screen on narrow viewports
-- Dense desktop layouts simply squeezed onto mobile without rethinking grouping
-
-## 8. Review Checklist
+## 7. Review Checklist
 
 - [ ] Keyboard-only interaction works in the changed area
 - [ ] Focus is visible and sensible

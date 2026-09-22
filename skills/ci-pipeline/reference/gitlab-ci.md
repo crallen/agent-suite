@@ -25,7 +25,7 @@ test:
   stage: test
   script:
     - # test runner with coverage, gated at the project's threshold
-  coverage: '/Lines\s*:\s*(\d+\.?\d*)%/'
+  coverage: '<regex matching the stack's coverage line; see the stack file>'
   artifacts:
     reports:
       coverage_report:

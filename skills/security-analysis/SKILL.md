@@ -1,185 +1,79 @@
 ---
 name: security-analysis
-description: Structured security assessment methodology covering vulnerability taxonomy, data flow analysis, dependency auditing, and remediation patterns
+description: The security report format and severity matrix, a source-to-sink method, and the vulnerability categories to cover with their CWE ids. Load when performing a security review, auditing dependencies, or investigating a suspected vulnerability.
 ---
 
 # Security Analysis
 
-Structured methodology for application security assessment. Load this skill when performing security reviews, dependency audits, or vulnerability investigations.
+Methodology and report shape for application security assessment.
 
-## Security Analysis Methodology
+## Report Format
 
-Work through each phase in order, adapting depth to the scope of the analysis.
+- `## Security Assessment Summary` - one-paragraph posture and overall risk level.
+- `## Attack Surface` - brief trust-boundary and entry-point summary.
+- `## Findings` - split by severity using `### CRITICAL`, `### HIGH`,
+  `### MEDIUM`, `### LOW`, and `### INFO`. Under each populated subsection, a
+  markdown table with columns `Category | Location | Exploitability | Impact |
+  Remediation`. Omit empty sections; if there are no findings, say so plainly.
+- `## Dependency Audit` - table with columns `Tool | Result | Notes` when
+  applicable.
+- `## Recommendations` - prioritized remediation plan.
+- Keep rows concise. References, exploit-path detail, defense-in-depth notes,
+  prevention guidance, or code go in a short `### Detail:` block below the
+  relevant table.
 
-### Phase 1: Reconnaissance
-
-Before looking for vulnerabilities, understand what you're analyzing.
-
-**Identify the tech stack:**
-- Language(s) and framework(s) — read package.json, go.mod, Cargo.toml, requirements.txt, Gemfile, pom.xml, etc.
-- Database(s) — look for connection strings, ORM configs, migration files
-- External services — API clients, message queues, cache layers, cloud SDKs
-- Authentication system — session-based, JWT, OAuth, API keys, SAML
-
-**Map entry points:**
-- HTTP routes / API endpoints (controllers, handlers, route files)
-- CLI argument parsing
-- File upload / processing endpoints
-- WebSocket handlers
-- Background job / queue consumers
-- Cron / scheduled task definitions
-
-**Identify trust boundaries:**
-- Where does user input enter the system?
-- Where does the system talk to external services?
-- Where does privilege change? (auth middleware, role checks)
-- What runs with elevated permissions?
-
-### Phase 2: Data Flow Analysis
-
-Trace data from sources to sinks. This is the core of the assessment.
-
-**Sources** (where untrusted data enters):
-- HTTP request parameters (query, body, headers, cookies)
-- File uploads
-- Database reads (if data was originally user-supplied)
-- Environment variables (in multi-tenant or shared environments)
-- External API responses
-- Deserialized data (JSON, XML, YAML, protobuf)
-
-**Sinks** (where data reaches dangerous operations):
-- SQL/NoSQL queries
-- OS command execution (exec, spawn, system)
-- File system operations (read, write, delete, path construction)
-- HTML rendering (template engines, innerHTML, dangerouslySetInnerHTML)
-- HTTP requests from the server (SSRF surface)
-- Deserialization calls
-- Cryptographic operations
-- Logging calls (PII/secret exposure)
-- Email/SMS sending (injection)
-- Redirect URLs (open redirect)
-
-**For each source-to-sink path, verify:**
-1. Is the input validated? (type, format, length, range, allowed values)
-2. Is the input sanitized/escaped for the target context?
-3. Is there a parameterized API available? (prepared statements, template engines)
-4. Are there intermediate checks? (authorization, rate limiting)
-
-### Phase 3: Vulnerability Analysis by Category
-
-Work through each category relevant to the codebase. Skip categories that don't apply.
-
-#### Injection (CWE-74)
-- **SQL injection**: Look for string concatenation in queries. Check ORM usage for raw query escape hatches.
-- **Command injection**: Look for exec/spawn/system calls with user input. Check for shell metacharacter handling.
-- **Template injection**: Look for user input passed as template strings rather than template variables.
-- **LDAP/XPath/NoSQL injection**: Same pattern — user input in query construction without parameterization.
-
-#### Authentication & Session Management (CWE-287)
-- Are passwords hashed with a modern algorithm? (bcrypt, scrypt, argon2 — NOT md5, sha1, sha256 alone)
-- Are sessions invalidated on logout and password change?
-- Is there brute-force protection? (rate limiting, account lockout)
-- Are JWTs validated properly? (signature verification, expiration, issuer, audience)
-- Is the `none` algorithm rejected for JWTs?
-- Are session tokens generated with a CSPRNG?
-
-#### Access Control (CWE-284)
-- Is authorization checked on every protected endpoint? (not just the frontend)
-- Are there IDOR vulnerabilities? (sequential IDs, user can access other users' resources by guessing IDs)
-- Is the principle of least privilege followed? (minimal permissions by default)
-- Are admin functions protected by role checks on the backend?
-- Is CORS configured restrictively? (not `*` in production)
-
-#### Cryptography (CWE-310)
-- Are deprecated algorithms in use? (MD5, SHA1 for integrity, DES, RC4, RSA-1024)
-- Are keys/IVs hardcoded?
-- Is the same IV reused across encryptions?
-- Are random values generated with a CSPRNG? (not Math.random, not rand())
-- Is TLS enforced for all external communications?
-- Are certificates validated? (no `rejectUnauthorized: false` or `InsecureSkipVerify`)
-
-#### Sensitive Data (CWE-200)
-- Search for hardcoded secrets: `grep -rEi "password|secret|api.?key|token|private.?key" --include='*.js' --include='*.ts' --include='*.py' --include='*.go' --include='*.rb' --include='*.java' --include='*.yaml' --include='*.yml' --include='*.json' --include='*.toml' --include='*.env'` (brace expansion does not happen inside quotes, so list each pattern)
-- Check `.gitignore` — are secret files excluded? (.env, *.pem, credentials.json)
-- Is PII logged? (email addresses, IP addresses, auth tokens in log output)
-- Are error messages verbose enough to leak internal details? (stack traces, SQL errors, file paths)
-- Is sensitive data stored encrypted at rest?
-
-#### Security Configuration
-- Is debug mode disabled in production configs?
-- Are security headers set? (Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Strict-Transport-Security)
-- Are default credentials changed?
-- Are unnecessary features/endpoints disabled? (debug endpoints, admin panels, GraphQL introspection)
-- Are file upload restrictions in place? (size, type, storage location)
-
-#### Dependencies
-- Run available audit tools:
-  - Node.js: `npm audit`, `pnpm audit`, or `yarn npm audit` (Yarn Berry)
-  - Python: `pip-audit`
-  - Go: `govulncheck` (if available)
-  - Ruby: `bundle audit` (if available)
-- Check for pinned versions in lock files
-- Look for abandoned or unmaintained dependencies (last commit date, open issues)
-- Check for typosquatting risk (dependencies with similar names to popular packages)
-
-### Phase 4: Threat Modeling (for larger assessments)
-
-For significant features or systems, consider the STRIDE model:
-
-| Threat | Question |
-|---|---|
-| **S**poofing | Can an attacker impersonate another user or service? |
-| **T**ampering | Can an attacker modify data they shouldn't? |
-| **R**epudiation | Can actions be performed without an audit trail? |
-| **I**nformation Disclosure | Can an attacker access data they shouldn't? |
-| **D**enial of Service | Can an attacker make the system unavailable? |
-| **E**levation of Privilege | Can an attacker gain higher permissions? |
-
-### Phase 5: Remediation Guidance
-
-For each finding, provide:
-
-1. **Specific fix** - Show the exact code change needed, not generic advice
-2. **Defense in depth** - Suggest additional layers (WAF rules, monitoring, etc.)
-3. **Prevention** - How to prevent this class of bug in the future (linting rules, code review gates, security tests)
-4. **Priority** - Based on exploitability and impact, not just theoretical severity
-
-**Common remediation patterns:**
-
-| Vulnerability | Remediation |
-|---|---|
-| SQL injection | Parameterized queries / prepared statements |
-| XSS | Context-aware output encoding; use framework's auto-escaping |
-| Command injection | Avoid shell execution; use array-based APIs (execFile, not exec) |
-| Path traversal | Canonicalize paths and verify they're within allowed directories |
-| SSRF | Allowlist permitted hosts/IPs; block internal ranges |
-| Insecure deserialization | Use data-only formats (JSON); validate schema before processing |
-| Hardcoded secrets | Move to environment variables or a secret manager |
-| Weak crypto | Upgrade to current algorithms; use a well-reviewed crypto library |
-
-### Severity Scoring Guide
-
-Use a simplified CVSS-like approach:
+### Severity
 
 | Factor | CRITICAL | HIGH | MEDIUM | LOW |
 |---|---|---|---|---|
 | **Exploitability** | Remote, unauthenticated, trivial | Remote, authenticated or needs specific conditions | Requires local access or social engineering | Requires physical access or insider |
-| **Impact** | RCE, full data breach, auth bypass | Significant data access, privilege escalation | Limited data access, account takeover (single user) | Information disclosure, DoS |
+| **Impact** | RCE, full data breach, auth bypass | Significant data access, privilege escalation | Limited data access, single-account takeover | Information disclosure, DoS |
 | **Affected users** | All users | Subset of users | Individual user | Admin only |
 
-Use `INFO` for defense-in-depth or hardening suggestions that do not represent a material exploitable vulnerability on their own.
+`INFO` is for defense-in-depth or hardening suggestions that are not an
+exploitable vulnerability on their own. Priority follows exploitability and
+impact, not theoretical severity. Each finding's remediation is the specific
+change for this code, not the generic pattern.
 
-## Report Format
+## Method
 
-Use this default report shape:
+**Trust boundaries first.** Where does user input enter the system, where does it
+talk to external services, where does privilege change, and what runs elevated?
+Map entry points (routes, CLI parsing, uploads, sockets, queue consumers,
+scheduled jobs) from that.
 
-- `## Security Assessment Summary` - one-paragraph posture and overall risk level.
-- `## Attack Surface` - brief trust-boundary and entry-point summary.
-- `## Findings` - split by severity using `### CRITICAL`, `### HIGH`, `### MEDIUM`, `### LOW`, and `### INFO` subsections.
-- Under each populated severity subsection, use a markdown table with columns `Category | Location | Exploitability | Impact | Remediation`.
-- `## Dependency Audit` - markdown table with columns `Tool | Result | Notes` when applicable.
-- `## Recommendations` - prioritized remediation plan.
-- Omit empty severity sections. If there are no findings, say so plainly under `## Findings`.
-- Keep table rows concise. If a finding needs references, exploit-path detail, defense-in-depth notes, prevention guidance, or code snippets, add a short `### Detail:` section below the relevant severity table.
-- Put remediation ordering and priority in `## Recommendations`; use `### Detail:` blocks for anything too long for the findings table.
-- Example: `reference/security-table.md`
+**Trace sources to sinks.** Sources: request parameters, uploads, database reads
+of user-supplied data, external API responses, deserialized data, environment in
+shared contexts. Sinks: queries, command execution, file paths, HTML rendering,
+server-side HTTP (SSRF), deserialization, crypto, logging, mail and SMS,
+redirects. For each path: is the input validated for the target context, is a
+parameterized API available and used, and are authorization and rate limits on
+the way?
+
+**Cover each category that applies:**
+
+- Injection (CWE-74): SQL, command, template, LDAP/XPath/NoSQL, including ORM raw
+  escape hatches.
+- Authentication and sessions (CWE-287): hashing algorithm, session invalidation,
+  brute-force protection, JWT validation including the `none` algorithm, token
+  entropy.
+- Access control (CWE-284): every protected endpoint checked server-side, IDOR,
+  least privilege, admin role checks, CORS.
+- Cryptography (CWE-310): deprecated algorithms, hardcoded keys or IVs, IV reuse,
+  CSPRNG, TLS enforcement and certificate validation.
+- Sensitive data (CWE-200): hardcoded secrets, `.gitignore` coverage, PII in logs,
+  verbose errors, encryption at rest. Find secrets with
+  `grep -rEi "password|secret|api.?key|token|private.?key"` and a repeated
+  `--include` per extension, since brace expansion does not happen inside quotes.
+- Configuration: debug mode, security headers, default credentials, exposed
+  debug or admin endpoints, upload restrictions.
+- Dependencies: run the ecosystem's audit (`npm audit`, `pnpm audit`,
+  `yarn npm audit` on Berry, `pip-audit`, `govulncheck`, `bundle audit`), check
+  lock-file pinning, and look for abandoned packages and typosquats.
+
+**For larger assessments, threat-model with STRIDE:** spoofing, tampering,
+repudiation, information disclosure, denial of service, elevation of privilege.
+One question each: can an attacker do it?
+
+Never inspect `.env`, credential files, private keys, or similar secret-bearing
+files, including through `git diff` or `git show`.
