@@ -14,7 +14,7 @@ Current agents:
 !`ls ~/.claude/agents/ 2>/dev/null || echo "(none)"`
 
 Current skills:
-!`ls ~/.claude/skills/ 2>/dev/null || echo "(none)"`
+!`for d in ~/.claude/skills/*/; do [ -f "$d/SKILL.md" ] && basename "$d"; done 2>/dev/null || echo "(none)"`
 
 Current commands:
 !`ls ~/.claude/commands/ 2>/dev/null || echo "(none)"`

@@ -5,11 +5,12 @@ The compiler covers boundary enforcement and type checking. Coverage needs a thi
 ## GitHub Actions
 
 ```yaml
+# versions checked 2026-09-22; re-verify before pinning
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy

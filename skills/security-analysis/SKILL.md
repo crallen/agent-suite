@@ -99,7 +99,7 @@ Work through each category relevant to the codebase. Skip categories that don't 
 - Are certificates validated? (no `rejectUnauthorized: false` or `InsecureSkipVerify`)
 
 #### Sensitive Data (CWE-200)
-- Search for hardcoded secrets: `grep -r "password\|secret\|api.key\|token\|private.key" --include="*.{js,ts,py,go,rb,java,yaml,yml,json,toml,env}"`
+- Search for hardcoded secrets: `grep -rEi "password|secret|api.?key|token|private.?key" --include='*.js' --include='*.ts' --include='*.py' --include='*.go' --include='*.rb' --include='*.java' --include='*.yaml' --include='*.yml' --include='*.json' --include='*.toml' --include='*.env'` (brace expansion does not happen inside quotes, so list each pattern)
 - Check `.gitignore` — are secret files excluded? (.env, *.pem, credentials.json)
 - Is PII logged? (email addresses, IP addresses, auth tokens in log output)
 - Are error messages verbose enough to leak internal details? (stack traces, SQL errors, file paths)
@@ -114,8 +114,8 @@ Work through each category relevant to the codebase. Skip categories that don't 
 
 #### Dependencies
 - Run available audit tools:
-  - Node.js: `npm audit` or `yarn audit`
-  - Python: `pip audit` or `pip-audit`
+  - Node.js: `npm audit`, `pnpm audit`, or `yarn npm audit` (Yarn Berry)
+  - Python: `pip-audit`
   - Go: `govulncheck` (if available)
   - Ruby: `bundle audit` (if available)
 - Check for pinned versions in lock files

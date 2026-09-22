@@ -38,7 +38,7 @@ Ground the dialogue in the actual codebase before speculating about design.
 Ask questions one at a time. Do not dump a list.
 
 - **Prefer multiple choice** — easier to answer quickly than open-ended questions. Open-ended is fine when the problem is truly exploratory.
-- **Letter the options inline** (`A`, `B`, `C`) as a markdown list, one option per line with a blank line before the list, recommended option first and tagged "(Recommended)", in the same message as the reasoning. Never run the options together in a sentence. Do not use the harness's structured question tool (`AskUserQuestion`) — it shows the options without the surrounding context. The user answers by letter or in their own words.
+- **Letter the options inline** (`A`, `B`, `C`) as a markdown list, one option per line with a blank line before the list, recommended option first and tagged "(Recommended)", in the same message as the reasoning. Never run the options together in a sentence. Do not use the harness's structured question tool — it shows the options without the surrounding context. The user answers by letter or in their own words.
 - **One question per message**. If a topic needs more exploration, break it into multiple questions across multiple turns.
 - **Focus on**: purpose (why), constraints (what must be true), and success criteria (how will we know it worked).
 - **Stop when you have enough**. Once purpose, constraints, and success criteria are clear, move on — do not ask more questions for the sake of thoroughness.
@@ -140,10 +140,6 @@ Before presenting the finished spec for final approval, re-read it with fresh ey
 
 Present the finished spec and ask for review. If the user requests changes, apply them and re-run the self-review. Only hand off once the user approves.
 
-Suggested wording:
-
-> "Here's the spec. Let me know if you want any changes before we hand this to the tech-lead for execution — or I can save it as a file first."
-
 ## Design Principles
 
 These principles should guide every spec.
@@ -162,7 +158,7 @@ Litmus tests:
 - Can you change the internals without breaking consumers? If not, the seam is in the wrong place.
 - Is the interface small next to what sits behind it? A large implementation behind a small interface is the goal; a unit whose interface is nearly as complex as its body is the problem.
 
-Prefer few units with small interfaces over many units that each expose nearly everything they do. A unit may be composed internally of small parts — keeping those parts out of its interface is what makes the unit **deep**. `architecture-review/reference/vocabulary.md` holds the full vocabulary for this, and `/architecture` measures finished designs by it.
+Prefer few units with small interfaces over many units that each expose nearly everything they do. A unit may be composed internally of small parts — keeping those parts out of its interface is what makes the unit **deep**. `architecture-review/reference/vocabulary.md` holds the full vocabulary for this, and `architecture-review` measures finished designs by it.
 
 ### YAGNI — You Aren't Gonna Need It
 

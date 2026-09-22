@@ -5,8 +5,9 @@ Go emits a static binary, so the final image needs nothing but the binary itself
 ## Dockerfile
 
 ```dockerfile
+# versions checked 2026-09-22; re-verify before pinning
 # Stage 1: Build
-FROM golang:1.26-alpine AS build
+FROM golang:1.27-alpine AS build
 WORKDIR /src
 
 # Dependencies resolve from the manifest alone, so this layer survives source edits.
@@ -19,7 +20,7 @@ COPY . .
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /app ./cmd/server
 
 # Stage 2: Production
-FROM gcr.io/distroless/static-debian12:nonroot
+FROM gcr.io/distroless/static-debian13:nonroot
 COPY --from=build /app /app
 USER 65532:65532
 ENTRYPOINT ["/app"]

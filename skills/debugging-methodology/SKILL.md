@@ -120,7 +120,7 @@ Test each hypothesis systematically, starting with the most likely. **Change one
 
 Write the regression test **before the fix** — but only if there is a **correct seam** for it. A correct seam is one where the test exercises the *real bug pattern* as it occurs at the call site. A shallow seam (unit test that can't replicate the chain that triggered the bug) gives false confidence.
 
-**If no correct seam exists, that itself is the finding.** Note it — the codebase architecture is preventing the bug from being locked down. This is a candidate for `/architecture` work.
+**If no correct seam exists, that itself is the finding.** Note it — the codebase architecture is preventing the bug from being locked down. This is a candidate for `architecture-review` work.
 
 If a correct seam exists:
 1. Turn the minimised repro into a failing test at that seam.
@@ -141,7 +141,7 @@ Required before declaring done:
 - [ ] Throwaway prototypes or harnesses deleted
 - [ ] The hypothesis that turned out correct is stated in the commit / PR message — so the next debugger learns
 
-**Then ask: what would have prevented this bug?** If the answer involves architectural change (no good test seam, tangled callers, hidden coupling), hand off to `/architecture` with the specifics. Make the recommendation *after* the fix is in — you have more information now than when you started.
+**Then ask: what would have prevented this bug?** If the answer involves architectural change (no good test seam, tangled callers, hidden coupling), hand off to `architecture-review` with the specifics. Make the recommendation *after* the fix is in — you have more information now than when you started.
 
 ## Anti-Patterns
 

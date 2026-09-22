@@ -2,6 +2,7 @@
 description: Generate or update project documentation
 argument-hint: [doc type or target (optional)]
 agent: documenter
+context: fork
 disable-model-invocation: true
 ---
 

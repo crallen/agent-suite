@@ -29,23 +29,24 @@ jobs:
 ## Caching
 
 ```yaml
+# versions checked 2026-09-22; re-verify before pinning
 # Node.js - cache node_modules via setup-node
-- uses: actions/setup-node@v4
+- uses: actions/setup-node@v7
   with:
     node-version: 24
     cache: npm
 
 # Go - cache module downloads and build cache
-- uses: actions/setup-go@v5
+- uses: actions/setup-go@v7
   with:
-    go-version: '1.26'
+    go-version: '1.27'
     cache: true
 
 # Rust - use swatinem/rust-cache
 - uses: swatinem/rust-cache@v2
 
 # Docker layers - use buildx cache
-- uses: docker/build-push-action@v5
+- uses: docker/build-push-action@v7
   with:
     cache-from: type=gha
     cache-to: type=gha,mode=max
@@ -58,6 +59,7 @@ For a stack not listed, cache the ecosystem's download directory keyed on the lo
 Test across multiple versions or platforms:
 
 ```yaml
+# versions checked 2026-09-22; re-verify before pinning
 jobs:
   test:
     strategy:
@@ -66,8 +68,8 @@ jobs:
         node-version: [22, 24]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm ci

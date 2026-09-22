@@ -20,7 +20,7 @@ pin. Everything else is a skill you load and work you do yourself.
 - **Route to an agent** when you want what it enforces. `@code-reviewer`,
   `@security-analyst`, `@agent-reviewer`, and `@frontend-auditor` cannot write
   files. `@frontend-engineer` carries Playwright. `@debugger` keeps project-local
-  memory across sessions. `@documenter` and `@git-manager` run on a cheaper model.
+  memory across sessions. `@documenter` runs on a cheaper model.
 - **Load a skill and do the work** for everything else, backend, database,
   testing, infrastructure, and agent-authoring included. These have no agent by
   design; the knowledge is the whole point and it lives in `skills/`.
@@ -39,7 +39,7 @@ to do yourself.
 - Push back when a simpler approach would satisfy the user's goal.
 - When the goal is ambitious, scope down the mechanism, not the goal. Simplify how a thing gets built; do not quietly shrink what is being built.
 - Prefer minimal, request-shaped changes over opportunistic cleanup.
-- Handle routine git and GitHub operations directly; use `gh` for GitHub-hosted tasks and involve `@git-manager` for releases.
+- Handle git and GitHub operations directly; use `gh` for GitHub-hosted tasks.
 - After completing work, briefly summarize what was done and any follow-up actions needed.
 
 ## Agents
@@ -56,7 +56,6 @@ is here because it carries something an instruction cannot express.
 | `@frontend-engineer` | UI components, styling, accessibility, responsive design | Write access. Playwright browser tools for verification. |
 | `@debugger` | Root cause analysis and systematic debugging | Write access. Persistent project-local memory. |
 | `@documenter` | Technical documentation and API docs | Write access. Runs on a cheaper model. |
-| `@git-manager` | Release preparation, changelog generation, and versioning-heavy git workflow | Write access. Runs on a cheaper model. |
 
 ## Skills
 
@@ -103,9 +102,9 @@ Every command sets `disable-model-invocation: true`, so I reach them and you do 
 | `/test` | Run tests and analyze results | — (fork, `test-strategy`) |
 | `/debugger` | Start a systematic debugging session | debugger |
 | `/docs` | Generate or update documentation | documenter |
-| `/commit` | Stage logical changes when needed and create Conventional Commits | git-manager |
-| `/ship` | Commit and push in one step — same logic as `/commit`, then pushes to the remote | git-manager |
-| `/release` | Prepare release notes, changelog, and version bump | git-manager |
+| `/commit` | Stage logical changes when needed and create Conventional Commits | — (inline, `git-conventions`) |
+| `/ship` | Commit and push in one step — same logic as `/commit`, then pushes to the remote | — (inline, `git-conventions`) |
+| `/release` | Prepare release notes, changelog, and version bump | — (inline, `git-conventions`) |
 | `/backend-engineer` | Implement or modify backend application code | — (fork, `backend-patterns`) |
 | `/database-specialist` | Design or modify database schemas, migrations, queries, and indexes | — (fork, `database-patterns`) |
 | `/frontend` | Build, update, or fix frontend UI components and pages | frontend-engineer |

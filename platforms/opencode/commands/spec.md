@@ -6,9 +6,9 @@ agent: architect
 Collaborate with the user to produce a design spec for the goal below. Start with the scope gate: if the request spans multiple independent subsystems, propose a decomposition before diving in. Otherwise, read relevant code first, then ask clarifying questions one at a time, propose 2-3 approaches, and present the design in stages. End with a markdown task checklist the tech-lead can execute.
 
 Current repository state:
-!`git status --short`
+!`git status --short 2>/dev/null || echo "(not a git repository)"`
 
 Recent commits:
-!`git log --oneline -10`
+!`git log --oneline -10 2>/dev/null || echo "(no git history yet)"`
 
 $ARGUMENTS

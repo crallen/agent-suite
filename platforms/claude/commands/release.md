@@ -1,9 +1,10 @@
 ---
 description: Prepare a release with changelog, version bump, and release notes
 argument-hint: [version hint (optional)]
-agent: git-manager
 disable-model-invocation: true
 ---
+
+Load the `git-conventions` skill and follow it.
 
 Prepare a release for this project. Analyze the commit history since the last tag to determine the appropriate version bump and generate release notes.
 

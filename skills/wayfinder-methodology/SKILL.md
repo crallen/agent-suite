@@ -11,12 +11,12 @@ A loose idea has arrived, too big for one session and wrapped in fog: the way fr
 
 A map costs a file and a session spent charting, so reach for it only when the effort outlives a single session:
 
-- **`/grill`** — one sitting, one thread of questions. No artifact beyond CONTEXT.md and ADRs.
-- **`/spec`** — one sitting, and the shape is already knowable. Produces a spec plus a task checklist.
-- **`/wayfinder`** — the effort will not fit in one session and the shape is fogged. The artifact is a map that survives across sessions. A map's destination is often *a spec `/spec` can then write*.
-- **`/ticket`** — downstream of a settled spec, splitting it into build slices. Wayfinder tickets are decisions, never build slices.
+- **`grill-methodology`** — one sitting, one thread of questions. No artifact beyond CONTEXT.md and ADRs.
+- **`spec-writing`** — one sitting, and the shape is already knowable. Produces a spec plus a task checklist.
+- **`wayfinder-methodology`** — the effort will not fit in one session and the shape is fogged. The artifact is a map that survives across sessions. A map's destination is often *a spec `spec-writing` can then write*.
+- **`ticket-writing`** — downstream of a settled spec, splitting it into build slices. Wayfinder tickets are decisions, never build slices.
 
-If charting surfaces no fog — the way is already clear, the whole journey fits one session — say so and stop. An unfogged effort wants `/spec`, not a map.
+If charting surfaces no fog — the way is already clear, the whole journey fits one session — say so and stop. An unfogged effort wants `spec-writing`, not a map.
 
 ## Plan, don't do
 
@@ -89,7 +89,7 @@ Every ticket is either **HITL** — worked *with* the user, who speaks for thems
 
 | Type | Mode | What it is |
 |---|---|---|
-| `research` | AFK | Surfacing a fact a decision waits on, from outside the working directory: third-party docs, an API's real behaviour, a local knowledge base. Dispatch a subagent — `Explore` for in-repo questions, `general-purpose` when the answer lives on the web. |
+| `research` | AFK | Surfacing a fact a decision waits on, from outside the working directory: third-party docs, an API's real behaviour, a local knowledge base. Dispatch a read-only subagent for in-repo facts, a web-capable one when the answer lives on the web. |
 | `prototype` | HITL | Raise the fidelity of the discussion with a cheap, rough, concrete artifact to react to. Load `prototype-methodology`. Reach for it when *how should it look* or *how should it behave* is the open question. |
 | `grilling` | HITL | Conversation, and the default case. Load `grill-methodology` and `domain-modeling`. |
 | `task` | Either | Manual work that must happen before a decision can be made: signing up for a service so its API can be judged, provisioning access, moving data so its shape is visible. The one type that *does* rather than decides, and it earns its place by unblocking a decision. The agent drives it alone where it can; otherwise it hands the user a precise checklist. Its resolution records what was done plus any facts later tickets depend on. |
@@ -100,7 +100,7 @@ A resolved ticket leaves **one line** under **Decisions so far**: the decision i
 
 Where the detail lives depends on how hard the decision is to reverse. Load `domain-modeling` for the ADR test and apply it here:
 
-- **Hard to reverse** — write an **ADR** in `docs/adr/` and cite it from the map line. This is the same durable-decision mechanism `/grill` and `/architecture` already use, so a wayfinder decision lands where every other architectural decision in the repo lands. The map holds the gist; the ADR holds the argument.
+- **Hard to reverse** — write an **ADR** in `docs/adr/` and cite it from the map line. This is the same durable-decision mechanism `grill-methodology` and `architecture-review` already use, so a wayfinder decision lands where every other architectural decision in the repo lands. The map holds the gist; the ADR holds the argument.
 - **Easy to reverse** — the one-line gist on the map is the whole record. Do not manufacture an ADR for it.
 - **A term the domain now needs** — add it to `CONTEXT.md`, again per `domain-modeling`.
 
@@ -147,4 +147,4 @@ The user arrives with a map, and optionally a ticket. Without one, you pick the 
 3. **Resolve it.** Work it by its type, loading whichever skills the **Notes** block names; when in doubt, `grill-methodology` and `domain-modeling`.
 4. **Record the resolution** per *Recording a resolution*: remove the ticket's section, add its line to **Decisions so far**, and write the ADR or CONTEXT.md entry if the decision earns one.
 5. **Advance the frontier.** Add newly surfaced tickets, and graduate any fog the answer made specifiable — clearing each graduated patch from **Not yet specified** so it lives only as its ticket. If the answer puts a ticket past the destination, rule it out of scope rather than resolving it. If it invalidates part of the map, update or delete the affected tickets.
-6. **Report** the decision made, what it unblocked, and the new frontier. When no tickets remain, say the way is clear and name the handoff — usually `/spec`.
+6. **Report** the decision made, what it unblocked, and the new frontier. When no tickets remain, say the way is clear and name the handoff — usually `spec-writing`.

@@ -104,6 +104,15 @@ Examples:
 - Skip boilerplate sections (test plans, checklists, headings) unless the repo's PR template asks for them.
 - The description ends on its last real line. Never append a "Generated with Claude Code" footer or a session link — the body passed to `gh pr create` gets no attribution.
 
+## Filesystem Safety
+
+Git work is not filesystem manipulation.
+
+- Never run destructive filesystem commands (`rm`, `rm -rf`, moving, overwriting, or truncating files) inside or against the working tree.
+- Never create temporary files or directories inside the working tree to test or verify behavior. If a scratch path is genuinely needed, use a system temp directory outside the repo — never a path that shadows a real repo directory.
+- Verify with non-mutating, read-only commands. In particular, `git check-ignore <path>` matches a path string and does not require the path to exist — never create a file or directory to test ignore rules.
+- If a verification appears to require creating or deleting files on disk, stop and report instead of proceeding.
+
 ## Commit Hygiene
 
 - One logical change per commit. Atomic commits are easier to review, revert, and bisect.
