@@ -1,6 +1,6 @@
 ---
 name: debugging-methodology
-description: Systematic debugging workflow covering reproduction, evidence gathering, hypothesis testing, root cause analysis, and fix verification
+description: The debugging discipline — build a pass/fail feedback loop before anything else, rank falsifiable hypotheses and show them, tag instrumentation for removal, fix at a correct test seam or record that none exists. Load when investigating a bug, a failing test, or unexplained behavior.
 ---
 
 # Debugging Methodology
@@ -49,30 +49,7 @@ Confirm:
 
 ## Phase 2: Gather Evidence
 
-Collect information before forming theories.
-
-**Read error output carefully:**
-- Stack traces tell you the call chain. Read from bottom to top.
-- Error messages often contain the exact cause. Don't gloss over them.
-- Log timestamps reveal ordering and timing issues.
-
-**Check recent changes:**
-```bash
-git log --oneline -20           # Recent commits
-git log --oneline --all -20     # Including other branches
-git diff HEAD~5                 # Changes in last 5 commits
-git bisect start                # Binary search for breaking commit
-```
-
-**Inspect runtime state:**
-- Add targeted logging at key decision points (input values, branch taken, return values).
-- Check configuration values at runtime — are they what you expect?
-- Inspect database state, file contents, environment variables.
-
-**Check external dependencies:**
-- Are external services responding? Check health endpoints.
-- Are dependency versions what you expect? Check lock files.
-- Has an external API changed its contract?
+Collect before theorizing: the exact error output, recent changes on every branch, runtime state at the decision points (inputs, branch taken, config values, stored state), and the health and versions of external dependencies.
 
 ## Phase 3: Form Hypotheses
 
@@ -85,18 +62,6 @@ Each hypothesis must be **falsifiable**: state the prediction it makes.
 If you cannot state the prediction, the hypothesis is a vibe — discard or sharpen it.
 
 **Show the ranked list to the user before testing.** They often have domain knowledge that re-ranks instantly ("we just deployed a change to #3"), or know hypotheses they've already ruled out. Cheap checkpoint, big time saver. Don't block on it — proceed with your ranking if the user is AFK.
-
-**Common root cause categories:**
-
-| Category | Examples |
-|---|---|
-| Input handling | Unexpected nil/null, wrong type, missing field, encoding issue |
-| State management | Stale cache, race condition, leaked state between requests |
-| Logic error | Off-by-one, wrong operator, inverted condition, missing case |
-| Resource issue | Connection pool exhaustion, memory leak, file descriptor leak |
-| Dependency | Version mismatch, API contract change, transitive dependency conflict |
-| Configuration | Wrong environment, missing env var, incorrect feature flag |
-| Timing | Race condition, timeout too short, clock skew, retry storm |
 
 ## Phase 4: Test Hypotheses
 
@@ -122,14 +87,7 @@ Write the regression test **before the fix** — but only if there is a **correc
 
 **If no correct seam exists, that itself is the finding.** Note it — the codebase architecture is preventing the bug from being locked down. This is a candidate for `architecture-review` work.
 
-If a correct seam exists:
-1. Turn the minimised repro into a failing test at that seam.
-2. Watch it fail.
-3. Apply the minimal fix that addresses the root cause.
-4. Watch it pass.
-5. Re-run the Phase 0 feedback loop against the original (un-minimised) scenario.
-6. Check for variants — search the codebase for similar patterns that might have the same bug.
-7. Run the full test suite to ensure the fix doesn't break anything else.
+With a seam: minimised repro becomes a failing test there, minimal root-cause fix, test passes, then re-run the Phase 0 loop against the original un-minimised scenario and search the codebase for variants of the same pattern.
 
 ## Phase 6: Cleanup and Post-Mortem
 
@@ -143,11 +101,3 @@ Required before declaring done:
 
 **Then ask: what would have prevented this bug?** If the answer involves architectural change (no good test seam, tangled callers, hidden coupling), hand off to `architecture-review` with the specifics. Make the recommendation *after* the fix is in — you have more information now than when you started.
 
-## Anti-Patterns
-
-- **Shotgun debugging**: Changing things randomly hoping something works. This wastes time and can introduce new bugs.
-- **Fixing symptoms**: Adding a nil check to prevent a crash without understanding why the value is nil.
-- **Blame-driven debugging**: Assuming a specific component is at fault without evidence.
-- **Tunnel vision**: Getting fixated on one hypothesis and ignoring contradicting evidence.
-- **Skipping Phase 0**: Trying to fix a bug you can't reproduce. You'll have no way to verify the fix.
-- **Moving on without a loop**: Hypothesising without a runnable pass/fail signal. Discipline here is everything.
