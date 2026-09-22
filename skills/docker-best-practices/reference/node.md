@@ -5,6 +5,7 @@ Node needs its runtime in the final image, so the floor is the size of the base 
 ## Dockerfile
 
 ```dockerfile
+# versions checked 2026-09-22; re-verify before pinning
 # Stage 1: Build
 FROM node:24-slim AS build
 WORKDIR /app

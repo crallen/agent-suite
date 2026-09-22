@@ -7,6 +7,7 @@ Rust emits a static binary against musl, or a dynamically linked one against gli
 `cargo-chef` exists because `cargo build` compiles dependencies and source in one step, so the naive Dockerfile rebuilds every crate on any source edit. Chef splits the dependency compile into its own cacheable layer.
 
 ```dockerfile
+# versions checked 2026-09-22; re-verify before pinning
 # Stage 1: Plan — compute a dependency-only recipe
 FROM lukemathwalker/cargo-chef:latest-rust-1 AS chef
 WORKDIR /src
@@ -24,7 +25,7 @@ COPY . .
 RUN cargo build --release --bin server
 
 # Stage 3: Production
-FROM gcr.io/distroless/cc-debian12:nonroot
+FROM gcr.io/distroless/cc-debian13:nonroot
 COPY --from=build /src/target/release/server /app
 USER 65532:65532
 ENTRYPOINT ["/app"]

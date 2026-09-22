@@ -5,18 +5,19 @@ The compiler covers boundary enforcement and type checking, so the pipeline is s
 ## GitHub Actions
 
 ```yaml
+# versions checked 2026-09-22; re-verify before pinning
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
-          go-version: '1.26'
+          go-version: '1.27'
           cache: true
       - run: test -z "$(gofmt -l .)"
       - run: go vet ./...
-      - uses: golangci/golangci-lint-action@v6
+      - uses: golangci/golangci-lint-action@v9
       - run: go test -race -covermode=atomic -coverprofile=cover.out ./...
       - name: Coverage gate
         run: |

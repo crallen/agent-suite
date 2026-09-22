@@ -5,11 +5,11 @@ description: "Cross-cutting execution guardrails for coding tasks: surface assum
 
 # Coding Guardrails
 
-Load this skill for implementation work: writing features, fixing bugs, refactoring, reviewing diffs, or changing configuration. It captures four behavioral guardrails that keep work grounded, simple, scoped, and easy to verify.
+Load this skill for implementation work: writing features, fixing bugs, refactoring, reviewing diffs, or changing configuration. It captures six behavioral guardrails that keep work grounded, simple, scoped, verifiable, well-shaped, and clearly named.
 
 These guardrails bias toward caution over speed. Apply them proportionally — a one-line typo fix does not need a ceremony-heavy process.
 
-## The Four Guardrails
+## The Guardrails
 
 | Guardrail | Prevents | Core question |
 |---|---|---|
@@ -116,7 +116,7 @@ comments, docstrings, or identifiers a human will read.
 
 ## Principle Deep-Dives
 
-The four guardrails above apply to every task and stay in context. These references hold sharper, situational depth — load the one the task in front of you calls for, and only then:
+The guardrails above apply to every task and stay in context. These references hold sharper, situational depth — load the one the task in front of you calls for, and only then:
 
 | Load | When |
 |---|---|
