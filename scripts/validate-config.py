@@ -352,7 +352,8 @@ def index_tokens(path: Path) -> tuple[set[str], set[str], set[str]]:
     return skills, agents, commands
 
 
-def check_index(index: Path, skills: dict, agents: dict, commands: dict) -> str:
+def check_index(index: Path, skills: dict, agents: dict, commands: dict,
+                require_mentions: bool = True) -> str:
     named_s, named_a, named_c = index_tokens(index)
     for s in sorted(named_s):
         if s not in skills:
@@ -371,17 +372,20 @@ def check_index(index: Path, skills: dict, agents: dict, commands: dict) -> str:
     def mentioned(name: str) -> bool:
         return re.search(r"`[/@$]?" + re.escape(name) + r"(?:\s[^`]*)?`", text) is not None
 
-    for s in sorted(skills):
+    # Claude Code injects the skill and agent listings itself, so its index only
+    # has to mention commands, which explicit-only invocation hides from the model.
+    for s in sorted(skills if require_mentions else {}):
         if not mentioned(s):
             fail(f"{rel(index)}: skill '{s}' exists but is never mentioned")
-    for a in sorted(agents):
+    for a in sorted(agents if require_mentions else {}):
         if not mentioned(a):
             fail(f"{rel(index)}: agent '{a}' exists but is never mentioned")
     for c in sorted(commands):
         if not mentioned(c):
             fail(f"{rel(index)}: command '{c}' exists but is never mentioned")
-    return (f"{len(named_s)}/{len(named_a)}/{len(named_c)} skills/agents/commands named all exist; "
-            f"{len(skills)}/{len(agents)}/{len(commands)} on disk all mentioned")
+    on_disk = (f"{len(skills)}/{len(agents)}/{len(commands)} on disk all mentioned"
+               if require_mentions else f"{len(commands)} commands on disk all mentioned")
+    return f"{len(named_s)}/{len(named_a)}/{len(named_c)} skills/agents/commands named all exist; {on_disk}"
 
 
 def check_countable_claims(index: Path, skills: dict, root: Path) -> str:
@@ -416,44 +420,38 @@ def check_countable_claims(index: Path, skills: dict, root: Path) -> str:
 
 
 def check_index_description_parity() -> str:
-    """A shared skill carries the same description in the core index and each platform's.
+    """A shared skill carries the same description in the OpenCode and Codex indexes.
 
-    The skill files themselves are symlinks and cannot drift, but the index tables
-    are separate documents. A description sharpened in one and not the others
-    leaves a platform advertising a skill by a blurb that no longer matches it.
+    The skill files are symlinks and cannot drift, but the two index tables are
+    separate documents. Claude's index carries no skill table: the harness injects
+    the listing from frontmatter, so there is nothing there to compare.
     """
-    c_text = (CLAUDE / "CLAUDE.md").read_text()
-
     def desc(text: str, skill: str) -> str | None:
-        # Index tables carry two or three columns depending on the platform, so
-        # take the description cell and ignore anything after it.
         m = re.search(r"^\| `" + re.escape(skill) + r"` \| (.*?) \|(?: .*)?$", text, re.M)
         return m.group(1).strip() if m else None
 
+    o_text = (OPENCODE / "AGENTS.md").read_text()
+    x_index = CODEX / "AGENTS.md"
+    if not x_index.is_file():
+        return "codex index absent; nothing to compare"
+    x_text = x_index.read_text()
     n = 0
-    for label, root, inv in (("opencode", OPENCODE, O_SKILLS), ("codex", CODEX, X_SKILLS)):
-        index = root / "AGENTS.md"
-        if not index.is_file():
-            continue
-        p_text = index.read_text()
-        for name in sorted(inv):
-            c_desc, p_desc = desc(c_text, name), desc(p_text, name)
-            if c_desc is None or p_desc is None:
-                continue  # coverage is already enforced by check_index
-            n += 1
-            if c_desc != p_desc:
-                # Show the divergence, not the first 60 chars — the two often share
-                # a long prefix, which makes a head-truncated message look identical.
-                i = next((k for k, (a, b) in enumerate(zip(c_desc, p_desc)) if a != b),
-                         min(len(c_desc), len(p_desc)))
-                start = max(0, i - 15)
-                fail(f"index descriptions disagree for shared skill '{name}' at char {i}: "
-                     f"core {'...' if start else ''}{c_desc[start:i + 45]!r}, "
-                     f"{label} {'...' if start else ''}{p_desc[start:i + 45]!r}")
+    for name in sorted(set(O_SKILLS) & set(X_SKILLS)):
+        o_desc, x_desc = desc(o_text, name), desc(x_text, name)
+        if o_desc is None or x_desc is None:
+            continue  # coverage is already enforced by check_index
+        n += 1
+        if o_desc != x_desc:
+            i = next((k for k, (a, b) in enumerate(zip(o_desc, x_desc)) if a != b),
+                     min(len(o_desc), len(x_desc)))
+            start = max(0, i - 15)
+            fail(f"index descriptions disagree for shared skill '{name}' at char {i}: "
+                 f"opencode {'...' if start else ''}{o_desc[start:i + 45]!r}, "
+                 f"codex {'...' if start else ''}{x_desc[start:i + 45]!r}")
     if not n:
         fail("no shared skill descriptions were compared: the index tables parsed "
              "as zero rows, so this check is silently passing on nothing")
-    return f"{n} shared skill descriptions agree with the core index"
+    return f"{n} shared skill descriptions agree between the opencode and codex indexes"
 
 
 def check_shared_links() -> str:
@@ -510,7 +508,8 @@ def main() -> int:
         ("colors", check_colors),
         ("injection lines", check_injection_lines),
         ("reference pointers", check_reference_pointers),
-        ("claude index", lambda: check_index(CLAUDE / "CLAUDE.md", C_SKILLS, C_AGENTS, C_COMMANDS)),
+        ("claude index", lambda: check_index(CLAUDE / "CLAUDE.md", C_SKILLS, C_AGENTS, C_COMMANDS,
+                                             require_mentions=False)),
         ("opencode index", lambda: check_index(OPENCODE / "AGENTS.md", O_SKILLS, O_AGENTS, O_COMMANDS)),
         ("claude phase counts",
          lambda: check_countable_claims(CLAUDE / "CLAUDE.md", C_SKILLS, CORE / "skills")),
