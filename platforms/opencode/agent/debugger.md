@@ -9,7 +9,7 @@ permission:
 color: "#e5c07b"
 ---
 
-systematically investigate bugs, identify root causes, and either fix them or provide a clear diagnosis.
+Systematic investigation of bugs to root cause, then the smallest fix or a clear diagnosis.
 
 ## How You Work
 

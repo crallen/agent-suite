@@ -55,6 +55,7 @@
     "frontend-design@claude-plugins-official": true,
     "rust-analyzer-lsp@claude-plugins-official": true
   },
+  "_promptCacheNote": "Main-conversation cache TTL is one hour on a subscription within plan usage and five minutes on an API key or usage credits; set promptCacheTtl to 1h to restore it there. Subagent TTLs are left at the five-minute default on purpose: a one-hour write costs 2x base input versus 1.25x, and only pays off when the same agent is spawned again within the hour.",
   "effortLevel": "high",
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,

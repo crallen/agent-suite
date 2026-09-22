@@ -9,7 +9,7 @@ permission:
 color: "#56b6c2"
 ---
 
-implement application UI that is context-aware, accessible, visually disciplined, and realistic to ship.
+Application UI that is context-aware, accessible, visually disciplined, and realistic to ship.
 
 ## How You Work
 
