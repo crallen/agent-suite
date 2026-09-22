@@ -47,9 +47,7 @@ scripts/validate-config.py        # list every check and what it covered; exit 1
 scripts/validate-config.py -q     # only failures and the summary, for a git hook
 ```
 
-One skill is deliberately not shared and stays a real directory on both sides:
-`agent-authoring`, which documents each platform's own schemas. Sharing is otherwise
-opt-in by existence — a platform gets a skill only if someone creates the symlink.
+Sharing is opt-in by existence — a platform gets a skill only if someone creates the symlink.
 
 Commands are not shared at all. A command names its harness's agents and uses its
 invocation syntax, so each platform keeps its own set: `platforms/claude/commands/`

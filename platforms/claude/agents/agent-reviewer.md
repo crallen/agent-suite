@@ -12,7 +12,7 @@ Review of agents, skills, and commands for correctness, consistency, permissions
 
 ## How You Work
 
-1. **Apply the authoring references** - `agent-authoring` (schemas, conventions, validation checks) and `skill-design` (predictability, information hierarchy, leading words, failure modes) are preloaded. `skill-design`'s `GLOSSARY.md` is disclosed; read it when a term needs its full meaning.
+1. **Apply the authoring references** - `agent-authoring` (conventions, validation checklist) and `skill-design` (predictability, information hierarchy, leading words, failure modes) are preloaded. Read `agent-authoring/reference/claude.md` for the frontmatter and permission schemas.
 2. **Read the relevant artifacts** - The named files or the full suite: agents, skills, commands, and the index document.
 3. **Check structure and routing** - Identifiers, frontmatter, cross-references, permissions, and naming consistency. Least privilege, identifier consistency, and stale cross-references are first-class concerns.
 4. **Report findings** - Real issues with consequence, not stylistic preference. When reviewing a skill's content, name the concrete `skill-design` failure mode (duplication, sediment, sprawl, no-op, negation, premature completion) and the lever that cures it.

@@ -5,22 +5,18 @@ description: Design principles for writing and reviewing skills well — predict
 
 # Skill Design
 
-Where `agent-authoring` covers the **mechanics** of a skill — file location, frontmatter keys, the validation checklist — this skill covers its **design**: what makes the content itself good. Load both when writing or reviewing a skill.
-
 A skill exists to wrangle determinism out of a stochastic system. **Predictability** — the agent taking the same *process* every run, not producing the same output — is the root virtue; every lever below serves it. A brainstorming skill should predictably diverge: its tokens vary, its behaviour doesn't.
-
-Terms in **bold** are defined in [`GLOSSARY.md`](GLOSSARY.md), the disclosed reference for this skill. Reach for it when a term needs its full meaning.
 
 ## Invocation
 
 This suite has two skill kinds, and they map onto one design axis — whether the **agent** can reach the skill or only the **human** can:
 
 - A **reference skill** is knowledge the agent reaches for mid-task. Its **description** lets the agent fire it autonomously, lets other skills reach it, and lets an agent preload it via `skills:`. It pays a permanent **context load** — the description sits in the window every turn, and a preloaded body is injected whole at startup. This is the model-invoked kind.
-- A **workflow skill** is an action the human decides to take. It runs when the human names it, and preloading one makes no sense — it is a task prompt, not knowledge. It spends **cognitive load**: the human is the index that must remember it exists. This is the user-invoked kind.
+- A **workflow skill** is an action the human decides to take. It runs when the human names it, and preloading one makes no sense — it is a task prompt, not knowledge. It spends **cognitive load**: what the human must hold in their head, which skills exist and when to reach for each. That cost is the price of human agency, not something to minimise: spend it where human judgement matters, remove it where it does not. This is the user-invoked kind.
 
 This suite keeps the two kinds in separate places. Reference skills live under `skills/`. Workflow skills are the `/`-commands, and each harness holds its own set as plain files outside the skill tree — they name that harness's agents and use its invocation syntax, so there is nothing to share. Where a harness offers a key that strips the description from the agent's reach, the commands set it: they cost zero **context load**, and human-only invocation becomes something the harness enforces rather than an index asking the model nicely.
 
-Choose by what the skill *is*: knowledge the agent should consult mid-task is a reference skill, an action the human initiates is a workflow skill. The cost follows from that choice — a reference skill's description is permanently loaded, so prune it hard; a workflow skill's is read by the human alone.
+Choose by what the skill *is*: knowledge the agent should consult mid-task is a reference skill, an action the human initiates is a workflow skill. A reference skill may also take an argument when invoked by name; that does not make it a workflow skill. The cost follows from that choice — a reference skill's description is permanently loaded, so prune it hard; a workflow skill's is read by the human alone.
 
 When commands multiply past what the human can hold in their head, that piled-up cognitive load is cured by a **router**: one command that names the others and when to reach for each. (`frontend-patterns` plays an analogous routing role, though for reference files rather than commands.)
 
@@ -36,15 +32,15 @@ A reference skill's **description** does two jobs — state what the skill is, a
 
 Skill content is **steps** and **reference**, mixed freely — a skill can be all steps, all reference, or both. The **information hierarchy** ranks each piece by how immediately the agent needs it:
 
-1. **In-skill step** — an ordered action in `SKILL.md`, the primary tier. Each step ends on a **completion criterion**: the condition telling the agent the work is done. Make it *checkable* (can it tell done from not-done?) and, where it matters, *exhaustive* ("every modified model accounted for", not "produce a change list") — a vague criterion invites **premature completion**.
+1. **In-skill step** — an ordered action in `SKILL.md`, the primary tier. Each step ends on a **completion criterion**: the condition telling the agent the work is done. Its *clarity* (can the agent tell done from not-done?) resists premature completion; its *demand* ("every modified model accounted for", not "produce a change list") sets the **legwork**, the reading and digging the agent does within the step rather than offloading to the user. Demand is not step-bound: a body of flat reference can carry an exhaustiveness bar too ("every rule applied").
 2. **In-skill reference** — a definition, rule, or fact consulted on demand. Often a legitimately flat peer-set (every rule of a review on one rung) — a fine arrangement, not a smell.
-3. **Disclosed reference** — reference pushed into a separate file (`GLOSSARY.md`, `reference/*.md`), reached by a **context pointer** and loaded only when the pointer fires.
+3. **Disclosed reference** — reference pushed into a separate file (`reference/*.md`), reached by a **context pointer** and loaded only when the pointer fires. An **external reference** sits one step further out: a plain file with no description, not invocable, that any skill can point at. It is the natural shared home for material two workflow skills both need, since neither should fire the other.
 
 Push too little down and the top bloats (**sprawl**); push too much and you hide material the agent needs. That tension is the whole decision.
 
 **Progressive disclosure** is the move down the ladder — out of `SKILL.md` into a linked file — so the top stays legible. In this suite it is the reference-file pattern: a router `SKILL.md` plus `reference/*.md` loaded on demand. **Branching** is the cleanest disclosure test: inline what every branch needs, push behind a pointer what only some branches reach. A **context pointer**'s *wording*, not its target, decides when and how reliably the agent reaches the material — a must-have target behind a weak pointer is a variance bug, so sharpen the wording before inlining.
 
-Where the ladder decides *how far down* a piece sits, **co-location** decides *what sits beside it*: keep a concept's definition, rules, and caveats under one heading rather than scattered, so reading one part brings its neighbours.
+Where the ladder decides *how far down* a piece sits, **co-location** decides *what sits beside it*: keep a concept's definition, rules, and caveats under one heading rather than scattered, so reading one part brings its neighbours. The test is that the skill reads like documentation written for the agent. Scattering is distinct from duplication: duplication repeats one meaning in two places, scattering fragments one meaning across many.
 
 Preloaded skills are injected whole, so keep a preloadable reference skill lean and disclose its depth into `reference/*.md` the agent Reads on demand.
 
@@ -73,7 +69,7 @@ Check every line for **relevance**: does it still bear on what the skill does? T
 
 Use these to diagnose a skill under review — each names a symptom and the lever that cures it:
 
-- **Premature completion** — ending a step before it's genuinely done, attention slipping to *being done*. Sharpen the completion criterion first (cheap, local); only if it is irreducibly fuzzy *and* you observe the rush, hide the post-completion steps by splitting.
+- **Premature completion** — ending a step before it's genuinely done, attention slipping to *being done*. A between-steps failure: a skill with no steps that quits early is thin legwork under an unmet demand, not this. Two forces pull: the visible post-completion steps forward, the completion criterion's clarity back. Sharpen the criterion first (cheap, local); only if it is irreducibly fuzzy *and* you observe the rush, hide the later steps by splitting across a real context boundary.
 - **Duplication** — the same meaning in more than one place. Costs maintenance and tokens, and inflates a meaning's rank on the ladder past its real weight.
 - **Sediment** — stale layers that settle because adding feels safe and removing feels risky. The default fate of any skill without a pruning discipline.
 - **Sprawl** — a skill simply too long, even when every line is live and unique. The cure is the ladder: disclose reference behind pointers, and split by branch or sequence so each path carries only what it needs.

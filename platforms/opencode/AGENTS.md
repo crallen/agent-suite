@@ -67,7 +67,7 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 | `backend-patterns` | Backend application patterns for handlers, services, validation, auth/authz, integrations, and app-layer refactors |
 | `database-patterns` | Database design and performance patterns for schemas, migrations, indexes, constraints, transactions, and query behavior |
 | `frontend-patterns` | Frontend router for product context gathering, work-mode selection, escalation, and targeted reference selection |
-| `agent-authoring` | Schemas, templates, and conventions for creating agents, skills, and commands |
+| `agent-authoring` | Conventions and validation checklist for agents, skills, and commands, with per-harness schema references |
 | `domain-modeling` | Active domain-model maintenance: terminology sharpening, CONTEXT.md glossary upkeep, which terms earn a type, and minimal ADRs — both gated by a three-part test |
 | `grill-methodology` | One-question-at-a-time Socratic interrogation of a plan: frontier questioning, recommendation-first questions, codebase cross-referencing, and a shared-understanding gate — pairs with `domain-modeling` |
 | `architecture-review` | Architecture deepening workflow: find shallow modules, propose depth-increasing refactors, present markdown report of candidates, then grill on the chosen one with CONTEXT.md / ADR integration |

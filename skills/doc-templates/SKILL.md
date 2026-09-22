@@ -20,217 +20,55 @@ Four documentation types, each serving one distinct need. Mixing them in a singl
 
 The templates below are mostly how-to and reference; ADRs and design docs are explanation. When a page tries to be two types at once, split it.
 
-## README Template
+## README
 
-```markdown
-# Project Name
+Sections, in order: one-sentence description of what it does and who it is for;
+Quick Start (prerequisites with versions, then clone, install, run); Usage (the
+most common call, then a table or short list of options); Project Structure (only
+when the layout is non-obvious); Development (test, lint, build commands);
+Contributing; License. Every command shown must run as written.
 
-One-sentence description of what this project does and who it's for.
+## API Documentation
 
-## Quick Start
-
-Prerequisites:
-- Dependency 1 (version)
-- Dependency 2 (version)
-
-\```bash
-# Clone and install
-git clone <repo-url>
-cd <project>
-<install-command>
-
-# Run
-<run-command>
-\```
-
-## Usage
-
-Brief usage examples showing the most common operations.
-
-\```bash
-# Example 1: Description
-<command or code>
-
-# Example 2: Description
-<command or code>
-\```
-
-## Project Structure
-
-\```
-project/
-├── src/           # Source code
-├── test/          # Tests
-├── docs/          # Documentation
-└── ...
-\```
-
-## Development
-
-\```bash
-# Run tests
-<test-command>
-
-# Run linter
-<lint-command>
-
-# Build
-<build-command>
-\```
-
-## Contributing
-
-Brief contribution guidelines or link to CONTRIBUTING.md.
-
-## License
-
-<License type>. See [LICENSE](LICENSE) for details.
-```
-
-## API Documentation Template
-
-For each endpoint or public function:
-
-```markdown
-### `METHOD /path/to/endpoint`
-
-Brief description of what this endpoint does.
-
-**Authentication**: Required / Optional / None
-
-**Parameters**:
-
-| Name | Type | In | Required | Description |
-|------|------|----|----------|-------------|
-| id   | string | path | yes | Resource identifier |
-| limit | integer | query | no | Max results (default: 20, max: 100) |
-
-**Request Body** (if applicable):
-
-\```json
-{
-  "field": "value",
-  "nested": {
-    "key": "value"
-  }
-}
-\```
-
-**Response** `200 OK`:
-
-\```json
-{
-  "data": { ... },
-  "meta": {
-    "total": 42,
-    "page": 1
-  }
-}
-\```
-
-**Errors**:
-
-| Status | Code | Description |
-|--------|------|-------------|
-| 400 | INVALID_INPUT | Request body validation failed |
-| 401 | UNAUTHORIZED | Missing or invalid authentication |
-| 404 | NOT_FOUND | Resource does not exist |
-
-**Example**:
-
-\```bash
-curl -X GET https://api.example.com/resource/123 \
-  -H "Authorization: Bearer <token>"
-\```
-```
+Per endpoint or public function, in order: signature as the heading; one-line
+purpose; authentication; parameters as a table with name, type, required,
+description; a request example; a response example with status code; errors as a
+table with status, condition, body. Show real shapes, not placeholders.
 
 ## Architecture Decision Records (ADRs)
 
-ADRs follow the `domain-modeling` skill — it owns the three-part gate for when a decision deserves one, the `docs/adr/` layout, and the canonical minimal format (a title plus 1-3 sentences, with optional Status / Considered Options / Consequences sections). Load it before writing an ADR.
+ADRs follow the `domain-modeling` skill — it owns the three-part gate for when a
+decision deserves one, the `docs/adr/` layout, and the canonical minimal format.
+Load it before writing an ADR.
 
-## Changelog Template
+## Changelog
 
-Follow [Keep a Changelog](https://keepachangelog.com/) format:
+[Keep a Changelog](https://keepachangelog.com/) format: an `[Unreleased]` section
+at the top, then one section per version with its date, each split into Added,
+Changed, Fixed, Removed as needed. Every entry ends with its issue or PR
+reference in parentheses, `(#123)`.
 
-```markdown
-# Changelog
+## Code Comments
 
-All notable changes to this project will be documented in this file.
+Comments explain why: workarounds, business rules, performance tricks, links to
+specs and issues. The code already shows what. Public APIs document parameters,
+return values, error conditions, and one usage example; everything else is
+documented only when a caller cannot infer it from the signature, so a
+"document everything" lint is satisfied by fewer, better comments, not more.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/),
-and this project adheres to [Semantic Versioning](https://semver.org/).
-
-## [Unreleased]
-
-### Added
-- New feature description (#issue-number)
-
-### Changed
-- Modified behavior description (#issue-number)
-
-### Fixed
-- Bug fix description (#issue-number)
-
-### Removed
-- Removed feature description (#issue-number)
-
-## [1.0.0] - YYYY-MM-DD
-
-### Added
-- Initial release features
-```
-
-## Code Comment Guidelines
-
-### When to Comment
-
-- **WHY, not WHAT**: The code shows what happens. Comments explain why.
-- **Non-obvious behavior**: Workarounds, business rules, performance tricks.
-- **Important context**: Links to specs, issue numbers, external docs.
-- **Public API**: Document parameters, return values, error conditions, and usage examples.
-
-### When NOT to Comment
-
-- Don't restate the code: `i++ // increment i` adds nothing.
-- Don't leave commented-out code. Delete it; git has the history.
-- Don't use comments as section dividers where functions would be better.
-- Don't write TODOs without an associated issue or ticket number.
-- Don't narrate steps the code already shows (`// load config`, `// open the connection`). A run of step labels is noise.
-- Don't banner-comment the sections of a struct or object literal (`// financial fields`); if the grouping matters, give it a type.
-- Don't document every field, getter, or self-evident item to satisfy a "document everything" lint. Document what a caller can't infer from the signature.
-
-### Keep It Lean
-
-Prose in code is read on every pass, so keep it minimal. When an explanation outgrows a couple of lines — design rationale, trade-offs, background — move it to a README, an ADR, or a design doc and link it from the code. The code carries the load-bearing *why*; the documents carry the depth.
-
-### Format
-
-```
-// Good: Explains WHY
-// Rate limit is 100 req/min per the API docs (https://example.com/limits).
-// We use 80 to leave headroom for retries.
-const maxRequestsPerMinute = 80
-
-// Bad: Restates WHAT
-// Set max requests to 80
-const maxRequestsPerMinute = 80
-```
+Prose in code is read on every pass, so keep it minimal. When an explanation
+outgrows a couple of lines, move it to a README, an ADR, or a design doc and
+link it from the code; the code carries the load-bearing why, the documents carry
+the depth. A TODO carries its issue number. Commented-out code is deleted; git
+has the history. When a group of fields matters enough to label, give it a type
+instead of a banner comment.
 
 ## Writing for a Global Audience
 
 Much technical prose is read by non-native English speakers and by translation
-tools. Simplified Technical English and Global English add rules on top of the
-general prose hygiene the `unslop` skill owns — active voice, one idea per
-sentence, one term per concept all apply here too:
-
-- Keep sentences short — aim under ~25 words.
-- Avoid idiom, phrasal verbs, and culture-bound metaphor ("kick off", "out of
-  the box", "in the ballpark"). Write "start", "with no configuration",
-  "roughly".
-- Keep pronoun references explicit — an "it" or "this" with no clear antecedent
-  breaks a translator and a reader alike.
-
-These reinforce the Register rules below.
+tools, so on top of the general prose hygiene the `unslop` skill owns: keep
+sentences under about 25 words, write "start" and "roughly" rather than "kick
+off" and "in the ballpark", and give every "it" and "this" a clear antecedent.
 
 ## Register
 

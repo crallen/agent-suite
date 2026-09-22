@@ -1,347 +1,122 @@
 ---
 name: agent-authoring
-description: Schemas, templates, conventions, and validation rules for creating Claude Code agents, skills, and slash commands.
+description: Conventions, body templates, and the validation checklist for creating or modifying agents, skills, and slash commands, plus per-harness frontmatter and permission references. Load when adding or changing any of the three artifact types.
 ---
 
-# Agent Authoring Reference
+# Agent Authoring
 
-This skill contains the exact schemas, conventions, and templates for authoring Claude Code agents, skills, and slash commands. Use it whenever creating or modifying these artifacts.
+Conventions for the three artifact types this suite ships, and the per-harness
+schemas behind them. The harness-specific half is disclosed: read
+`agent-authoring/reference/claude.md` when working on Claude Code artifacts and
+`agent-authoring/reference/opencode.md` for OpenCode. Codex consumes skills only.
 
-Paths below are relative to the Claude Code config root at `~/.claude/`. In a dotfiles repo, that root may be mirrored elsewhere (for example via GNU Stow), but the artifact layout stays the same.
+For the design of a skill's content (predictability, information hierarchy,
+leading words, disclosure, failure modes) use `skill-design`; this skill covers
+mechanics.
 
-## File Locations and Naming
+## The Three Artifacts
 
-| Artifact | Location | Naming Rule | Identifier |
+| Artifact | Lives at | Identifier | Reached by |
 |---|---|---|---|
-| Agent | `agents/<name>.md` | kebab-case filename | Filename sans `.md` (becomes `@name`) |
-| Skill (reference) | `skills/<name>/SKILL.md` | kebab-case directory name | Directory name |
-| Command | `platforms/claude/commands/<name>.md` | kebab-case filename | Filename without `.md` (becomes `/name`) |
+| Agent | the harness's agent directory, one file each | filename without `.md`, as `@name` | delegation, routing, or `@mention` |
+| Skill | `skills/<name>/SKILL.md`, shared by every harness | directory name, matching `name:` | the harness's skill tool, or preloaded into an agent |
+| Command | the harness's command directory, one file each | filename without `.md`, as `/name` | the user typing `/name` |
 
-Commands live at `platforms/claude/commands/<name>.md`, one file each, and are platform-specific by nature — a command names its harness's agents and uses its invocation syntax, so it cannot be shared the way a skill is. Skills under `skills/` are the harness-neutral half and are never commands. When naming a command, avoid shadowing bundled skills (`/debug`, `/review`, `/security-review`, `/run`, `/verify`, `/init`, `/loop`, `/batch`, `/simplify`, `/schedule`, `/claude-api`); when a command delegates to one agent and the natural verb is taken, name it after the agent (e.g., `/debugger`). One deliberate exception: this suite **intentionally claims** `/code-review` with its own command (which forks to `@code-reviewer`). The bundled `/code-review` still appears in the menu, but the personal command lists above it and is selected by default — so `/code-review` runs ours. Do not rename it to dodge the bundled name; the collision is intentional.
+Skills are harness-neutral by rule: no tool names, invocation syntax, or machinery
+specific to one harness. Anything that cannot be said neutrally belongs in a
+platform's index or in this skill's references. Every skill carries `name:`
+matching its directory, which is what lets one file serve all three harnesses.
 
-Identifiers must be consistent across all references:
-- Commands route to agents via the `agent:` frontmatter key (filename without `.md`) and/or via prose ("Use the `@name` subagent ...").
-- Agents reference skills by directory name in prose (e.g., "Use the Skill tool to load `agent-authoring`").
-- `CLAUDE.md` uses `@name` syntax when referencing agents.
+Commands are platform-specific by nature. A command names its harness's agents and
+uses its invocation syntax, so each platform keeps its own set. Commands are short
+task prompts, not reference documents: most fit in 5–15 lines, and every command
+that accepts input ends with `$ARGUMENTS`.
 
-## Agent Definition Schema
+An agent earns its slot by a capability instructions cannot express: a tool
+restriction the harness enforces, an MCP server, persistent memory, or a model pin.
+A definition that only carries a persona and preloads a skill is a skill and a
+command, not an agent.
 
-### Frontmatter
+## Agent Body
 
-```yaml
----
-name: kebab-case-name
-description: One-sentence summary of when Claude should delegate to this subagent.
-tools: Read, Glob, Grep, Bash
-disallowedTools: Write, Edit, NotebookEdit
-skills:
-  - relevant-skill
-color: red
----
-```
-
-| Key | Type | Required | Description |
-|---|---|---|---|
-| `name` | string | Yes | Unique identifier. Lowercase + hyphens. The filename does not have to match, but in this suite it must (convention). |
-| `description` | string | Yes | When Claude should delegate to this subagent. Appears in the agent listing and informs auto-routing. |
-| `tools` | comma-separated string | No | Allowlist of tools the agent can use. Omit to inherit the full tool set. Use the allowlist to scope read-only agents. **An allowlist excludes everything unlisted — including the `Skill` tool** (see permission patterns below). |
-| `disallowedTools` | comma-separated string | No | Denylist applied on top of the inherited or allowlisted tool set. Useful for blocking write tools while keeping Bash. If both are set, `disallowedTools` wins. |
-| `skills` | YAML list | No | Skills whose **full content is preloaded** into the agent's context at startup. The canonical way to wire skill-backed knowledge into an agent — required for agents whose `tools:` allowlist excludes `Skill`. Cannot preload skills with `disable-model-invocation: true`. |
-| `model` | string | No | `sonnet`, `opus`, `haiku`, `fable`, a full model ID, or `inherit`. Defaults to `inherit` (the main conversation's model). **Suite convention: omit this key** so the user's session model selection applies to every agent; pin only for deliberate cost routing. |
-| `color` | string | No | Word: `red`, `blue`, `green`, `yellow`, `purple`, `orange`, `pink`, `cyan`. **Not** a hex code. |
-| `permissionMode` | string | No | `default`, `acceptEdits`, `auto`, `dontAsk`, `bypassPermissions`, or `plan`. If the parent session uses `auto`, `acceptEdits`, or `bypassPermissions`, the parent mode takes precedence. |
-| `maxTurns` | integer | No | Maximum agentic turns before stopping. |
-| `memory` | string | No | Persistent cross-session memory directory: `user` (`~/.claude/agent-memory/<name>/`), `project` (checked in), or `local` (project-level, not checked in). Auto-enables Read/Write/Edit for the memory directory. |
-| `mcpServers` | YAML list | No | MCP servers available to this agent: names referencing already-configured servers, or inline server definitions scoped to this agent only. |
-| `hooks` | YAML map | No | Lifecycle hooks scoped to this agent (e.g., a `PreToolUse` command hook that validates Bash commands). |
-| `effort` | string | No | `low`, `medium`, `high`, `xhigh`, or `max`. Overrides the session effort level. |
-| `background` | boolean | No | `true` to always run as a background task. Background agents auto-deny permission prompts. |
-| `isolation` | string | No | `worktree` to run the agent in a temporary git worktree (isolated repo copy, auto-cleaned if unchanged). |
-
-Subagents are loaded at session start; agents added or edited on disk need a session restart (agents created via `/agents` take effect immediately).
-
-### Permission Patterns
-
-**Least privilege.** Restrict an agent with `tools:` by default. Omit the key only when the agent genuinely needs to write files and run arbitrary commands.
-
-Claude Code's `tools:` key is an **unrestricted allowlist** — there is no granular per-command Bash scoping like OpenCode supports. Listing `Bash` grants arbitrary shell. Use one of these patterns:
-
-#### Full access (implementation agents)
-
-Omit `tools:` and `disallowedTools:`. The agent inherits the full tool set, including the Skill tool for loading situational skills on demand. Preload the skills it always needs via `skills:`.
-
-```yaml
----
-name: backend-engineer
-description: Implements backend application code ...
-skills:
-  - backend-patterns
-  - coding-guardrails
-color: blue
----
-```
-
-#### Read-only (analysis agents that must not modify files)
-
-Allowlist only the read/search tools, plus Bash if the agent needs git/lint/dependency commands. Add `disallowedTools:` to belt-and-suspenders the write tools in case Bash inheritance changes:
-
-```yaml
----
-name: code-reviewer
-description: Reviews code for quality, security, performance, and best practices ...
-tools: Read, Glob, Grep, Bash
-disallowedTools: Write, Edit, NotebookEdit
-skills:
-  - code-review-checklist
-  - coding-guardrails
-color: red
----
-```
-
-**The allowlist excludes the `Skill` tool**, so a read-only agent cannot load skills at runtime. Any skill the agent depends on must be preloaded via the `skills:` field; its body should say the skill is "preloaded into your context," never "use the Skill tool." (Skill reference files such as `reference/*.md` are still reachable through the Read tool.)
-
-Bash remains powerful — shell `>` redirects, `rm`, `mv`, `sed -i`, etc. all stay available. The prose body of read-only agents must explicitly forbid file modification ("You do NOT modify files — you only read and analyze.").
-
-#### Write but no Bash (rare)
-
-```yaml
-tools: Read, Glob, Grep, Edit, Write
-```
-
-Use when the agent should be able to author files but never run shell commands.
-
-### Body Structure
-
-Keep the body to a concise workflow description, roughly 40-80 lines. Detailed procedural knowledge belongs in a skill the agent preloads via `skills:`, not inlined here — the body is read every time the agent runs.
-
-Follow this template for the markdown body (after the closing `---` of frontmatter):
+Keep the body to a concise workflow, roughly 30–60 lines. Detailed procedural
+knowledge belongs in a skill the agent preloads or loads, not inline; the body is
+read on every run.
 
 ```markdown
-You are a senior [role title]. Your job is to [primary responsibility in one sentence].
+One sentence naming the agent's focus.
 
 ## How You Work
 
-1. **Step one** - Description of the first phase of the agent's workflow.
-2. **Step two** - Reference preloaded skills: "The `skill-name` skill ([what it provides]) is preloaded into your context." For situational skills on full-access agents: "Use the Skill tool to invoke `skill-name` when [condition]."
-3. **Step three** - The core work phase.
+1. **Step one** - The first phase.
+2. **Step two** - Name the skills that carry the method and what each provides.
+3. **Step three** - The core work.
 4. **Step four** - Verification, output, or handoff.
 
-## [Domain-Specific Section]
+## Output Format (analysis agents only)
 
-Content covering the agent's domain expertise: categories, principles, techniques, etc.
-
-## Output Format (optional — for analysis agents)
-
-Structure your [report/review/analysis] as:
-
-[Template with severity levels, sections, etc.]
+The report shape, or a pointer to the skill that owns it.
 
 ## Guidelines
 
-- Behavioral rule one.
-- Behavioral rule two.
+- Standing rules that no step above and no loaded skill already states.
 ```
 
-Key conventions:
-- **Opening line**: Always starts with "You are a senior [role]." followed by "Your job is to [verb]."
-- **How You Work**: Numbered steps. Reference the Skill tool here for loading procedural knowledge.
-- **Domain sections**: One or more sections with the agent's area-specific knowledge.
-- **Output Format**: Only for analysis/reporting agents (code-reviewer, security-analyst). Includes severity levels and structured templates.
-- **Guidelines**: Always the last section. Standing behavioral rules that no *How You Work* step and no preloaded skill already states — a bullet restating either one is duplication, not emphasis.
+A Guidelines bullet that restates a step or a skill's rule is duplication, not
+emphasis. A read-only agent's body states the restraint in words as well, because
+a shell can still write files.
 
-## Skill Definition Schema
+## Skill Body
 
-This section is the **mechanics** of a skill — file layout, frontmatter, body conventions. For the **design** of a skill's content — predictability, information hierarchy, leading words, progressive disclosure, and the failure modes it catalogs — use the `skill-design` skill, its single source of truth.
+Skills are reference documents, not personas. Open with a single H1 and a one- or
+two-sentence intro that says what the skill covers and when to load it, then
+headed sections of rules, tables, and examples. State the target behavior rather
+than a list of prohibitions.
 
-### Frontmatter
-
-```yaml
----
-name: skill-directory-name
-description: One-sentence description of the skill's content and when to load it.
----
-```
-
-| Key | Type | Required | Description |
-|---|---|---|---|
-| `description` | string | Recommended | What the skill does and when to use it. Drives auto-routing. Put the key use case first — combined `description` + `when_to_use` text is truncated at 1,536 characters in the skill listing. |
-| `when_to_use` | string | No | Extra routing context: trigger phrases or example requests. Appended to `description` in the listing. |
-| `name` | string | Yes (this suite) | Display name in skill listings. Claude Code treats it as optional and the directory name remains the `/command` identifier, but this suite sets it on every skill and requires it to match the directory — OpenCode's loader needs it, and it is what lets all three platforms read one file. |
-| `disable-model-invocation` | boolean | No | Set `true` so only the user can invoke it. **Never used on a skill here** — it blocks the Skill tool, which is a skill's only route, and it blocks preloading via an agent's `skills:` field. A user-only workflow belongs in `commands/` instead. |
-| `user-invocable` | boolean | No | Set `false` to hide from the `/` menu. Use for background knowledge that isn't a meaningful user action. |
-| `argument-hint` | string | No | Autocomplete hint for expected arguments, e.g. `[issue-number]`. |
-| `arguments` | list | No | Named positional arguments usable as `$name` substitutions in the body. |
-| `allowed-tools` | string/list | No | Tools pre-approved while the skill is active. Supports rule specifiers, e.g. `Bash(git add *) Bash(git commit *)`. |
-| `disallowed-tools` | string/list | No | Tools removed from the pool while the skill is active. |
-| `model` / `effort` | string | No | Model or effort override for the rest of the turn while the skill is active. |
-| `context` | string | No | `fork` to run the skill in an isolated subagent context (see command schema below). |
-| `agent` | string | No | Which agent type executes the skill when `context: fork` is set. |
-| `paths` | string/list | No | Glob patterns limiting auto-activation to work on matching files. |
-| `hooks` | map | No | Hooks scoped to this skill's lifecycle. |
-
-The directory name (`skills/<name>/`) is the canonical identifier you type after `/`.
-
-### Body Structure
-
-Skills are **reference documents**, not personas. They contain structured knowledge that agents load on demand.
-
-```markdown
-# Skill Title
-
-Brief introduction (1-2 sentences) explaining what this skill covers and when to load it.
-
-## Section One
-
-Reference content: tables, rules, patterns, examples.
-
-### Subsection
-
-More detailed content. Use:
-- **Tables** for quick-reference data (commit types, severity levels, coverage targets)
-- **Code blocks** with language tags for examples
-- **Checklists** (`- [ ]`) for audit/review workflows
-- **Numbered steps** for ordered processes
-
-## Section Two
-
-Additional reference content.
-
-## Anti-Patterns (optional)
-
-What NOT to do. Common mistakes to avoid.
-```
-
-Key conventions:
-- **No persona statements**. Skills never say "you are..." — they are pure reference material.
-- **Dense and scannable**. Use headings, tables, code blocks, and bullet points liberally.
-- **Actionable examples**. Include real code examples, command snippets, and templates.
-- **Self-contained**. A skill should provide everything an agent needs without requiring additional context lookups.
-- **Open with `# H1 Title`**. Every skill body starts with a single H1 matching the skill's purpose, followed by a 1-2 sentence intro. Avoid jumping straight into an H2.
-- Skills typically range from 90-250 lines; keep `SKILL.md` under 500 lines (official guidance). For larger reference material, split into `SKILL.md` (router) plus `reference/*.md` files loaded on demand.
-- **Preloadable**. Skills consumed via an agent's `skills:` field are injected whole at startup — keep them lean, and push rarely-needed depth into `reference/*.md` files the agent Reads on demand.
-
-### Reference-File Pattern
-
-When a skill's domain is too large for a single file, split it:
+Keep `SKILL.md` lean, since an agent that preloads it pays for every line on
+every run. When the domain is too large for one file, `SKILL.md` becomes a router
+and the depth moves to `reference/*.md` files loaded on demand:
 
 ```
 skills/<name>/
-├── SKILL.md         # Router: index of references and when to load each
+├── SKILL.md         # trigger, non-obvious rules, and a map of the references
 └── reference/
-    ├── topic-a.md
-    ├── topic-b.md
-    └── topic-c.md
+    └── topic.md
 ```
 
-The router `SKILL.md` should map task shapes to the reference files an agent should load. See `frontend-patterns/SKILL.md` for the canonical example.
+Pointers to a reference use the form `<skill>/reference/<file>.md`; the validator
+checks they resolve.
 
-## Cross-Cutting Skill Expectations
+Never leave a shell-injection token bare at the start of a line in a skill or
+agent file. It belongs inside inline code, as in the command references, or the
+harness will run it whenever the file loads. The validator checks this too.
 
-Some skills are domain-specific (`docker-best-practices`, `frontend-patterns`). Others should be reused across multiple agents rather than re-explained in every file.
+## Cross-Cutting Skills
 
-- **`coding-guardrails`** - Default cross-cutting skill for agents that write, refactor, fix, or review code/configuration. Covers assumption management, simplicity, surgical diffs, and verification-driven execution.
-- **`spec-writing`** - Default cross-cutting skill for design-first planning agents.
+- `coding-guardrails` for any agent that writes, refactors, fixes, or reviews
+  code or configuration.
+- `spec-writing` for design-first planning.
 
-Wire cross-cutting skills into agents via the `skills:` preload field rather than runtime Skill-tool instructions — preloading guarantees the guidance is present and works for read-only agents whose allowlist excludes the Skill tool.
-
-## Command Definition Schema
-
-A file at `platforms/claude/commands/<name>.md` creates `/name`. Commands are short task prompts, not reference documents — they follow the conventions below rather than the reference-skill body structure (no `# H1 Title` requirement).
-
-### Frontmatter
-
-```yaml
----
-description: Short description of what the command does.
-argument-hint: [free-form request]
-agent: agent-identifier
-context: fork
-disable-model-invocation: true
----
-```
-
-**Always set `disable-model-invocation: true`.** These are user-triggered workflows, and the key is what makes that a guarantee the harness enforces rather than a request the index makes. `scripts/validate-config.py` fails on any command missing it.
-
-This is the reason commands are files here and not skills. As skills they could not carry the key at all — it blocks the Skill tool outright, which is the only route a skill has, so `/name` stopped working and the flag had to come out. A paragraph in `CLAUDE.md` asking the model not to self-invoke stood in for it. Commands have their own invocation path, so the switch works as intended.
-
-| Key | Type | Required | Description |
-|---|---|---|---|
-| `description` | string | Yes | Short description displayed in `/help` and the command palette. |
-| `argument-hint` | string | No | Autocomplete hint shown after the command name, e.g. `[issue description]`. Add it whenever the command accepts `$ARGUMENTS`. |
-| `agent` | string | No | Agent identifier (filename without `.md`) to route the command to. When paired with `context: fork`, the command runs in that agent's isolated subagent context. |
-| `context` | string | No | Set to `fork` to run the command in an isolated subagent context with no access to the conversation history. Pair with `agent:`. Only use when the body is a self-contained task (inject any needed state via `` !`command` ``). A fork cannot pause for user input — `AskUserQuestion` is stripped from every subagent — so dialogue-driven workflows must run inline. |
-| `disable-model-invocation` | boolean | Yes | Prevents auto-invocation by Claude. **Required on every command here** — see the note above the table. |
-| `allowed-tools` | comma-separated string | No | Tools pre-approved while this command is running. Supports rule specifiers like `Bash(git commit *)`. |
-
-### Body Structure
-
-```markdown
-Instructional text telling the agent what to do (1-3 sentences).
-
-Optional dynamic content (injects command output — see the "Dynamic content" note below for the exact syntax):
-<dynamic command output block>
-
-Optional conditional/fallback logic in prose:
-If [condition], do X. If [other condition], do Y.
-
-$ARGUMENTS
-```
-
-Key conventions:
-- **Dynamic content**: Use `` !`command` `` syntax to inject shell command output into the prompt at invocation time. The `!` backtick block evaluates the command and replaces itself with the output before Claude sees the content. The `!` must start a line or follow whitespace; use a ```` ```! ```` fenced block for multi-line commands. Because it evaluates on load, never leave this token bare (at line start or after whitespace) in a skill or agent file — keep it inside inline code as shown above, or it will execute whenever the file is pulled into context.
-- **`$ARGUMENTS`**: When the command accepts free-form user input, place `$ARGUMENTS` at the end. The user's text after the slash command (e.g., `/debug the login page crashes`) replaces it. Positional access is available via `$0`/`$1` (or `$ARGUMENTS[N]`), and `${CLAUDE_SKILL_DIR}` resolves to the skill's own directory for referencing bundled files.
-- **Keep it as short as the task allows**. Workflow skills are prompts, not documentation — most fit in 5-15 lines, but target-selection and diff-injection skills (`/code-review`, `/full-review`) legitimately run longer.
-- **Multiple commands can route to the same agent** (e.g., `/frontend`, `/frontend-polish`, and `/frontend-audit` route within the frontend workflow family).
-- **Choose the routing style by context needs**. `agent:` + `context: fork` runs the skill body as the task in an isolated subagent — no conversation history, so inject any needed state via `` !`command` ``. Prose routing ("Use the `@name` subagent ...") runs in the main conversation, which composes a delegation message that can carry conversation context. Use fork for self-contained analyses (review, audit, security); use prose routing when the surrounding conversation matters (debugging, implementation). Dialogue-driven workflows (`/spec`, `/grill`, `/architecture`) must not fork at all: a forked subagent has no `AskUserQuestion` and cannot pause for the user's answers, so they run inline in the main conversation.
-
-## Color Palette
-
-Claude Code colors are limited to a fixed set of names: `red`, `blue`, `green`, `yellow`, `purple`, `orange`, `pink`, `cyan`. Hex codes are not supported.
-
-Current assignments in this suite:
-
-| Color | Currently used by | Semantic meaning |
-|---|---|---|
-| `red` | code-reviewer | Critical analysis |
-| `orange` | security-analyst | Security |
-| `green` | frontend-auditor | Audit |
-| `yellow` | debugger | Investigation |
-| `cyan` | documenter | Documentation |
-| `blue` | frontend-engineer | UI |
-| `pink` | agent-reviewer | Meta/tooling |
-| `purple` | unused | — |
-
-With only 8 colors available, duplication across roles is unavoidable. When picking a color for a new agent, prefer one with semantic relevance even if it overlaps an existing assignment.
+Wire them in through the harness's preload mechanism rather than a runtime
+instruction, so they are present even for agents whose tool set excludes the
+skill tool.
 
 ## Validation Checklist
 
-After creating or modifying an agent, skill, or command, verify:
+`scripts/validate-config.py` enforces most of this; run it after any change.
 
-- [ ] **Filename matches identifier**: Agent filename = `@mention` name = `name:` frontmatter. Skill directory matches its `name:` key and references in prose. Command filename is the `/command` name, and carries no `name:` key.
-- [ ] **No bundled-skill shadowing**: New command names do not collide with Claude Code's bundled skills.
-- [ ] **Cross-references are correct**: Workflow skills reference valid agent identifiers via `agent:` frontmatter or prose. Agents reference valid skill names. `CLAUDE.md` lists the new artifact.
-- [ ] **Color is a valid word**: `red`, `blue`, `green`, `yellow`, `purple`, `orange`, `pink`, or `cyan` — not a hex code.
-- [ ] **Tool scope is appropriate**: Read-only agents allowlist only `Read, Glob, Grep, Bash` (Bash only if needed for git/lint/etc.) and add `disallowedTools: Write, Edit, NotebookEdit`. Implementation agents typically omit `tools:` to inherit everything. Tool names must exist in the current tools reference (no stale names like `MultiEdit`).
-- [ ] **Skills are preloaded, not stranded**: Every skill an agent's body depends on appears in its `skills:` frontmatter. An agent with a `tools:` allowlist that omits `Skill` must never be told to "use the Skill tool." Preloaded skills must not set `disable-model-invocation: true`.
-- [ ] **Frontmatter is complete**: All required keys are present with valid values.
-- [ ] **Body follows conventions**: Opening persona line (agents), `# H1 Title` + intro (skills), `$ARGUMENTS` at end when accepting user args (commands).
-- [ ] **Guidance is stated once**: No Guidelines bullet repeats a *How You Work* step or a rule from a skill the agent preloads. Additive detail belongs in the step or section that owns it.
-- [ ] **Skill content is well-designed**: For a new or edited skill, apply `skill-design` — the description triggers on distinct branches, reference is disclosed rather than bloating the top, and the body is free of the failure modes it catalogs.
-- [ ] **Cross-cutting guidance is wired in**: Implementation-oriented agents reference `coding-guardrails` (or clearly include equivalent guardrails) alongside any domain skill.
-- [ ] **`CLAUDE.md` is updated**: New agents appear in the subagent table, new skills in the skills table, new commands in the commands table.
-- [ ] **User-facing docs are updated if present**: README or other suite docs are kept in sync when this repo actually includes them.
-
-## Updating Suite Documentation
-
-When adding a new artifact, update these docs as applicable:
-
-### `CLAUDE.md` under the current Claude Code config root
-
-- Add agents to the "Agents" table.
-- Add skills to the "Skills" table with description and primary agent users.
-- Add commands to the "Commands" table with description and agent.
-
-### `README.md` or other user-facing docs (if present)
-
-- Update any public-facing summary tables so they match the suite on disk.
-- If the repo has no README or equivalent docs file, do not invent one just to satisfy a checklist item.
+- [ ] Filename matches identifier: agent filename = `@name` = `name:`; skill
+      directory = `name:`; command filename = `/name`, with no `name:` key.
+- [ ] Every frontmatter key is one the harness reads, and every tool name exists.
+- [ ] Cross-references resolve: command → agent, agent → skill, skill →
+      reference file.
+- [ ] Colors follow the harness's rule and are unique across its roster.
+- [ ] Read-only agents restrict writes through the harness's mechanism and say so
+      in the body.
+- [ ] Every skill an agent depends on is preloaded or loadable by that agent.
+- [ ] Guidance is stated once: no Guidelines bullet repeats a step or a skill.
+- [ ] A new or edited skill passes `skill-design`: the description names its
+      triggers, depth is disclosed, and the body is free of the failure modes it
+      catalogs.
+- [ ] The platform's index document lists the new artifact where that harness
+      needs it (see the references), and any README stays in sync.
