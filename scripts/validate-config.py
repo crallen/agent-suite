@@ -1,5 +1,9 @@
-#!/usr/bin/env python3
-"""Validate the two agent-suite configs for reference integrity and parity.
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.12"
+# dependencies = ["pyyaml"]
+# ///
+"""Validate the suite and its three platform views for integrity and parity.
 
 Checks that identifiers match filenames, that every cross-reference resolves
 (agent -> skill, command -> agent, skill -> reference file), that the index
@@ -10,8 +14,7 @@ are symlinked to their canonical top-level source.
     scripts/validate-config.py          list every check and what it covered
     scripts/validate-config.py -q       print only failures and the summary
 
-Frontmatter is parsed with PyYAML when available; without it the YAML-validity
-check is skipped and a simple key scanner is used instead.
+Runs under uv, which supplies PyYAML from the inline script metadata above.
 """
 
 from __future__ import annotations
@@ -22,10 +25,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-try:
-    import yaml
-except ImportError:
-    yaml = None
+import yaml
 
 ROOT = Path(
     subprocess.run(
@@ -44,6 +44,47 @@ CODEX = ROOT / "platforms/codex"
 
 # Agent identifiers provided by the harness, so no file backs them.
 BUILTIN_AGENTS = {"explore", "general", "plan", "build"}
+
+# Tool names from the Claude Code tools reference, checked 2026-09-22. MCP tools
+# are matched by their mcp__ prefix instead.
+KNOWN_TOOLS = {
+    "Agent", "Artifact", "AskUserQuestion", "Bash", "CronCreate", "CronDelete",
+    "CronList", "Edit", "EndConversation", "EnterPlanMode", "EnterWorktree",
+    "ExitPlanMode", "ExitWorktree", "Glob", "Grep", "ListAgents",
+    "ListMcpResourcesTool", "LSP", "Monitor", "NotebookEdit", "PowerShell",
+    "PushNotification", "Read", "ReadMcpResourceTool", "RemoteTrigger",
+    "ReportFindings", "ScheduleWakeup", "SendFeedback", "SendMessage",
+    "SendUserFile", "ShareOnboardingGuide", "Skill", "SubagentHandback",
+    "TaskCreate", "TaskGet", "TaskList", "TaskOutput", "TaskStop", "TaskUpdate",
+    "TodoWrite", "ToolSearch", "WaitForMcpServers", "WebFetch", "WebSearch",
+    "Workflow", "Write",
+}
+
+# Claude Code accepts only these names for an agent's color; hex is rejected.
+CLAUDE_COLORS = {"red", "blue", "green", "yellow", "purple", "orange", "pink", "cyan"}
+
+# Frontmatter keys each artifact type may carry, from the harness references.
+ALLOWED_KEYS = {
+    "claude agent": {
+        "name", "description", "tools", "disallowedTools", "model", "permissionMode",
+        "maxTurns", "skills", "mcpServers", "hooks", "memory", "background",
+        "omitClaudeMd", "effort", "isolation", "color", "initialPrompt", "experimental",
+    },
+    "claude command": {
+        "description", "argument-hint", "disable-model-invocation", "user-invocable",
+        "allowed-tools", "model", "effort", "context", "agent", "hooks",
+    },
+    "skill": {
+        "name", "description", "argument-hint", "disable-model-invocation",
+        "user-invocable", "allowed-tools", "model", "effort", "context", "agent",
+        "hooks", "license", "metadata",
+    },
+    "opencode agent": {
+        "description", "mode", "model", "temperature", "top_p", "tools", "permission",
+        "disable", "hidden", "color", "prompt", "steps", "options",
+    },
+    "opencode command": {"description", "agent", "subtask", "model", "template"},
+}
 
 problems: list[str] = []
 
@@ -72,65 +113,21 @@ def parse_frontmatter(path: Path) -> dict | None:
     if raw is None:
         fail(f"{rel(path)}: no frontmatter block")
         return None
-    if yaml is not None:
-        try:
-            data = yaml.safe_load(raw)
-        except yaml.YAMLError as e:
-            fail(f"{rel(path)}: invalid YAML frontmatter — {str(e).splitlines()[0]}")
-            return None
-        if not isinstance(data, dict):
-            fail(f"{rel(path)}: frontmatter parsed as {type(data).__name__}, not a mapping")
-            return None
-        return data
-    # Fallback: scalars plus simple block lists — enough for the reference
-    # checks. Nested mappings are collapsed to a list, which no check reads.
-    data: dict = {}
-    lines = raw.splitlines()
-    i = 0
-    while i < len(lines):
-        m = re.match(r"^([A-Za-z_][A-Za-z0-9_-]*):\s*(.*)$", lines[i])
-        if not m:
-            i += 1
-            continue
-        key, val = m.group(1), m.group(2).strip().strip("\"'")
-        if val:
-            low = val.lower()
-            data[key] = True if low in ("true", "yes") else False if low in ("false", "no") else val
-            i += 1
-            continue
-        items = []
-        j = i + 1
-        while j < len(lines) and re.match(r"^\s+-\s+", lines[j]):
-            items.append(re.sub(r"^\s+-\s+", "", lines[j]).strip().strip("\"'").rstrip(":"))
-            j += 1
-        data[key] = items
-        i = j
+    try:
+        data = yaml.safe_load(raw)
+    except yaml.YAMLError as e:
+        fail(f"{rel(path)}: invalid YAML frontmatter — {str(e).splitlines()[0]}")
+        return None
+    if not isinstance(data, dict):
+        fail(f"{rel(path)}: frontmatter parsed as {type(data).__name__}, not a mapping")
+        return None
     return data
 
 
 # ---------------------------------------------------------------- inventories
 
-def claude_skills() -> dict[str, dict]:
+def skill_dirs(root: Path) -> dict[str, dict]:
     out = {}
-    for d in sorted((CORE / "skills").iterdir()):
-        f = d / "SKILL.md"
-        if d.is_dir() and f.is_file():
-            out[d.name] = parse_frontmatter(f) or {}
-    return out
-
-
-def opencode_skills() -> dict[str, dict]:
-    out = {}
-    for d in sorted((OPENCODE / "skills").iterdir()):
-        f = d / "SKILL.md"
-        if d.is_dir() and f.is_file():
-            out[d.name] = parse_frontmatter(f) or {}
-    return out
-
-
-def codex_skills() -> dict[str, dict]:
-    out = {}
-    root = CODEX / "skills"
     if not root.is_dir():
         return out
     for d in sorted(root.iterdir()):
@@ -148,9 +145,9 @@ def md_files(directory: Path) -> dict[str, dict]:
     return out
 
 
-C_SKILLS = claude_skills()
-X_SKILLS = codex_skills()
-O_SKILLS = opencode_skills()
+C_SKILLS = skill_dirs(CORE / "skills")
+X_SKILLS = skill_dirs(CODEX / "skills")
+O_SKILLS = skill_dirs(OPENCODE / "skills")
 C_AGENTS = md_files(CLAUDE / "agents")
 O_AGENTS = md_files(OPENCODE / "agent")
 O_COMMANDS = md_files(OPENCODE / "commands")
@@ -239,6 +236,84 @@ def check_command_invocation() -> str:
             f"none colliding with a skill name")
 
 
+def check_frontmatter_keys() -> str:
+    """Every key is one the harness reads, and every tool name is a real tool."""
+    n_keys = n_tools = 0
+    inventories = (("claude agent", C_AGENTS), ("claude command", C_COMMANDS),
+                   ("skill", C_SKILLS), ("opencode agent", O_AGENTS),
+                   ("opencode command", O_COMMANDS))
+    for label, inv in inventories:
+        allowed = ALLOWED_KEYS[label]
+        for name, fm in inv.items():
+            for key in fm:
+                n_keys += 1
+                if key not in allowed:
+                    fail(f"{label} '{name}': unknown frontmatter key '{key}'")
+            for field in ("tools", "disallowedTools"):
+                value = fm.get(field)
+                if not isinstance(value, str):
+                    continue
+                for tool in (x.strip() for x in value.split(",") if x.strip()):
+                    n_tools += 1
+                    if tool not in KNOWN_TOOLS and not tool.startswith("mcp__"):
+                        fail(f"{label} '{name}': {field} names unknown tool '{tool}'")
+    return f"{n_keys} keys across five artifact types are known; {n_tools} tool names resolve"
+
+
+def check_colors() -> str:
+    """Claude colors come from the fixed palette; OpenCode colors are hex; both unique.
+
+    Uniqueness on Claude downgrades to a warning once the roster outgrows the
+    eight-name palette, since a collision is then unavoidable.
+    """
+    seen: dict[str, str] = {}
+    for name, fm in C_AGENTS.items():
+        color = fm.get("color")
+        if color is None:
+            continue
+        if color not in CLAUDE_COLORS:
+            fail(f"claude agent '{name}': color '{color}' is not one of {sorted(CLAUDE_COLORS)}")
+            continue
+        if color in seen:
+            msg = f"claude agent '{name}': color '{color}' already used by '{seen[color]}'"
+            if len(C_AGENTS) > len(CLAUDE_COLORS):
+                print(f"  warn  {msg} (roster exceeds the palette)")
+            else:
+                fail(msg)
+        seen[color] = name
+    hexes: dict[str, str] = {}
+    for name, fm in O_AGENTS.items():
+        color = fm.get("color")
+        if not isinstance(color, str) or not re.fullmatch(r"#[0-9a-fA-F]{6}", color):
+            fail(f"opencode agent '{name}': color must be a six-digit hex string, got {color!r}")
+            continue
+        low = color.lower()
+        if low in hexes:
+            fail(f"opencode agent '{name}': color '{color}' already used by '{hexes[low]}'")
+        hexes[low] = name
+    return f"{len(seen)} claude and {len(hexes)} opencode agent colors are valid and unique"
+
+
+def check_injection_lines() -> str:
+    """No skill or agent body starts a line with a shell injection.
+
+    Commands run their !`...` lines on purpose; a skill or agent that carries one
+    outside a code fence either runs it unexpectedly or ships a dead literal.
+    """
+    n = 0
+    roots = (CORE / "skills", CLAUDE / "agents", OPENCODE / "agent")
+    for root in roots:
+        for f in sorted(root.rglob("*.md")):
+            n += 1
+            in_fence = False
+            for i, line in enumerate(f.read_text().splitlines(), 1):
+                if line.startswith("```"):
+                    in_fence = not in_fence
+                elif not in_fence and line.startswith("!`"):
+                    fail(f"{rel(f)}:{i}: bare injection line outside a code fence")
+    return f"{n} skill and agent files carry no bare injection lines"
+
+
 def check_reference_pointers() -> str:
     n_files = n_ptr = n_link = 0
     pat_scoped = re.compile(r"\b([a-z][a-z0-9-]*)/reference/([a-z0-9-]+\.md)\b")
@@ -289,17 +364,21 @@ def check_index(index: Path, skills: dict, agents: dict, commands: dict) -> str:
         if c not in commands:
             fail(f"{rel(index)}: lists command '{c}', which does not exist")
 
-    # Existence -> mention. Loose on purpose: some artifacts are described in
-    # prose or bold rather than a backticked table cell.
+    # Existence -> mention, as a backticked token: `name`, `/name args`, `@name`,
+    # or `$name` (Codex). A substring test let 'why' match inside any word.
     text = index.read_text()
+
+    def mentioned(name: str) -> bool:
+        return re.search(r"`[/@$]?" + re.escape(name) + r"(?:\s[^`]*)?`", text) is not None
+
     for s in sorted(skills):
-        if s not in text:
+        if not mentioned(s):
             fail(f"{rel(index)}: skill '{s}' exists but is never mentioned")
     for a in sorted(agents):
-        if a not in text:
+        if not mentioned(a):
             fail(f"{rel(index)}: agent '{a}' exists but is never mentioned")
     for c in sorted(commands):
-        if c not in text:
+        if not mentioned(c):
             fail(f"{rel(index)}: command '{c}' exists but is never mentioned")
     return (f"{len(named_s)}/{len(named_a)}/{len(named_c)} skills/agents/commands named all exist; "
             f"{len(skills)}/{len(agents)}/{len(commands)} on disk all mentioned")
@@ -415,8 +494,6 @@ def main() -> int:
     quiet = "-q" in sys.argv or "--quiet" in sys.argv
 
     print("validating the core suite and its three platform views\n")
-    if yaml is None:
-        print("  note: PyYAML not installed — frontmatter validity check skipped\n")
     print(f"  inventory  claude: {len(C_SKILLS)} skills, {len(C_AGENTS)} agents, "
           f"{len(C_COMMANDS)} commands")
     print(f"             opencode: {len(O_SKILLS)} skills, {len(O_AGENTS)} agents, "
@@ -429,6 +506,9 @@ def main() -> int:
         ("agent skill refs", check_agent_skill_refs),
         ("command agent refs", check_command_agent_refs),
         ("command invocation", check_command_invocation),
+        ("frontmatter keys", check_frontmatter_keys),
+        ("colors", check_colors),
+        ("injection lines", check_injection_lines),
         ("reference pointers", check_reference_pointers),
         ("claude index", lambda: check_index(CLAUDE / "CLAUDE.md", C_SKILLS, C_AGENTS, C_COMMANDS)),
         ("opencode index", lambda: check_index(OPENCODE / "AGENTS.md", O_SKILLS, O_AGENTS, O_COMMANDS)),

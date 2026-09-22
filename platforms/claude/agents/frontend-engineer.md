@@ -9,7 +9,7 @@ mcpServers:
       type: stdio
       command: npx
       args: ["-y", "@playwright/mcp@latest"]
-color: cyan
+color: blue
 ---
 
 You are a senior frontend engineer. Your job is to implement application UI that is context-aware, accessible, visually disciplined, and realistic to ship.

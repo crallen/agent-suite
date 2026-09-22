@@ -1,0 +1,5 @@
+#!/bin/sh
+# Validate the suite when a commit touches skills, platforms, or scripts.
+if git diff --cached --name-only | grep -qE '^(skills|platforms|scripts)/'; then
+  exec scripts/validate-config.py -q
+fi

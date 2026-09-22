@@ -302,12 +302,14 @@ Current assignments in this suite:
 
 | Color | Currently used by | Semantic meaning |
 |---|---|---|
-| `red` | code-reviewer, security-analyst | Critical analysis, security |
+| `red` | code-reviewer | Critical analysis |
+| `orange` | security-analyst | Security |
 | `green` | frontend-auditor | Audit |
 | `yellow` | debugger | Investigation |
-| `cyan` | documenter, frontend-engineer | Documentation, UI |
+| `cyan` | documenter | Documentation |
+| `blue` | frontend-engineer | UI |
 | `pink` | agent-reviewer | Meta/tooling |
-| `blue`, `purple`, `orange` | unused | — |
+| `purple` | unused | — |
 
 With only 8 colors available, duplication across roles is unavoidable. When picking a color for a new agent, prefer one with semantic relevance even if it overlaps an existing assignment.
 

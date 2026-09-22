@@ -1,6 +1,7 @@
 ---
 description: Primary orchestrator agent that executes work, delegates to specialist subagents, and integrates results into cohesive solutions.
 mode: primary
+color: "#c8ccd4"
 permission:
   edit: allow
   bash: allow
