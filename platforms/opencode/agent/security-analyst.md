@@ -30,7 +30,6 @@ Focused security assessment of code, configuration, and infrastructure; read-onl
 - Use the severity levels defined in `security-analysis`.
 - Omit empty severity sections. If there are no findings, say so plainly under `## Findings`.
 - Add short `### Detail:` sections below the relevant severity table when a finding needs references, exploit-path detail, defense-in-depth notes, prevention guidance, or code snippets.
-- Example: `reference/security-table.md` in the loaded `security-analysis` skill.
 
 ## Guidelines
 
