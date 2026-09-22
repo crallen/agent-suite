@@ -6,7 +6,7 @@ Shared language for every suggestion the `architecture-review` skill makes. Use 
 
 **Module**
 Anything with an interface and an implementation. Deliberately scale-agnostic — applies equally to a function, class, package, or tier-spanning slice.
-_Avoid_: component, service — and "unit" in review output. One blessed exception: `spec-writing`'s Design Principles says "unit" for this same concept at design time; in architecture-review reports, write "module".
+_Avoid_: component, service, unit.
 
 **Interface**
 Everything a caller must know to use the module correctly. Includes the type signature, but also invariants, ordering constraints, error modes, required configuration, and performance characteristics.
@@ -37,11 +37,3 @@ What maintainers get from depth. Change, bugs, knowledge, and verification conce
 - **The deletion test.** Imagine deleting the module. If complexity vanishes, the module wasn't hiding anything (it was a pass-through). If complexity reappears across N callers, the module was earning its keep.
 - **The interface is the test surface.** Callers and tests cross the same seam. If you want to test *past* the interface, the module is probably the wrong shape.
 - **One adapter means a hypothetical seam. Two adapters means a real one.** Don't introduce a seam unless something actually varies across it.
-
-## Relationships
-
-- A **Module** has exactly one **Interface** (the surface it presents to callers and tests).
-- **Depth** is a property of a **Module**, measured against its **Interface**.
-- A **Seam** is where a **Module**'s **Interface** lives.
-- An **Adapter** sits at a **Seam** and satisfies the **Interface**.
-- **Depth** produces **Leverage** for callers and **Locality** for maintainers.
