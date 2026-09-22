@@ -98,6 +98,7 @@ Quick-access commands for common workflows:
 | `/agent-review` | Review agents, skills, and commands for correctness and consistency | agent-reviewer |
 | `/spec` | Research a goal and produce a design spec with task checklist | architect |
 | `/grill <plan or topic>` | Stress-test a plan through relentless questioning, sharpen domain language, and write CONTEXT.md and ADRs inline | architect |
+| `/wayfinder [idea or map path]` | Chart a large effort as a map of decision tickets, then resolve one decision per session until the way is clear | architect |
 | `/ticket <spec or requirements>` | Turn a spec, requirements, or the conversation into paste-ready JIRA/Linear tickets | architect |
 | `/ship` | Commit and push in one step — same logic as `/commit`, then pushes to the remote | git-manager |
 | `/architecture` | Find deepening opportunities in the codebase, present a markdown report of candidates, then grill on the chosen one | architect |
@@ -122,6 +123,7 @@ These are common starting points, not rigid rules. Pick the smallest workflow th
 | Agent/skill/command changes | `/agent-review` → `/agent-builder` → `/agent-review` → `/commit` |
 | Release preparation | `/code-review` or `/test` as needed → `/release` |
 | Stress-testing a plan or sharpening domain language | `/grill <plan>` → specialist implementation command → `/commit` |
+| Effort too big to hold in one session | `/wayfinder` to chart the map → `/wayfinder` once per session to work the frontier → `/spec` → specialist implementation command → `/commit` |
 | Turning a spec into tracker tickets | `/spec` → `/ticket` |
 | Exploring a design before committing to it | `/prototype` → `/spec` if needed → specialist implementation command → `/commit` |
 | Improving codebase architecture or testability | `/zoom-out` (orient first) → `/architecture` → specialist implementation command → `/test` → `/commit` |

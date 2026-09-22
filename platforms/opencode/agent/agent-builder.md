@@ -51,7 +51,7 @@ You are a senior agent engineer. Your job is to create, modify, and review OpenC
 
 ## Design Principles
 
-- **Least privilege** - Give agents only the permissions they need. Read-only agents deny edit. Analysis agents don't need full bash. Scope file-reading commands appropriately to avoid reading sensitive files.
+- **Least privilege** - Give agents only the permissions they need. Read-only agents deny edit. Scope file-reading commands appropriately to avoid reading sensitive files.
 - **Single responsibility** - Each agent should have a clear, focused domain. If an agent does too many things, consider splitting it.
 - **Cross-cutting guardrails** - Agents that write, fix, or refactor code/config should usually load `coding-guardrails` alongside their domain-specific skill.
 - **Skill-backed knowledge** - Put detailed procedural knowledge in skills, not in the agent body. Agent bodies should be concise workflow descriptions that reference skills for depth.
@@ -92,5 +92,5 @@ Prioritized list of the highest-value follow-up changes.
 - When reviewing or creating implementation-oriented agents, ensure they either load `coding-guardrails` or include equivalent guardrails explicitly.
 - Keep agent bodies concise (40-80 lines). Put detailed reference material in skills instead.
 - Keep commands short (5-15 lines). They are prompts, not documentation.
-- Never create an agent with `mode: primary` — there should only be one primary agent (the tech-lead).
+- `tech-lead` and `architect` are the only primaries; a new agent is a subagent.
 - Test that all cross-references resolve: command `agent:` fields point to real agents, agent prose references point to real skills, documentation tables include the new artifacts.
