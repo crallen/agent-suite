@@ -32,7 +32,7 @@ These are invoked by the tech-lead via Task tool, or manually via `@mention`.
 | `@git-manager` | Release preparation, changelog generation, and versioning-heavy git workflow | Write access. |
 | `@frontend-engineer` | UI components, styling, accessibility, responsive design | Write access. |
 | `@frontend-auditor` | Read-only frontend audit and critique for UI quality, accessibility, responsiveness, and product-specific design fit | Read-only. Cannot modify files. |
-| `@agent-builder` | Creates, modifies, and reviews agents, skills, and slash commands | Write access. |
+| `@agent-builder` | Creates and modifies agents, skills, and slash commands | Write access. |
 | `@agent-reviewer` | Read-only review of agents, skills, and commands for correctness, permissions, and consistency | Read-only. Cannot modify files. |
 
 `@agent-reviewer` and `@frontend-auditor` are `hidden: true` — they stay out of `@` autocomplete and are reached through their commands (`/agent-review`, `/frontend-audit`, `/frontend-critique`).
@@ -48,31 +48,31 @@ Plus the built-in subagents:
 
 Skills are loaded on-demand by agents via the `skill` tool. They provide detailed procedural knowledge without consuming context until needed.
 
-| Skill | Description | Primary users |
-|---|---|---|
-| `coding-guardrails` | Cross-cutting execution guardrails for implementation work: assumptions, simplicity, surgical diffs, verification, structure/error/safety defaults, and naming over comments, plus on-demand principle references (type-system discipline, idempotency, build-the-lever, encode-lessons-in-structure) | tech-lead, code-reviewer, tester, debugger, devops-engineer, frontend-engineer, backend-engineer, database-specialist |
-| `spec-writing` | Scope decomposition, clarifying dialogue, approach exploration, staged design presentation, and spec self-review | architect |
-| `ticket-writing` | Spec-to-ticket splitting, story/task and bug templates, testable acceptance-criteria rules, and JIRA/Linear platform notes | architect, documenter |
-| `git-conventions` | Conventional Commits format, branching model, commit hygiene, short-summary commit and PR style | git-manager, tech-lead |
-| `test-strategy` | Test type selection, coverage targets, mocking guidelines, fixture-data hygiene | tester, tech-lead |
-| `code-review-checklist` | Structured review rubric across core review categories, spec fidelity, and a Fowler design-smell baseline, with severity levels | code-reviewer |
-| `security-analysis` | Vulnerability taxonomy, data flow analysis, dependency auditing, remediation patterns | security-analyst |
-| `debugging-methodology` | Phased debugging workflow — Phase 0 builds a feedback loop (10 strategies), phases 1–5 reproduce/gather/hypothesize/test/fix, Phase 6 is cleanup and post-mortem | debugger |
-| `doc-templates` | Templates for READMEs, API docs, changelogs, code comments, plus Diátaxis document-type selection and global-audience prose rules, and register/naming rules — ADRs defer to `domain-modeling` | documenter |
-| `unslop` | Cut AI tells from any writing (puffery, AI vocabulary, punctuation/list overuse, hedging, voiceless prose), then restore a human voice | documenter, any agent writing prose |
-| `why` | Reconstruct why code is shaped as it is — recover rationale from git history, PRs, issues, comments, and ADRs, each claim cited with stated confidence and gaps named | debugger, code-reviewer, architect, any agent |
-| `blast-radius` | Find what a change breaks beyond its obvious callers, then prove the safety-critical fact by running code, ranking each claim on a verification ladder | code-reviewer, backend-engineer, frontend-engineer, any agent making changes |
-| `docker-best-practices` | The static-binary vs runtime base-image decision, multi-stage builds, layer caching, hardening, and per-stack reference Dockerfiles | devops-engineer |
-| `ci-pipeline` | CI/CD stage order, architecture and coverage enforcement gates, auditing an inherited pipeline, per-stack reference workflows, and a discovery procedure for unfamiliar stacks | devops-engineer |
-| `backend-patterns` | Backend application patterns for handlers, services, validation, auth/authz, integrations, and app-layer refactors | backend-engineer, tech-lead |
-| `database-patterns` | Database design and performance patterns for schemas, migrations, indexes, constraints, transactions, and query behavior | database-specialist, tech-lead |
-| `frontend-patterns` | Frontend router for product context gathering, work-mode selection, escalation, and targeted reference selection | frontend-engineer, frontend-auditor |
-| `agent-authoring` | Schemas, templates, and conventions for creating agents, skills, and commands | agent-builder, agent-reviewer |
-| `domain-modeling` | Active domain-model maintenance: terminology sharpening, CONTEXT.md glossary upkeep, which terms earn a type, and minimal ADRs — both gated by a three-part test | architect, documenter |
-| `grill-methodology` | One-question-at-a-time Socratic interrogation of a plan: frontier questioning, recommendation-first questions, codebase cross-referencing, and a shared-understanding gate — pairs with `domain-modeling` | architect |
-| `architecture-review` | Architecture deepening workflow: find shallow modules, propose depth-increasing refactors, present markdown report of candidates, then grill on the chosen one with CONTEXT.md / ADR integration | architect |
-| `prototype-methodology` | Throwaway prototype workflow — routes between a terminal app for logic/state questions and multiple UI variants for visual questions | architect, backend-engineer, frontend-engineer |
-| `wayfinder-methodology` | Multi-session effort mapping: chart a destination plus decision tickets in-repo, work the frontier one decision per session, hold unsharpened work as fog of war | architect |
+| Skill | Description |
+|---|---|
+| `coding-guardrails` | Cross-cutting execution guardrails for implementation work: assumptions, simplicity, surgical diffs, verification, structure/error/safety defaults, and naming over comments, plus on-demand principle references (type-system discipline, idempotency, build-the-lever, encode-lessons-in-structure) |
+| `spec-writing` | Scope decomposition, clarifying dialogue, approach exploration, staged design presentation, and spec self-review |
+| `ticket-writing` | Spec-to-ticket splitting, story/task and bug templates, testable acceptance-criteria rules, and JIRA/Linear platform notes |
+| `git-conventions` | Conventional Commits format, branching model, commit hygiene, short-summary commit and PR style |
+| `test-strategy` | Test type selection, coverage targets, mocking guidelines, fixture-data hygiene |
+| `code-review-checklist` | Structured review rubric across core review categories, spec fidelity, and a Fowler design-smell baseline, with severity levels |
+| `security-analysis` | Vulnerability taxonomy, data flow analysis, dependency auditing, remediation patterns |
+| `debugging-methodology` | Phased debugging workflow — Phase 0 builds a feedback loop (10 strategies), phases 1–5 reproduce/gather/hypothesize/test/fix, Phase 6 is cleanup and post-mortem |
+| `doc-templates` | Templates for READMEs, API docs, changelogs, code comments, plus Diátaxis document-type selection and global-audience prose rules, and register/naming rules — ADRs defer to `domain-modeling` |
+| `unslop` | Cut AI tells from any writing (puffery, AI vocabulary, punctuation/list overuse, hedging, voiceless prose), then restore a human voice |
+| `why` | Reconstruct why code is shaped as it is — recover rationale from git history, PRs, issues, comments, and ADRs, each claim cited with stated confidence and gaps named |
+| `blast-radius` | Find what a change breaks beyond its obvious callers, then prove the safety-critical fact by running code, ranking each claim on a verification ladder |
+| `docker-best-practices` | The static-binary vs runtime base-image decision, multi-stage builds, layer caching, hardening, and per-stack reference Dockerfiles |
+| `ci-pipeline` | CI/CD stage order, architecture and coverage enforcement gates, auditing an inherited pipeline, per-stack reference workflows, and a discovery procedure for unfamiliar stacks |
+| `backend-patterns` | Backend application patterns for handlers, services, validation, auth/authz, integrations, and app-layer refactors |
+| `database-patterns` | Database design and performance patterns for schemas, migrations, indexes, constraints, transactions, and query behavior |
+| `frontend-patterns` | Frontend router for product context gathering, work-mode selection, escalation, and targeted reference selection |
+| `agent-authoring` | Schemas, templates, and conventions for creating agents, skills, and commands |
+| `domain-modeling` | Active domain-model maintenance: terminology sharpening, CONTEXT.md glossary upkeep, which terms earn a type, and minimal ADRs — both gated by a three-part test |
+| `grill-methodology` | One-question-at-a-time Socratic interrogation of a plan: frontier questioning, recommendation-first questions, codebase cross-referencing, and a shared-understanding gate — pairs with `domain-modeling` |
+| `architecture-review` | Architecture deepening workflow: find shallow modules, propose depth-increasing refactors, present markdown report of candidates, then grill on the chosen one with CONTEXT.md / ADR integration |
+| `prototype-methodology` | Throwaway prototype workflow — routes between a terminal app for logic/state questions and multiple UI variants for visual questions |
+| `wayfinder-methodology` | Multi-session effort mapping: chart a destination plus decision tickets in-repo, work the frontier one decision per session, hold unsharpened work as fog of war |
 
 ## Commands
 
@@ -134,13 +134,12 @@ These are common starting points, not rigid rules. Pick the smallest workflow th
 - T3 Code hides every assistant message of a turn except the last one behind a "Worked for …" row once the turn settles, so any text written before a tool call disappears when the turn ends. Do the work first, then answer: keep text before a tool call to a one-line heads-up, never end a turn with tool calls followed by a bare "Done", and make the final message of every turn the complete, self-contained answer — findings, decisions, and questions included, with no reference back to text written earlier in the turn. Concise still means complete. Ask questions only in the final message, then stop and wait for the reply.
 - For ambiguous or cross-cutting work, use `/spec` or `@architect` first. The architect is a collaborative dialogue agent — always invoke it directly, never via Task delegation.
 - Skills are the canonical long-form guidance. Keep agent bodies and commands short; load only what you need. For implementation work, start with `coding-guardrails` plus the domain skill.
-- Agent permissions enforce two things: `edit` (denied on the read-only agents) and `task` (`"*": deny` on every subagent, so subagents cannot spawn subagents; the primaries keep delegation — tech-lead unrestricted, architect only to explore, code-reviewer, and security-analyst). Bash is `allow` across the suite — a read-only agent's shell restraint is carried by its prose, so state it in the body. Role-scoped bash allowlists exist in the schema (`agent-authoring` documents the pattern) for an agent that genuinely needs a narrower shell.
+- Agent permissions enforce two things: `edit` (denied on the read-only agents) and `task` (`"*": deny` on every subagent, so subagents cannot spawn subagents; the primaries keep delegation — tech-lead unrestricted, architect only to explore, code-reviewer, and security-analyst; `/full-review` routes tech-lead as a subtask, which works only because tech-lead carries no task deny). Bash is `allow` across the suite — a read-only agent's shell restraint is carried by its prose, so state it in the body. Role-scoped bash allowlists exist in the schema (`agent-authoring` documents the pattern) for an agent that genuinely needs a narrower shell.
 - Route backend application work to `@backend-engineer`; when schema, SQL, migrations, indexes, transaction behavior, or database-heavy ORM/query-builder behavior are the real concern, involve `@database-specialist`.
 - For implementation work, surface assumptions, keep changes simple and scoped, and verify with explicit checks.
 - Match existing conventions and prefer the smallest change that satisfies the request.
 - Use the GitHub CLI (`gh`) for GitHub-hosted tasks when shell access is appropriate.
 - Keep commit messages and PR descriptions to short summaries: a subject line plus a few lines of why. The diff carries the detail.
 - Describe only what the change contains. Never attach a TODO list, "additional things to verify", or suggested follow-up work to a commit message or PR description.
-- Use `/code-review`, `/security`, `/test`, `/docs`, and `/commit` as appropriate to keep quality, docs, and history clean.
 - Never append attribution footers to commits or PR descriptions — no "Generated with Claude Code", no `Co-Authored-By: Claude`, no session links. This applies to every commit and PR body, including those written by subagents.
 - Never read `.env` files or other secret-bearing files, by any method. `.env.example` is the exception — it holds placeholder values and may be read and edited (never put real secrets in it).
