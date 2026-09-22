@@ -3,10 +3,9 @@ description: Commit and push in one step — stages logical changes, creates Con
 argument-hint: [instructions (optional)]
 disable-model-invocation: true
 ---
-
 Load the `git-conventions` skill and follow it.
 
-Review the current working tree, create appropriate Conventional Commit(s), then push to the remote. Follow the same commit logic as `/commit`: if the working tree is clean with no unpushed commits, report that there is nothing to do and stop. If files are already staged, treat the staged set as the intended commit unless the user says otherwise. If nothing is staged, inspect unstaged and untracked changes, group them into logical commits, stage and commit each group. If the split is ambiguous, explain the proposed grouping and ask before committing. After all commits are created, push to the remote tracking branch (`git push`).
+Same as `/commit`: if the working tree is clean with no unpushed commits, report that there is nothing to do and stop; treat a staged set as the intended commit; otherwise group unstaged and untracked changes into logical commits, asking first if the split is ambiguous. Then push to the remote tracking branch.
 
 Repository state:
 !`git status --short --branch`

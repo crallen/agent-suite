@@ -71,7 +71,7 @@ a commit boundary; the spec's checklist records where.
 
 - [x] 1. Routing and drift fixes (merged 2026-09-22, PR #3)
 - [x] 2. Validator hardening and settings checks (merged 2026-09-22, PR #4; dotfiles 760bae)
-- [ ] 3. Platform-layer density and caching
+- [x] 3. Platform-layer density and caching (merged 2026-09-22, PR #5)
 - [ ] 4a. Skills density: meta
 - [ ] 4b. Skills density: engineering
 - [ ] 4c. Skills density: methodology
