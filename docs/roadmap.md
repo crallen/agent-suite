@@ -69,7 +69,7 @@ a commit boundary; the spec's checklist records where.
 
 ## Progress
 
-- [ ] 1. Routing and drift fixes
+- [x] 1. Routing and drift fixes (merged 2026-09-22, PR #3)
 - [ ] 2. Validator hardening and settings checks
 - [ ] 3. Platform-layer density and caching
 - [ ] 4a. Skills density: meta
