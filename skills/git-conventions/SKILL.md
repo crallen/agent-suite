@@ -20,11 +20,12 @@ stay consistent within a project.
 
 Type decides the version bump: `feat` is minor; `fix` and `perf` are patch;
 `docs`, `style`, `refactor`, `test`, `build`, `ci`, and `chore` bump nothing;
-`revert` varies. A breaking change takes `!` after the type or scope and a
-`BREAKING CHANGE:` footer with migration instructions, and bumps major.
+`revert` varies. A breaking change takes `!` after the type or scope, a
+`BREAKING CHANGE:` footer with migration instructions, or both, and bumps major.
 
 The body is a short summary of why, a few lines at most, and only when the subject
-alone does not carry it. Most commits need no body. Footers are for issue
+alone does not carry it, separated from the subject by a blank line and wrapped at
+72 characters. Most commits need no body. Footers are for issue
 references (`Closes #42`) and breaking changes. Never add a `Co-Authored-By: Claude`
 trailer, a "Generated with Claude Code" line, or a session link.
 
