@@ -7,7 +7,9 @@ descriptions and the roster prose in the index. We cut the roster to 8, keeping
 only agents that express something instructions cannot: tool restrictions the
 harness enforces (`code-reviewer`, `security-analyst`, `agent-reviewer`,
 `frontend-auditor`), an inline MCP server (`frontend-engineer`), persistent
-project-local memory (`debugger`), or a model pin (`documenter`, `git-manager`).
+project-local memory (`debugger`), or a model pin (`documenter`; `git-manager` held the same pin until
+2026-09-22, when inline git on the session model was judged worth more than the
+saving, and its commands load `git-conventions` directly).
 The guidance the removed agents carried was folded into the skills they preloaded
 first, so nothing was lost; their commands now load those skills directly and run
 with `context: fork` where isolation was the real benefit.

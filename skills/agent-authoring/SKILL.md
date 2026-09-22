@@ -303,13 +303,11 @@ Current assignments in this suite:
 | Color | Currently used by | Semantic meaning |
 |---|---|---|
 | `red` | code-reviewer, security-analyst | Critical analysis, security |
-| `green` | architect, tester, frontend-auditor | Planning, pass/fail, audit |
-| `yellow` | debugger | Warnings, investigation |
-| `blue` | backend-engineer, database-specialist | Application/data implementation |
-| `purple` | devops-engineer | Infrastructure |
-| `orange` | git-manager | Version control |
+| `green` | frontend-auditor | Audit |
+| `yellow` | debugger | Investigation |
 | `cyan` | documenter, frontend-engineer | Documentation, UI |
-| `pink` | agent-builder, agent-reviewer | Meta/tooling |
+| `pink` | agent-reviewer | Meta/tooling |
+| `blue`, `purple`, `orange` | unused | — |
 
 With only 8 colors available, duplication across roles is unavoidable. When picking a color for a new agent, prefer one with semantic relevance even if it overlaps an existing assignment.
 
