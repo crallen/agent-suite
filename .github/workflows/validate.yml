@@ -22,11 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.14'
-      # PyYAML is optional for the validator, but installing it enables the
-      # frontmatter-validity check.
-      - run: pip install pyyaml
-      # Covers reference integrity, index accuracy, and shared-skill link integrity.
-      - run: scripts/validate-config.py
+      # The validator declares PyYAML in its inline script metadata; uv
+      # supplies it.
+      - uses: astral-sh/setup-uv@v10
+      - run: uv run scripts/validate-config.py

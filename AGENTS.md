@@ -87,9 +87,13 @@ scripts/validate-config.py -q     # only failures and the summary
 ```
 
 It covers reference integrity (agent → skill, command → agent, skill → reference
-file), index accuracy in both directions, frontmatter validity, description parity
-across indexes, and that every platform skill directory is a live symlink into
-`skills/`. CI runs it on every push.
+file), index accuracy in both directions, frontmatter validity and known keys, tool
+names, color uniqueness, bare injection lines, description parity across indexes,
+and that every platform skill directory is a live symlink into `skills/`. It runs
+under `uv`, the one prerequisite, which supplies PyYAML from the script's inline
+metadata. CI runs it on every push, and `.githooks/pre-commit` runs it before any
+commit touching `skills/`, `platforms/`, or `scripts/` once `core.hooksPath` points
+at `.githooks` (the dotfiles `make install` sets that).
 
 For the schemas and file layout of agents, skills, and commands, use the
 `agent-authoring` skill — it is the source of truth for frontmatter keys and
