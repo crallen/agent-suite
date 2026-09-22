@@ -74,6 +74,10 @@ These are not universal bans, but they are strong warning signs in app UI:
 
 - Gradient text used as emphasis
 - Colored side-stripe borders on cards, alerts, or list rows by default
+- Pure-black or pure-white extremes where the system uses softened surfaces and text
+- Gray text on colored surfaces
+- Uppercase labels used so broadly that everything is equally loud
+- Multiple accent colors competing in one view, or a new palette for a single screen when shared tokens exist
 - Excessive blur, glow, and layered shadow stacks
 - Overuse of translucent surfaces that hurt contrast and readability
 - Decorative sparklines or fake metrics with no decision-making value
@@ -90,21 +94,6 @@ If you keep one of these patterns, there should be a clear product reason, not j
 | Prop surface grows for every edge case | Component becomes unreviewable | Prefer composition or smaller focused wrappers |
 | Rebuilding a design system during a feature task | Bloats scope and diff | Make the narrowest viable improvement |
 
-## 9. Audit Prompts
+## 9. Reporting
 
-When reviewing a surface, ask:
-
-1. What is the user trying to do first?
-2. What would confuse them in the first 5 seconds?
-3. Which state is missing or under-designed?
-4. Which visual treatment is compensating for weak structure?
-5. What is the smallest change that would make this screen feel more intentional?
-
-## 10. Reporting Guidance
-
-When calling out anti-patterns:
-
-- Name the concrete surface (`settings form`, `billing table`, `mobile drawer`)
-- Explain why it hurts the task, not just that it looks bad
-- Offer a better direction, ideally one that reuses local precedent
-- Separate must-fix issues from optional polish suggestions
+Name the concrete surface (`settings form`, `billing table`, `mobile drawer`), explain why the smell hurts the task, offer a direction that reuses local precedent, and separate must-fix from optional polish.
