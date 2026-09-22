@@ -73,5 +73,5 @@ a commit boundary; the spec's checklist records where.
 - [x] 2. Validator hardening and settings checks (merged 2026-09-22, PR #4; dotfiles 760bae)
 - [x] 3. Platform-layer density and caching (merged 2026-09-22, PR #5)
 - [x] 4a. Skills density: meta (merged 2026-09-22, PR #6)
-- [ ] 4b. Skills density: engineering
+- [x] 4b. Skills density: engineering (merged 2026-09-22, PR #7)
 - [ ] 4c. Skills density: methodology
