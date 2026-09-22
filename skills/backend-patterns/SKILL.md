@@ -1,158 +1,72 @@
 ---
 name: backend-patterns
-description: Backend application patterns for handlers, services, validation, auth/authz, integrations, and app-layer refactors
+description: House rules for application-layer code — the request path, inward dependency direction, where each kind of validation lives, constraints before app checks, and structured logs plus a metrics endpoint as defaults. Load for handlers, services, validation, auth, integrations, and app-layer refactors; pair with database-patterns when SQL behavior is the real concern.
 ---
 
 # Backend Patterns
 
-Load this skill for backend and application-layer implementation work: handlers, controllers, services, validation, authentication, authorization, external integrations, and request-flow refactors. Use it alongside `coding-guardrails`.
+Load with `coding-guardrails` for handlers, controllers, services, validation,
+authentication, authorization, external integrations, and request-flow refactors.
 
-When schema, SQL, migrations, indexes, transaction design, or database-heavy ORM behavior are central to the task, load `database-patterns` alongside this skill rather than treating the database as an implementation detail.
-
-## Scope Boundaries
-
-| Concern | Guidance lives in |
+| Concern | Skill |
 |---|---|
-| HTTP handlers, controllers, routes, RPC methods | this skill |
-| Service-layer business logic | this skill |
-| Validation, auth, authz, request orchestration | this skill |
-| External API and queue integrations | this skill |
-| Schema design, migrations, constraints, indexes | `database-patterns` |
-| Query plans, transaction boundaries, lock behavior | `database-patterns` |
-| ORM/query-builder code where SQL behavior is the real risk | `database-patterns` |
+| Handlers, services, validation, auth, integrations, app-layer refactors | this skill |
+| Schema, migrations, constraints, indexes, query plans, transactions, locks, ORM code where SQL behavior is the risk | `database-patterns` |
 
-## Request Flow Design
+## Request Path
 
-Prefer a predictable request path:
+1. **Transport boundary** - parse, authenticate, validate shape, map transport
+   concerns.
+2. **Authorization** - may this caller perform this action on this resource?
+   A separate decision from authentication, and unauthenticated and unauthorized
+   are handled separately.
+3. **Service layer** - business rules and orchestration: invariants spanning
+   inputs, side-effect ordering, domain-level errors or results.
+4. **Persistence and integration** - repositories, queues, third parties.
+5. **Response mapping** - domain result to transport response and error envelope.
 
-1. **Transport boundary** - Parse request, authenticate caller, validate shape, map transport concerns.
-2. **Authorization** - Decide whether the caller may perform the action.
-3. **Service layer** - Execute business rules and orchestration.
-4. **Persistence/integration** - Call repositories, queues, or third-party systems.
-5. **Response mapping** - Convert domain result into transport response and errors.
+Handlers coordinate; they do not own deep business logic. Input is normalized once
+at the boundary.
 
-### Dependency direction
+## Dependency Direction
 
-Dependencies point inward. Transport depends on the service layer; the service layer depends only on interfaces it owns. When a service needs the outside world, it declares the shape it needs and an outer layer supplies it — `Avoid in services` below lists the concrete cases.
+Dependencies point inward. Transport depends on the service layer; the service
+layer depends only on interfaces it owns, and never sees HTTP objects, framework
+transport details, raw SQL design, or presentation concerns. When a service needs
+the outside world, it declares the shape it needs and an outer layer supplies it.
+Keep the import graph acyclic: a cycle means the seam is in the wrong place, so
+extract the shared concept into its own module.
 
-Keep the import graph acyclic. A cycle between modules means the seam sits in the wrong place; extract the shared concept into its own module instead of importing both ways.
-
-## Handler and Controller Rules
-
-- Keep handlers thin. They should coordinate, not own deep business logic.
-- Normalize input once near the boundary.
-- Return consistent status codes or error envelopes.
-- Inject dependencies explicitly at new seams rather than reaching for hidden globals. Match the surrounding pattern when editing code that already relies on them.
-- Preserve idempotency for retried writes when the API contract expects it.
-
-### Handler Checklist
-
-- [ ] Request parsing is narrow and explicit
-- [ ] Validation happens before business logic
-- [ ] Authentication and authorization are separate decisions
-- [ ] Business logic lives outside the handler when reused or non-trivial
-- [ ] Errors are mapped consistently
-- [ ] Logging includes useful request or actor context without leaking secrets
-
-## Service-Layer Guidance
-
-Services own application rules and orchestration.
-
-### Good service responsibilities
-
-- Enforce domain invariants that span multiple inputs
-- Coordinate repository calls and external integrations
-- Decide side-effect ordering
-- Produce domain-level errors or result objects
-
-### Avoid in services
-
-- HTTP request or response objects
-- Framework-specific transport details
-- Raw SQL design decisions that need database review
-- UI-oriented formatting or presentation concerns
+Inject dependencies explicitly at new seams. When editing code that already relies
+on hidden globals, match the surrounding pattern rather than half-converting it.
 
 ## Validation
 
-Validate at the boundary closest to untrusted input.
-
 | Validation type | Where it belongs |
 |---|---|
-| Shape/type parsing | Request boundary |
-| Required fields and format | Request boundary |
+| Shape, type, required fields, format | Request boundary |
 | Cross-field business rules | Service layer |
-| Database-backed uniqueness or referential guarantees | Database constraints first, app checks second |
+| Uniqueness and referential guarantees | Database constraints first, app checks second |
 
-Rules:
+Do not rely on application checks alone for invariants the database can enforce.
 
-- Reject malformed input early.
-- Keep validation messages consistent with project norms.
-- Do not rely on application checks alone for invariants that the database can enforce.
+## Integrations
 
-## Authentication and Authorization
+Explicit timeouts; a retry policy that matches the idempotency of the call, never
+a blind retry of a non-idempotent write; external responses validated before use;
+external errors mapped into local semantics; correlation or trace context
+preserved where the system uses it; provider-specific payload mapping kept at the
+edge.
 
-Separate identity from permission.
+## Defaults
 
-- **Authentication** answers: who is the caller?
-- **Authorization** answers: may this caller do this action on this resource?
-
-### Auth/Authz checklist
-
-- [ ] Unauthenticated and unauthorized cases are handled separately
-- [ ] Resource ownership or tenant boundaries are explicit
-- [ ] Security-sensitive defaults fail closed
-- [ ] Audit or security logs follow existing conventions
-- [ ] Secrets and tokens are never logged
-
-## Integration Boundaries
-
-When calling external systems:
-
-- Set explicit timeouts.
-- Decide retry behavior intentionally; do not blindly retry non-idempotent writes.
-- Map external errors into local error semantics.
-- Preserve correlation IDs or trace context if the system uses them.
-- Keep provider-specific payload mapping at the edge of the integration.
-
-### Integration review checklist
-
-- [ ] Timeout behavior is explicit
-- [ ] Retry policy matches idempotency reality
-- [ ] External responses are validated before use
-- [ ] Partial failure behavior is defined
-- [ ] Side effects are ordered intentionally
-
-## Refactoring the App Layer
-
-Refactor only when it improves the requested change.
-
-- Extract a service when logic is duplicated, deeply nested, or impossible to test at the current boundary.
-- Keep module moves local; avoid repo-wide renames unless the request demands them.
-- Preserve public contracts unless the task includes coordinated caller updates.
-- Pair structural changes with behavior checks.
-
-## When Database Behavior Takes Over
-
-Load `database-patterns` when any of the following are true:
-
-- A migration is required
-- The change depends on new constraints or indexes
-- Query performance or execution plans matter
-- Transaction boundaries or lock behavior could change correctness
-- ORM or query-builder code needs SQL-aware reasoning
-- Data backfills, online migration safety, or rollback plans matter
-
-## Execution Defaults
-
-- Treat auth, validation, and integration boundaries as first-class concerns, not afterthoughts.
-- Match existing error handling, serialization, logging, and dependency wiring patterns.
-- Surface ambiguous API contracts, authorization rules, or side effects before encoding them.
-- Emit structured logs and expose a metrics endpoint as service defaults, not follow-up work.
-
-## Anti-Patterns
-
-- Fat handlers that mix transport, business rules, and persistence details
-- Authorization checks hidden deep inside unrelated helpers
-- Validation scattered across multiple layers without a clear boundary
-- App-only enforcement of invariants that belong in database constraints
-- Integration code without timeouts, retries, or failure semantics
+- Structured logs and a metrics endpoint are service defaults, not follow-up work.
+  Logs carry request or actor context and never secrets or tokens.
+- Security-sensitive defaults fail closed.
+- Match existing error handling, serialization, logging, and dependency wiring.
+- Surface ambiguous API contracts, authorization rules, or side effects before
+  encoding them.
+- Refactor the app layer only when it improves the requested change: extract a
+  service when logic is duplicated, deeply nested, or untestable at the current
+  boundary; keep module moves local; preserve public contracts unless the task
+  includes coordinated caller updates.
