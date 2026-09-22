@@ -1,6 +1,6 @@
 ---
 name: coding-guardrails
-description: "Cross-cutting execution guardrails for coding tasks: surface assumptions, prefer simple solutions, make surgical changes, define verifiable success criteria, shape code with sound structure/error/safety defaults, and prefer a clear name over a comment that explains it — plus on-demand principle references for type-system discipline, idempotency, building the lever, and encoding lessons in structure"
+description: "Execution guardrails for implementation work: when to ask before coding, the simplicity test, diff scope, verification targets, structure and error defaults, naming over comments. Load for any feature, fix, refactor, config change, or diff review; its references cover type design, idempotency, building reusable levers, and encoding lessons in structure."
 ---
 
 # Coding Guardrails
@@ -20,14 +20,7 @@ These guardrails bias toward caution over speed. Apply them proportionally — a
 
 ## 1. Think Before Coding
 
-Do not silently pick an interpretation when the request is ambiguous.
-
-- State assumptions explicitly.
-- If multiple readings lead to meaningfully different implementations, surface them.
-- If a simpler path would satisfy the goal, say so.
-- If you are confused, stop and ask instead of guessing.
-
-Ask instead of guessing when scope, data shape, UX, security, performance, or policy choices are unclear.
+State assumptions; when several readings lead to different implementations, or scope, data shape, UX, security, performance, or policy is unclear, ask instead of guessing. If a simpler path satisfies the goal, say so.
 
 ## 2. Simplicity First
 
@@ -57,14 +50,6 @@ Touch only what the request requires. Keep the diff narrow and local.
 - If you notice unrelated issues, mention them separately instead of fixing them in the same change.
 
 These bound your **reach** — which code you may touch — not the **shape** of code the request already puts you inside. There, write what the change actually needs rather than mirroring the surrounding complexity; that something is already complicated is not a reason to add to it. This is about structure, not style: the conventions above still hold. Reaching outside the request to simplify something you merely noticed is still a drive-by refactor.
-
-### Diff Discipline Checklist
-
-- [ ] Every changed line traces directly to the user's request or an approved spec.
-- [ ] Adjacent edits are required for correctness, tests, or build health.
-- [ ] Comments or docs changed only because the implementation changed their truth.
-- [ ] Existing dead code stays unless the user asked to remove it.
-- [ ] Style drift stayed out of the diff.
 
 ## 4. Goal-Driven Execution
 
@@ -125,11 +110,3 @@ The guardrails above apply to every task and stay in context. These references h
 | `coding-guardrails/reference/build-the-lever.md` | Facing non-trivial work — a migration, a bulk edit, an analysis or check worth making rerunnable |
 | `coding-guardrails/reference/encode-lessons-in-structure.md` | Writing the same instruction a second time, or noticing a recurring correction |
 
-## Anti-Patterns
-
-- Silent assumption
-- Speculative architecture (a seam nothing varies across)
-- Panic on a recoverable path
-- Drive-by refactor
-- Vague success criteria
-- Comment standing in for a name that could have been clearer
