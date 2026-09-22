@@ -54,28 +54,12 @@ Docker caches layers top-down, so order them by how often they change:
 
 Step 3 is the one that pays. Copy only the dependency manifest, resolve dependencies, *then* copy source — so editing a source file doesn't re-resolve the dependency graph. Every ecosystem has a form of this, and the compiled languages need a trick to achieve it because their dependency and source builds are one command; the stack files show each.
 
-## Reduce Image Size
-
-- Use `--no-install-recommends` with `apt-get`.
-- Clean package manager caches in the same `RUN` layer: `rm -rf /var/lib/apt/lists/*`.
-- Keep a `.dockerignore` (see below) — it shrinks the build context and stops local artifacts leaking into the image.
-- Never install development or test dependencies in the production stage.
-- Combine related `RUN` commands to reduce layers.
-
 ## Security Hardening
 
 - **Run as non-root.** Create a user in the runtime stage, or use a numeric UID where the base has no user database.
 - **Never bake secrets into the image.** Layers persist even when a later layer deletes the file. Use build secrets (`RUN --mount=type=secret,...`) for private registries.
 - **Set a read-only root filesystem** at runtime, via Compose or the orchestrator.
-
-**Security checklist:**
-- [ ] Runs as non-root user
-- [ ] No secrets baked into the image, including in deleted layers
-- [ ] Base image is pinned and regularly updated
-- [ ] Only necessary ports are exposed
-- [ ] No unnecessary capabilities (drop all, add specific)
-- [ ] `.dockerignore` excludes sensitive files (.env, .git, credentials)
-- [ ] Final stage contains no compiler, package manager, or shell it doesn't need
+- **Ship nothing the runtime does not need**: no compiler, package manager, shell, dev dependencies, or unused capabilities in the final stage; `.dockerignore` keeps `.env`, `.git`, and credentials out of the context.
 
 ## Health Checks
 

@@ -19,14 +19,9 @@ The judgment lives here; the YAML lives in `reference/`. Read the platform file 
 
 Working in a stack with no file above? Follow **Determining a Stack's Toolchain** and write what you verify to `ci-pipeline/reference/<stack>.md`, so the next run starts from it instead of rediscovering.
 
-## CI Pipeline Principles
+## Audit Before Trusting
 
-1. **Fast feedback** - Fail fast. Run linting and unit tests first, slow integration tests later.
-2. **Deterministic** - Same commit, same result. Pin dependency versions, use lock files, cache deterministically.
-3. **Parallel where possible** - Independent jobs should run concurrently.
-4. **Minimal permissions** - Each job gets only the permissions it needs.
-5. **Cache aggressively** - Dependencies, build artifacts, and Docker layers should be cached between runs.
-6. **Audit before trusting** - On an existing repo, confirm the pipeline runs the suite before treating a green build as evidence.
+On an existing repo, confirm the pipeline actually runs the suite before treating a green build as evidence.
 
 ## Auditing an Existing Pipeline
 
@@ -61,27 +56,7 @@ lint -> test -> build -> deploy
  +-- boundaries
 ```
 
-### Stage 1: Lint & Check
-- Code formatting
-- Linting
-- Type checking, where it isn't already covered by the build
-- Architecture rules (import direction and cycles — see `Enforcing Conventions`)
-- Security scanning (dependency audit, SAST)
-- Fastest stage. Catches most issues cheaply.
-
-### Stage 2: Test
-- Unit tests (fast, run first)
-- Integration tests (slower, run after unit tests pass)
-- Coverage measured and gated against the project's thresholds, not just reported
-
-### Stage 3: Build
-- Compile/bundle the application
-- Build container images
-- Generate artifacts
-
-### Stage 4: Deploy
-- Deploy to staging automatically
-- Deploy to production with manual approval or after staging verification
+Lint and check first (format, lint, typecheck where the build does not cover it, architecture rules, dependency audit), then unit before integration with coverage gated against the project threshold rather than reported, then build, then staging automatically and production behind approval or staging verification.
 
 ## Enforcing Conventions
 
@@ -176,8 +151,4 @@ Pin the major in templates (`node:24-slim`, `go-version: '1.26'`) so patch relea
 
 ## Security in CI
 
-- **Never echo secrets**. Use masked variables.
-- **Prefer full SHA pinning** for third-party or security-sensitive actions. Major-version tags can be acceptable for official actions when your org accepts that tradeoff, but use them intentionally and review updates regularly.
-- **Audit dependencies** as a CI step: `npm audit`, `govulncheck ./...`, `cargo audit`.
-- **Use OIDC** for cloud deployments instead of long-lived credentials.
-- **Limit permissions** per job: `permissions: { contents: read }`.
+Masked variables, never echoed. Full SHA pinning for third-party actions; major tags for official ones only as a deliberate tradeoff. OIDC for cloud deploys instead of long-lived credentials. `permissions: { contents: read }` per job, widened only where a job needs more.
