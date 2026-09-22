@@ -62,6 +62,14 @@ plus the one domain skill that fits; adding more crowds out the actual task.
 - Read the project's config and nearby code before changing anything. If `CONTEXT.md`
   exists at the repo root (or `CONTEXT-MAP.md` for multi-context repos), read it — it
   defines that project's canonical domain language and outranks general terminology.
+- T3 Code hides every assistant message of a turn except the last one behind a
+  "Worked for …" row once the turn settles, so any text written before a tool call
+  disappears when the turn ends. Do the work first, then answer: keep text before a
+  tool call to a one-line heads-up, never end a turn with tool calls followed by a
+  bare "Done", and make the final message of every turn the complete, self-contained
+  answer — findings, decisions, and questions included, with no reference back to
+  text written earlier in the turn. Ask questions only in the final message, then
+  stop and wait for the reply.
 - Skills are the canonical long-form guidance. Load only what the task needs.
 - Surface assumptions and alternative readings instead of silently picking one.
 - Push back when a simpler approach satisfies the goal. When the goal is ambitious,
