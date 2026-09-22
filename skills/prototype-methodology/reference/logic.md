@@ -11,15 +11,9 @@ A tiny interactive terminal app that lets the user drive a state model by hand. 
 
 ## Process
 
-### 1. State the Question
 
-Before writing code, write down what state model and what question you're prototyping. One paragraph, in the prototype's README or a comment at the top of the file. A logic prototype that answers the wrong question is pure waste.
 
-### 2. Pick the Language
-
-Use whatever the host project uses. Match the project's existing conventions for tooling — don't add a new package manager or runtime just for the prototype.
-
-### 3. Isolate the Logic in a Portable Module
+### 1. Isolate the Logic in a Portable Module
 
 Put the actual logic behind a small, pure interface that could be lifted into the real codebase later. The TUI around it is throwaway; the logic module shouldn't be.
 
@@ -31,7 +25,7 @@ Right shapes to consider:
 
 Keep it pure: no I/O, no terminal code, no `console.log` for control flow. The TUI imports it and calls into it; nothing flows the other direction.
 
-### 4. Build the Smallest TUI That Exposes the State
+### 2. Build the Smallest TUI That Exposes the State
 
 Build it as a **lightweight TUI** — on every tick, clear the screen and re-render the whole frame. The user should always see one stable view, not an ever-growing scrollback.
 
@@ -48,22 +42,11 @@ Behaviour:
 
 The whole frame should fit on one screen.
 
-### 5. Make It Runnable in One Command
 
-Add a script to the project's existing task runner (`package.json` scripts, `Makefile`, `justfile`, `pyproject.toml`). If the host project has no task runner, put the command at the top of the prototype's README.
-
-### 6. Hand It Over
+### 3. Hand It Over
 
 Give the user the run command. They'll drive it themselves; the interesting moments are "wait, that shouldn't be possible" or "huh, I assumed X would be different" — those are the bugs in the *idea*. If they want new actions added, add them.
 
-### 7. Capture the Answer
+### 4. Capture the Answer
 
 When the prototype has done its job, ask what it taught them (or leave a `NOTES.md` if running AFK). The validated reducer / machine / function set can be lifted into the real module — the TUI shell gets deleted.
-
-## Anti-Patterns
-
-- **Don't add tests.** A prototype that needs tests is no longer a prototype.
-- **Don't wire it to the real database.** Use an in-memory store unless the question is specifically about persistence.
-- **Don't generalise.** No "what if we wanted to support X later."
-- **Don't blur the logic and the TUI together.** If the reducer references `console.log` or escape codes, it's no longer portable. Keep the TUI as a thin shell over a pure module.
-- **Don't ship the TUI shell into production.** The logic module is the bit worth keeping.

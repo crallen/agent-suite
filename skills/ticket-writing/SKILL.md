@@ -101,10 +101,5 @@ Finance reads wrong monthly totals from every filtered view.
 
 | Anti-pattern | Instead |
 |---|---|
-| The whole spec pasted into the description | 2–3 sentences of context plus a link |
-| "Works correctly", "handles errors gracefully" as criteria | The observable check: "returns 422 with a field-level message on invalid input" |
-| Prescribing the implementation ("add a UserExporter class") | The outcome; real constraints named as constraints |
 | First description line restating the title | Open with why |
-| One ticket per layer ("backend part", "frontend part") | Vertical slices — each ticket ships alone |
 | Emoji, dense bolding, headings over one-line sections | Plain prose; delete empty sections |
-| A ticket readable only next to the spec | A self-contained summary; the link is for depth |

@@ -91,5 +91,3 @@ Once a variant has won, write down which one and why (commit message, ADR, issue
 
 - **Variants that differ only in colour or copy.** Real variants disagree about structure.
 - **Sharing too much code between variants.** A shared `<Header>` is fine; a shared `<Layout>` defeats the point.
-- **Wiring variants to real mutations.** Read-only prototypes are fine; point mutations at a stub.
-- **Promoting the prototype directly to production.** Rewrite it properly when folding it in — the variant code was written under prototype constraints.

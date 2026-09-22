@@ -7,13 +7,11 @@ description: Architecture deepening workflow — finds shallow modules, proposes
 
 Surface architectural friction and propose **deepening opportunities** — refactors that turn shallow modules into deep ones. The aim is testability and AI-navigability.
 
-Use the vocabulary in `architecture-review/reference/vocabulary.md` exactly in every suggestion. Read it first. Consistent language is the whole point.
-
 ## Process
 
 ### 1. Orient
 
-Read `architecture-review/reference/vocabulary.md` for the shared architectural language.
+Read `architecture-review/reference/vocabulary.md` and use its terms exactly in every suggestion; consistent language is the whole point.
 
 If `CONTEXT.md` exists at the repo root (or `CONTEXT-MAP.md` for multi-context repos), read it — use domain vocabulary throughout the review. Check `docs/adr/` for any decisions that constrain what you can suggest.
 
@@ -28,8 +26,6 @@ Walk the codebase. Don't follow rigid heuristics — explore organically and not
 - Which parts of the codebase are untested, or hard to test through their current interface?
 
 Apply the **deletion test** to anything you suspect is shallow: would deleting it concentrate complexity, or just move it? "Yes, concentrates" is the signal.
-
-**Shallowness is an interface property.** A module is shallow when its interface is nearly as complex as its body — a short file is not itself the signal, and neither is decomposition a spec chose. `spec-writing` divides systems by the same measure, and **depth** already permits a deep module composed of small internal parts.
 
 ### 3. Present Candidates
 

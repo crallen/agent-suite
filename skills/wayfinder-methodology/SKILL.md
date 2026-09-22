@@ -9,12 +9,7 @@ A loose idea has arrived, too big for one session and wrapped in fog: the way fr
 
 ## When a map earns its keep
 
-A map costs a file and a session spent charting, so reach for it only when the effort outlives a single session:
-
-- **`grill-methodology`** — one sitting, one thread of questions. No artifact beyond CONTEXT.md and ADRs.
-- **`spec-writing`** — one sitting, and the shape is already knowable. Produces a spec plus a task checklist.
-- **`wayfinder-methodology`** — the effort will not fit in one session and the shape is fogged. The artifact is a map that survives across sessions. A map's destination is often *a spec `spec-writing` can then write*.
-- **`ticket-writing`** — downstream of a settled spec, splitting it into build slices. Wayfinder tickets are decisions, never build slices.
+A map costs a file and a session spent charting, so chart one only when the effort will not fit in one session and the shape is fogged. Wayfinder tickets are decisions, never build slices; `ticket-writing` splits a settled spec into those.
 
 If charting surfaces no fog — the way is already clear, the whole journey fits one session — say so and stop. An unfogged effort wants `spec-writing`, not a map.
 

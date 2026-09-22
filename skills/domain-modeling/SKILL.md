@@ -15,13 +15,11 @@ Orient before the first term is challenged:
 - `CONTEXT-MAP.md` at the repo root — present in multi-context repos; lists all contexts and how they relate. Each context has its own `CONTEXT.md` (e.g. `src/ordering/CONTEXT.md`) and may keep its own `docs/adr/` for context-specific decisions; the root `docs/adr/` holds system-wide ones.
 - `docs/adr/` — architectural decision records for past hard calls
 
-If `CONTEXT-MAP.md` exists, read it first, then the relevant `CONTEXT.md` files. If only a root `CONTEXT.md` exists, read it. If neither exists, that's fine — create files lazily, only when there's something to write.
+Create these lazily, only when there is something to write.
 
 ## Model-Sharpening Lenses
 
-**Challenge the glossary** — when a term is used that the domain might own (an entity name, a process name, an action verb), check whether it matches the project's established language. If it drifts, surface the conflict and propose the canonical term.
-
-**Sharpen fuzzy language** — words like "manage", "handle", "process", and "sync" hide decisions. When you encounter them, ask: what specifically happens? Who initiates it? What is the result?
+**Sharpen fuzzy language** — "manage", "handle", "process", and "sync" hide decisions: ask what specifically happens, who initiates it, and what the result is. Check any term the domain might own against the project's established language and propose the canonical one when it drifts.
 
 **Probe concept boundaries with scenarios** — when domain relationships are on the table, invent edge cases that force precision about where one concept ends and another begins. "Is a cancelled Order still an Order?" "What does a partial refund do to the Invoice?"
 
@@ -121,11 +119,3 @@ That's it. An ADR can be a single paragraph. The value is in recording *that* a 
 Before writing an ADR, confirm with the user. Example:
 
 > "This feels like a decision worth recording. Want me to write ADR-0001 for it?"
-
-## Anti-Patterns
-
-- **Deferring doc writes.** Write CONTEXT.md and ADR updates the moment a term or decision is resolved. Deferred documentation doesn't happen.
-- **Glossary inflation.** Don't add every noun to CONTEXT.md. Only project-specific domain terms belong there.
-- **ADR for every decision.** The three-part test is a gate. Most decisions don't clear it.
-- **A type per noun.** The three-part test above is a gate too. A wrapper that carries no rule and crosses no seam is indirection with a domain name on it.
-- **Promising enforcement the language can't give.** Claiming a Go named type makes a state unrepresentable is worse than saying nothing — it retires a boundary check that was doing the real work.
