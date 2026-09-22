@@ -5,8 +5,6 @@ description: Structured interrogation workflow for stress-testing a plan — one
 
 # Grill Methodology
 
-This skill drives a structured grilling session: a sustained, Socratic interrogation of a plan or design that challenges every assumption and anchors decisions in the real codebase. Load it when the user wants to stress-test a plan before or after speccing it.
-
 Load `domain-modeling` alongside this skill: grilling reshapes the domain model as terms and decisions crystallize, and that skill owns the terminology lenses, CONTEXT.md upkeep, and ADR discipline.
 
 ## Interrogation Workflow
@@ -38,11 +36,3 @@ Each answer reshapes the tree: a settled decision pushes the frontier outward an
 Finding **facts** is your job, never the user's. When a frontier question needs a fact from the environment, read the relevant files — or dispatch a subagent for anything sizable — instead of asking. Don't block on it: a running exploration is an unsettled prerequisite, so ask a frontier question that doesn't depend on it while the report comes back. **Decisions** belong to the user: put each one to them and wait.
 
 The session is done when the frontier is empty: every branch of the design tree visited, nothing left silently assumed. Implementation starts only after the user confirms shared understanding.
-
-## Session Behaviors
-
-Apply these lenses throughout the session:
-
-**Stress-test with concrete scenarios** — for each significant decision, run at least one edge case through it. "What happens when X is empty?", "What if two users do this simultaneously?", "What does the caller do if this fails?" Vague designs collapse under concrete scenarios.
-
-**Cross-reference the plan with code** — when a design refers to an existing module, pattern, or entity, read it. Confirm that the plan is consistent with what actually exists, not what someone remembers existing.
