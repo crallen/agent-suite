@@ -55,6 +55,8 @@ branches are short-lived and deleted after merging.
 - The description is a few sentences or a handful of bullets covering what changed
   and why. The diff and commit list carry the detail; the description orients the
   reviewer.
+- The description is Markdown that the host renders, not a commit body: no hard
+  wrapping at 72 columns. Each paragraph or bullet is one line, however long.
 - Describe only what the PR contains: no "things to verify", no follow-up lists.
   Work the PR does not do belongs in an issue.
 - No boilerplate sections unless the repo's template asks for them, and no
