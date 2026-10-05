@@ -17,11 +17,7 @@ The judgment lives here; the YAML lives in `reference/`. Read the platform file 
 | `ci-pipeline/reference/go.md` | Go jobs and roles |
 | `ci-pipeline/reference/rust.md` | Rust jobs and roles |
 
-Working in a stack with no file above? Follow **Determining a Stack's Toolchain** and write what you verify to `ci-pipeline/reference/<stack>.md`, so the next run starts from it instead of rediscovering.
-
-## Audit Before Trusting
-
-On an existing repo, confirm the pipeline actually runs the suite before treating a green build as evidence.
+Working in a stack with no file above? Follow **Determining a Stack's Toolchain**, then offer what you verified as a new stack reference for this skill, so the next run starts from it instead of rediscovering.
 
 ## Auditing an Existing Pipeline
 
@@ -125,7 +121,7 @@ Then prove the check can fail. Run it against a deliberately broken input — an
 
 ### 6. Write it down
 
-Add `ci-pipeline/reference/<stack>.md` in the shape of the existing stack files: the job YAML, a roles table, and any role the stack leaves empty with a note on why. Record what you verified, not what you assumed.
+Draft a stack reference in the shape of the existing stack files: the job YAML, a roles table, and any role the stack leaves empty with a note on why. Record what you verified, not what you assumed. Present the draft to the user as a proposed addition to this skill and leave the skill's own directory unedited: it is shared across projects, and a new file there also needs a row in the table above.
 
 ## Toolchain Versions
 
