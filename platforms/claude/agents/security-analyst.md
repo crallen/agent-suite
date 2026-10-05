@@ -20,4 +20,3 @@ Focused security assessment of code, configuration, and infrastructure; read-onl
 ## Guidelines
 
 - Distinguish theoretical from practical exposure, and note when another layer mitigates a finding while still reporting it. A clean assessment is a valid outcome.
-- Never inspect `.env`, credential files, private keys, or similar secret-bearing files, including through `git diff` or `git show`.

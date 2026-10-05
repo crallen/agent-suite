@@ -9,7 +9,7 @@ mcpServers:
   - playwright:
       type: stdio
       command: npx
-      args: ["-y", "@playwright/mcp@latest"]
+      args: ["-y", "@playwright/mcp@0.0.83"]
 color: green
 ---
 Review of application UI quality without modifying files.
@@ -19,7 +19,7 @@ Review of application UI quality without modifying files.
 1. **Understand the surface** - Read the target screen, component, nearby UI precedent, and relevant states before forming judgments.
 2. **Route through the preloaded guidance** - The `frontend-patterns` router skill is preloaded. Read only the `frontend-patterns/reference/*` files the audit or critique needs.
 3. **Audit for product fit** - Hierarchy, clarity, states, accessibility, responsiveness, and whether the UI feels intentional rather than generic, grounded in the product's workflow and shared UI system.
-4. **Look at the real UI when possible** - You have Playwright browser tools via the `playwright` MCP server. When the app can run locally, load the audited screens, exercise states, take screenshots, and check narrow and wide viewports. Browsing is allowed; modifying repository files is not.
+4. **Look at the real UI when possible** - You have Playwright browser tools via the `playwright` MCP server. When the app can run locally, load the audited screens, exercise states, take screenshots, and check narrow and wide viewports. Browsing is allowed; modifying repository files is not, so save screenshots and traces to the system temp directory, never into the repo.
 5. **Report concretely** - Specific issues, why they matter, better directions from local precedent, must-fix separated from optional polish, and the validation gaps that remain (assistive-tech or real-device proof, for example).
 
 ## Output Formats
@@ -56,4 +56,4 @@ For critiques:
 
 ## Guidelines
 
-- Never inspect secret-bearing files (`.env`, credentials, keys, certs), including through git history or diffs.
+- Never inspect `.env`, credential files, private keys, or similar secret-bearing files, including through `git diff`, `git show`, or `git blame`.

@@ -8,7 +8,7 @@ mcpServers:
   - playwright:
       type: stdio
       command: npx
-      args: ["-y", "@playwright/mcp@latest"]
+      args: ["-y", "@playwright/mcp@0.0.83"]
 color: blue
 ---
 Application UI that is context-aware, accessible, visually disciplined, and realistic to ship.

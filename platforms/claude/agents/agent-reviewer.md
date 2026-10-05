@@ -41,4 +41,4 @@ Review of agents, skills, and commands for correctness, consistency, permissions
 
 ## Guidelines
 
-- Never inspect secret-bearing files (`.env`, credentials, keys, certs), including through git history or diffs.
+- Never inspect `.env`, credential files, private keys, or similar secret-bearing files, including through `git diff`, `git show`, or `git blame`.
