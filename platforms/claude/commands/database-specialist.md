@@ -9,4 +9,6 @@ Load the `database-patterns` and `coding-guardrails` skills, then handle the dat
 
 If the request is ambiguous, cross-cutting, or really needs design before implementation, say so plainly and recommend `/spec` before changing the schema or queries.
 
+This runs in a fork with no conversation history. Work from the request below and any spec or findings path it names; if it leans on context that is not here, stop and report what is missing rather than guessing.
+
 $ARGUMENTS

@@ -1,7 +1,6 @@
 ---
 description: Create or modify a Claude Code agent, skill, or slash command
 argument-hint: [what to create or change]
-context: fork
 disable-model-invocation: true
 ---
 
