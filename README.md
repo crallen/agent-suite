@@ -11,21 +11,19 @@ half of `opencode/.config/opencode/`, with its history intact.
 ```text
 agent-suite/
 ├── AGENTS.md               # How to work on this repo (not any harness's instructions)
-├── agents/                 # Specialist subagent definitions
-├── skills/                 # Skills — methodology skills plus the /-command workflows
+├── skills/                 # Canonical skills, the one shared tree
 ├── platforms/
-│   ├── claude/             # Claude Code's view: CLAUDE.md + settings.json.example
+│   ├── claude/             # Claude Code's view: CLAUDE.md, agents/, commands/, settings.json.example
 │   ├── codex/              # Codex's view: AGENTS.md + skills/ (symlinks into skills/)
-│   └── opencode/           # OpenCode's view: agent/, commands/, AGENTS.md, skills/ (symlinks)
+│   └── opencode/           # OpenCode's view: AGENTS.md, agent/, commands/, skills/ (symlinks)
 └── scripts/
     └── validate-config.py  # Reference integrity, index accuracy, shared-skill links
 ```
 
-The top level is the canonical suite. `platforms/` holds each harness's view of it:
-an index document written for that harness, skill directories symlinked back into
-`skills/`, and whatever else it needs in its own shape — OpenCode keeps commands in
-their own tree rather than as skills, and has its own agent definitions. Claude Code
-consumes the canonical trees whole, so only its index is platform-specific.
+`skills/` is the canonical tree. `platforms/` holds each harness's view of it: an
+index document written for that harness, its own agents and commands where it has
+them, and skill directories symlinked back into `skills/`. Claude Code consumes
+`skills/` whole, so its view has no skill directory.
 
 ## Working here
 
@@ -40,7 +38,7 @@ Editing `skills/<name>/SKILL.md` changes it everywhere at once.
 `scripts/validate-config.py` is the broader check — reference integrity (agent → skill,
 command → agent, skill → reference file), index accuracy across the three index documents, frontmatter validity, and shared-skill link integrity. It runs
 in CI via `.github/workflows/validate.yml`. Run it after any change to an agent, skill,
-command, or either index document:
+command, or any of the three index documents:
 
 ```sh
 scripts/validate-config.py        # list every check and what it covered; exit 1 on any problem
@@ -87,16 +85,18 @@ to the next machine, and leave machine-local additions out of it.
 ## Conventions
 
 - Commits use Conventional Commits, scoped by area (`feat(skills):`, `chore(scripts):`).
-- Changes to a shared skill touch both the canonical and platform copies, and must be
-  committed together under the `skills` scope.
+- A shared skill is edited only at `skills/<name>/`; sharing it with a new platform adds
+  a symlink and an index row, committed together under the `skills` scope.
 - Never read or commit secret-bearing files (`.env`, keys, credentials).
 
 ## Acknowledgments
 
 The suite draws inspiration from Matt Pocock's
 [skills](https://github.com/mattpocock/skills) repo (MIT) — several skills (`skill-design`,
-`code-review-checklist`, `domain-modeling`, the grill skills, and the wayfinder skills)
-adapt material from it directly.
+`code-review-checklist`, `domain-modeling`, `retro-methodology`, `spec-implementation`,
+the grill skills, and the wayfinder skills) adapt material from it directly. The PR
+body guidance in `git-conventions` reworks ideas from Humanlayer's
+[show-me](https://github.com/humanlayer/skills) skill (MIT), by way of that repo.
 
 It also draws on Cursor's [pstack](https://github.com/cursor/plugins/tree/main/pstack)
 skills. The `unslop`, `why`, and `blast-radius` skills, the `coding-guardrails` principle
