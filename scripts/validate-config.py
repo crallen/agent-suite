@@ -314,6 +314,25 @@ def check_injection_lines() -> str:
     return f"{n} skill and agent files carry no bare injection lines"
 
 
+def check_skill_placeholders() -> str:
+    """No SKILL.md carries a command argument placeholder.
+
+    Claude Code substitutes $ARGUMENTS and $N in a skill body when it loads, so a
+    skill that mentions one, even inside inline code, reaches the agent with the
+    token erased. Reference files are read from disk and are not substituted.
+    """
+    pat = re.compile(r"\$ARGUMENTS\b|\$\d+\b")
+    n = 0
+    for f in sorted((CORE / "skills").glob("*/SKILL.md")):
+        n += 1
+        for i, line in enumerate(f.read_text().splitlines(), 1):
+            m = pat.search(line)
+            if m:
+                fail(f"{rel(f)}:{i}: argument placeholder {m.group(0)} is substituted "
+                     f"away when the skill loads; say it in words")
+    return f"{n} SKILL.md files carry no argument placeholders"
+
+
 def check_reference_pointers() -> str:
     n_files = n_ptr = n_link = 0
     pat_scoped = re.compile(r"\b([a-z][a-z0-9-]*)/reference/([a-z0-9-]+\.md)\b")
@@ -507,6 +526,7 @@ def main() -> int:
         ("frontmatter keys", check_frontmatter_keys),
         ("colors", check_colors),
         ("injection lines", check_injection_lines),
+        ("skill placeholders", check_skill_placeholders),
         ("reference pointers", check_reference_pointers),
         ("claude index", lambda: check_index(CLAUDE / "CLAUDE.md", C_SKILLS, C_AGENTS, C_COMMANDS,
                                              require_mentions=False)),

@@ -5,7 +5,7 @@ description: "Execution guardrails for implementation work: when to ask before c
 
 # Coding Guardrails
 
-Load this skill for implementation work: writing features, fixing bugs, refactoring, reviewing diffs, or changing configuration. It captures six behavioral guardrails that keep work grounded, simple, scoped, verifiable, well-shaped, and clearly named.
+Behavioral guardrails that keep implementation work grounded, simple, scoped, and verifiable.
 
 These guardrails bias toward caution over speed. Apply them proportionally — a one-line typo fix does not need a ceremony-heavy process.
 

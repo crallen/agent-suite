@@ -30,7 +30,8 @@ matching its directory, which is what lets one file serve all three harnesses.
 Commands are platform-specific by nature. A command names its harness's agents and
 uses its invocation syntax, so each platform keeps its own set. Commands are short
 task prompts, not reference documents: most fit in 5–15 lines, and every command
-that accepts input ends with `$ARGUMENTS`.
+that accepts input ends with the harness's argument placeholder, named in
+the platform reference.
 
 An agent earns its slot by a capability instructions cannot express: a tool
 restriction the harness enforces, an MCP server, persistent memory, or a model pin.
@@ -39,7 +40,7 @@ command, not an agent.
 
 ## Agent Body
 
-Keep the body to a concise workflow, roughly 30–60 lines. Detailed procedural
+Keep the body to a concise workflow, roughly 15–40 lines. Detailed procedural
 knowledge belongs in a skill the agent preloads or loads, not inline; the body is
 read on every run.
 
@@ -93,8 +94,9 @@ harness will run it whenever the file loads. The validator checks this too.
 
 ## Cross-Cutting Skills
 
-- `coding-guardrails` for any agent that writes, refactors, fixes, or reviews
-  code or configuration.
+- `coding-guardrails` for any agent that implements code or configuration, or
+  reviews a diff for quality. Analysis agents with their own rubric (security,
+  frontend audit) and documentation agents go without it.
 - `spec-writing` for design-first planning.
 
 Wire them in through the harness's preload mechanism rather than a runtime

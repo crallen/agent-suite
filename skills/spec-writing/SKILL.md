@@ -74,13 +74,16 @@ How correctness will be proven. Unit/integration/e2e split if applicable.
 - **Open**: Questions still unresolved.
 
 ## Task Checklist
-- [ ] Task one
-- [ ] Task two
+- [ ] 1. Task one
+- [ ] 2. Task two
+- [ ] 3. Task three (blocked by 1)
 - [ ] ...
 ```
 
 
 Each task names the actual files, functions, and interfaces: "modify `src/auth/session.ts` to add a `refresh()` method that returns a new access token", never "update the auth module".
+
+Number the tasks, and mark a task "(blocked by N)" only when task N must land before it can start: it consumes N's interface or edits the same code. Unmarked tasks can start immediately. The checklist is then a task graph that `spec-implementation` can work in parallel, and a reader working it by hand still goes top to bottom.
 
 ## Phase 6: Self-Review
 
@@ -91,7 +94,7 @@ Re-read with fresh eyes and fix inline; no second review after fixing.
 - [ ] **Scope check**: Is this focused enough for a single implementation plan, or does it need decomposition? If it grew too large during dialogue, return to Phase 1.
 - [ ] **Ambiguity**: Could any requirement be read two ways? Pick one interpretation and make it explicit.
 - [ ] **Specificity**: Does the spec name the actual files, functions, and interfaces — or does it speak in generalities? Replace vague references with concrete ones.
-- [ ] **Task checklist executability**: Is each task discrete, ordered, and clear enough for an executor to pick up without re-researching?
+- [ ] **Task checklist executability**: Is each task discrete, ordered, and clear enough for an executor to pick up without re-researching? Does every "blocked by" name a task that genuinely gates it?
 
 
 ## Phase 7: User Review Gate and Handoff

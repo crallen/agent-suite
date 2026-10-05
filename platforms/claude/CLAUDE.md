@@ -27,34 +27,38 @@ thing gets built, never quietly shrink what is being built.
 
 Quick-access commands for common workflows. Each is a file at `commands/<name>.md`, invoked as `/name`.
 
-Every command sets `disable-model-invocation: true`, so I reach them and you do not. Recommend one by name in prose; never invoke it.
+Every command sets `disable-model-invocation: true`, so I reach them and you do not. Recommend one by name in prose; never invoke it. A fork starts without this conversation, so recommend it with the spec path or findings as its argument.
 
 | Command | Action | Agent |
 |---|---|---|
 | `/code-review` | Review pending changes, changes since a base ref, or the full codebase when the working tree is clean | code-reviewer |
 | `/security` | Run a security assessment on code and dependencies | security-analyst |
 | `/full-review` | Run a code quality review and security audit in parallel | code-reviewer + security-analyst |
-| `/test` | Run tests and analyze results | — (fork, `test-strategy`) |
+| `/test` | Run tests and analyze results | — (fork) |
 | `/debugger` | Start a systematic debugging session | debugger |
 | `/docs` | Generate or update documentation | documenter |
-| `/commit` | Stage logical changes when needed and create Conventional Commits | — (inline, `git-conventions`) |
-| `/ship` | Commit and push in one step — same logic as `/commit`, then pushes to the remote | — (inline, `git-conventions`) |
-| `/release` | Prepare release notes, changelog, and version bump | — (inline, `git-conventions`) |
-| `/backend-engineer` | Implement or modify backend application code | — (fork, `backend-patterns`) |
-| `/database-specialist` | Design or modify database schemas, migrations, queries, and indexes | — (fork, `database-patterns`) |
+| `/commit` | Stage logical changes when needed and create Conventional Commits | — (inline) |
+| `/ship` | Commit and push in one step — same logic as `/commit`, then pushes to the remote | — (inline) |
+| `/release` | Prepare release notes, changelog, and version bump | — (inline) |
+| `/backend-engineer` | Implement or modify backend application code | — (fork) |
+| `/database-specialist` | Design or modify database schemas, migrations, queries, and indexes | — (fork) |
 | `/frontend` | Build, update, or fix frontend UI components and pages | frontend-engineer |
 | `/frontend-audit` | Audit frontend quality, states, responsiveness, and anti-patterns without editing files | frontend-auditor |
 | `/frontend-critique` | Critique frontend UX and visual direction, then suggest targeted improvements | frontend-auditor |
 | `/frontend-polish` | Apply focused frontend polish before handoff with verification and restraint | frontend-engineer |
-| `/agent-builder` | Create or modify an agent, skill, or command | — (fork, `agent-authoring`) |
+| `/agent-builder` | Create or modify an agent, skill, or command | — (inline) |
 | `/agent-review` | Review agents, skills, and commands for correctness and consistency | agent-reviewer |
 | `/spec` | Research a goal and produce a design spec with task checklist | — (inline) |
+| `/implement-spec` | Implement an approved spec: parallel implementers across its task graph, one integration branch, reviewed against the spec | implementers + code-reviewer |
 | `/grill` | Stress-test a plan with relentless one-question-at-a-time interrogation, sharpening domain language and writing CONTEXT.md / ADRs as decisions crystallize | — (inline) |
 | `/ticket` | Turn a spec, requirements, or the conversation into paste-ready JIRA/Linear tickets | — (inline) |
 | `/prototype` | Build a throwaway prototype to explore a design question — logic branch for state/data-model questions, UI branch for visual layout questions | frontend-engineer, or inline |
 | `/architecture` | Find deepening opportunities in the codebase, present a markdown report of candidates, then grill on the chosen one | — (inline) |
 | `/wayfinder` | Chart a large effort as a map of decision tickets, then resolve one decision per session until the way is clear | — (inline) |
-| `/zoom-out` | Get a map of relevant modules and callers when unfamiliar with an area, using the project's domain vocabulary | — |
+| `/zoom-out` | Get a map of relevant modules and callers when unfamiliar with an area, using the project's domain vocabulary | — (inline) |
+| `/retro` | Look back over a session and propose fixes to the agent's environment: pointers, checks, standards | — (inline) |
+| `/handoff` | Compact the conversation into a handoff document for a fresh session | — (inline) |
+| `/research` | Research a question against primary sources in the background; save cited findings | background subagent |
 
 ## Workflows
 
@@ -63,6 +67,7 @@ Every command sets `disable-model-invocation: true`, so I reach them and you do 
 | Ambiguous feature or cross-cutting change | `/spec` → the implementation command for the domain → `/code-review` or `/security` as needed → `/test` → `/commit` |
 | Effort too big to hold in one session | `/wayfinder` to chart the map → `/wayfinder` once per session to work the frontier → `/spec` → the implementation command for the domain → `/commit` |
 | Stress-testing a plan or sharpening domain language | `/grill` → the implementation command for the domain → `/commit` |
+| Multi-task spec built in one run | `/spec` → `/implement-spec` → `/test` → `/commit` |
 | Turning a spec into tracker tickets | `/spec` → `/ticket` |
 | Exploring a design before committing to it | `/prototype` → `/spec` if needed → the implementation command for the domain → `/commit` |
 | Improving codebase architecture or testability | `/zoom-out` (orient first) → `/architecture` → the implementation command for the domain → `/test` → `/commit` |
@@ -75,6 +80,7 @@ Every command sets `disable-model-invocation: true`, so I reach them and you do 
 | Documentation update | `/docs` → `/code-review` if the doc change affects technical accuracy significantly → `/commit` |
 | Agent/skill/command changes | `/agent-review` → `/agent-builder` → `/agent-review` → `/commit` |
 | Release preparation | `/code-review` or `/test` as needed → `/release` |
+| A session went sideways | `/retro` in that session → apply the picks → `/commit` |
 
 ## General Guidelines
 

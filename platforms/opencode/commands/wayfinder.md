@@ -8,7 +8,7 @@ Wayfind the effort below: decisions only, no implementation. Load `wayfinder-met
 Pick the mode from the argument: a path or effort name that matches an existing map means **work through the map**, anything else means **chart** a new one. If the argument is empty, list the maps below and ask which to work. Before charting, check the effort really outlives one session — if the way to the destination is already clear, say so and recommend `/spec` instead of charting a map.
 
 Existing maps:
-!`find docs/wayfinder -maxdepth 1 -name '*.md' 2>/dev/null | head -10 || echo "(none yet)"`
+!`find docs/wayfinder -maxdepth 1 -name '*.md' 2>/dev/null | sort | head -10 | grep . || echo "(none yet)"`
 
 Current repository state:
 !`git status --short 2>/dev/null || echo "(not a git repository)"`

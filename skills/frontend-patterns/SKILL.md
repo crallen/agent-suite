@@ -29,11 +29,11 @@ Read the target route or component, the shared primitives, tokens, and styling c
 
 | If the task is mainly about... | Consult |
 |---|---|
-| Visual direction, hierarchy, typography, color, spacing, motion, interaction tone | `reference/design-direction.md` |
-| AI-slop smells and overused polish patterns to check before refining a surface | `reference/anti-patterns.md` |
-| Component boundaries, state placement, forms, tables, lists, page shells | `reference/component-architecture.md` |
-| Keyboard, semantics, focus, overlays, narrow screens, overflow, touch | `reference/accessibility-responsive.md` |
-| Proof, state coverage, handoff notes | `reference/verification.md` |
+| Visual direction, hierarchy, typography, color, spacing, motion, interaction tone | `frontend-patterns/reference/design-direction.md` |
+| AI-slop smells and overused polish patterns to check before refining a surface | `frontend-patterns/reference/anti-patterns.md` |
+| Component boundaries, state placement, forms, tables, lists, page shells | `frontend-patterns/reference/component-architecture.md` |
+| Keyboard, semantics, focus, overlays, narrow screens, overflow, touch | `frontend-patterns/reference/accessibility-responsive.md` |
+| Proof, state coverage, handoff notes | `frontend-patterns/reference/verification.md` |
 
 ## Report
 

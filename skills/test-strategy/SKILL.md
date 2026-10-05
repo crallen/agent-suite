@@ -31,6 +31,12 @@ in `code-review-checklist` is the checklist for that pass.
 Each test describes behavior through the public interface and would survive an
 internal refactor.
 
+Expected values come from a source independent of the code: a known-good literal,
+a worked example, the spec. An assertion that recomputes the expected value the
+way the code does (`assert add(a, b) == a + b`, a snapshot derived by the same
+steps) is **tautological**: it passes by construction and can never disagree with
+the code.
+
 ## Mocks
 
 Mock at boundaries (external services, databases in unit tests, clocks, randomness),

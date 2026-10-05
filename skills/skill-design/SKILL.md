@@ -63,6 +63,8 @@ Hunt for restatements a leading word retires: a triad spelled out at three sites
 
 Keep each meaning in a **single source of truth** — one authoritative place, so changing the behaviour is a one-place edit.
 
+The **environment** is a source of truth too: build scripts, config files, the directory layout, `--help` output. A skill that restates it is a **cache** — a copy of a lookup, earning its load only when the lookup is expensive. Cache what the agent cannot find by looking: the unwritten convention, the reason behind a choice, the gotcha no config confesses. Leave the one-file, one-command lookups to the environment, where they cannot go stale.
+
 Check every line for **relevance**: does it still bear on what the skill does? Then hunt **no-ops** sentence by sentence — run the no-op test on each in isolation, and when one fails, delete the whole sentence rather than trim its words. Be aggressive: most prose that fails should go, not be rewritten.
 
 ## Failure modes

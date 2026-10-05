@@ -78,6 +78,7 @@ purpose and lists above the bundled one.
 | Shape | When | Effect |
 |---|---|---|
 | `context: fork` + `agent: name` | Self-contained analysis: review, audit, security, docs | Runs in the background on that agent, with no conversation history and no way to ask the user. Inject needed state with `` !`command` ``. |
+| `context: fork`, no `agent:` | Self-contained implementation carried by a skill (`/backend-engineer`, `/database-specialist`, `/test`), or a fork that orchestrates subagents (`/full-review`; nesting verified working) | Same fork, on a general-purpose agent that loads the skills the body names. The request must carry everything: pass the spec path or review findings as arguments. |
 | Prose: "Use the `@name` subagent to…" | Work that needs conversation context: debugging, implementation | The main conversation composes the delegation. |
 | Neither | Dialogue-driven workflows and inline skill work | Runs in the main conversation with the skills the body loads. |
 

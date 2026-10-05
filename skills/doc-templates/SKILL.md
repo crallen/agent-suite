@@ -1,6 +1,6 @@
 ---
 name: doc-templates
-description: Templates and structure for READMEs, API documentation, changelogs, and inline code documentation, plus Diátaxis document-type selection (tutorial / how-to / reference / explanation), global-audience prose rules, and the register and naming rules for prose humans read (name the mechanism, not a metaphor for it) — ADRs defer to the domain-modeling skill
+description: Load when writing or reviewing a README, API documentation, a changelog, or code comments, or when choosing what kind of document to write. Templates for each, Diátaxis document-type selection, global-audience prose rules, and the register and naming rules for prose humans read (name the mechanism, not a metaphor for it). ADRs defer to domain-modeling.
 ---
 
 # Documentation Templates

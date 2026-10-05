@@ -61,6 +61,9 @@ branches are short-lived and deleted after merging.
   Work the PR does not do belongs in an issue.
 - No boilerplate sections unless the repo's template asks for them, and no
   attribution footer or session link.
+- When the change alters structure, changes behavior, or cannot be rolled back,
+  read `git-conventions/reference/pr-body.md` for the sketch, the before and after
+  evidence line, and the one-way door line that description earns.
 
 ## Filesystem Safety
 

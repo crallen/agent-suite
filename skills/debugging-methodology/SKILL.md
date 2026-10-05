@@ -9,6 +9,10 @@ A phased workflow for investigating bugs end-to-end. The most important phase is
 
 If `CONTEXT.md` exists at the repo root, read it before exploring — the domain glossary helps you orient to the relevant modules. Also check `docs/adr/` in the area you're touching for recorded decisions.
 
+## Redact
+
+This skill has you show commands, output, and captured artifacts. Replace every secret with `<REDACTED>` before showing it, and build loops against environment variables so the credential stays in the environment. Captured artifacts carry auth headers: quote only the lines that carry the signal. If the redacted output is not enough to diagnose from, say so and ask.
+
 ## Phase 0: Build a Feedback Loop
 
 **This is the skill.** If you have a fast, deterministic, agent-runnable pass/fail signal for the bug, you will find the cause. If you don't, no amount of staring at code will save you. Spend disproportionate effort here.
@@ -38,7 +42,18 @@ The goal is not a clean repro but a **higher reproduction rate**. Loop the trigg
 
 Stop and say so explicitly. List what you tried. Ask for: (a) access to the environment that reproduces it, (b) a captured artifact (log dump, HAR file, core dump), or (c) permission to add temporary production instrumentation. Do **not** proceed to hypothesise without a loop.
 
-## Phase 1: Reproduce
+### Completion criterion
+
+Phase 0 is done when you can name **one command** you have already run at least once, with its invocation and output shown, that is:
+
+- [ ] **Red-capable**: it drives the bug's code path and asserts the user's exact symptom, so it goes red on this bug and green once fixed. "Runs without erroring" does not qualify.
+- [ ] **Deterministic**: the same verdict every run, or a pinned high reproduction rate for a flaky bug.
+- [ ] **Fast**: seconds, not minutes.
+- [ ] **Agent-runnable**: you can run it unattended.
+
+Reading code to build a theory before this command exists is the failure this skill prevents. No red-capable command, no Phase 1.
+
+## Phase 1: Reproduce and Minimise
 
 Run the loop. Watch the bug appear.
 
@@ -46,6 +61,8 @@ Confirm:
 - [ ] The loop produces the failure mode the **user** described — not a different failure that happens to be nearby. Wrong bug = wrong fix.
 - [ ] The failure is reproducible across multiple runs (or at a high enough rate to debug against for non-deterministic bugs).
 - [ ] You have captured the exact symptom (error message, wrong output, slow timing) so later phases can verify the fix actually addresses it.
+
+Then shrink the repro to the smallest scenario that still goes red. Cut inputs, callers, config, data, and steps **one at a time**, re-running the loop after each cut. A minimal repro leaves fewer parts to suspect in Phase 3 and becomes the regression test in Phase 5. Done when every remaining element is load-bearing: removing any one turns the loop green.
 
 ## Phase 2: Gather Evidence
 
@@ -99,5 +116,5 @@ Required before declaring done:
 - [ ] Throwaway prototypes or harnesses deleted
 - [ ] The hypothesis that turned out correct is stated in the commit / PR message — so the next debugger learns
 
-**Then ask: what would have prevented this bug?** If the answer involves architectural change (no good test seam, tangled callers, hidden coupling), hand off to `architecture-review` with the specifics. Make the recommendation *after* the fix is in — you have more information now than when you started.
+**Then ask: what would have prevented this bug?** If the answer involves architectural change (no good test seam, tangled callers, hidden coupling), hand off to `architecture-review` with the specifics. If it is a missing check, pointer, or standard in the agent's environment, that is a `retro-methodology` finding. Make the recommendation *after* the fix is in — you have more information now than when you started.
 

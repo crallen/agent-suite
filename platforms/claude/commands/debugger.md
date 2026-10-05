@@ -4,6 +4,6 @@ argument-hint: [issue description]
 disable-model-invocation: true
 ---
 
-Use the `@debugger` subagent to investigate the following issue with a systematic debugging methodology. Start by reproducing the problem, gather evidence, form hypotheses, and identify the root cause.
+Use the `@debugger` subagent to investigate the following issue.
 
 $ARGUMENTS
