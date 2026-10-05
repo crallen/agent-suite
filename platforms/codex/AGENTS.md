@@ -32,7 +32,9 @@ plus the one domain skill that fits; adding more crowds out the actual task.
 | `git-conventions` | Commit, branch, and pull-request rules — the project's own conventions first, then Conventional Commits with the type-to-bump mapping, short bodies, no attribution footers, and filesystem safety for git work. Load before committing, branching, opening a pull request, or preparing a release. | Writing commits, branches, or a PR description |
 | `grill-methodology` | One-question-at-a-time Socratic interrogation of a plan: frontier questioning, recommendation-first questions, codebase cross-referencing, and a shared-understanding gate — pairs with `domain-modeling` | Stress-testing a plan before committing to it |
 | `prototype-methodology` | Throwaway prototype workflow — routes between a terminal app for logic/state questions and multiple UI variants for visual questions | Answering a design question with throwaway code |
+| `retro-methodology` | Session retrospective aimed at the agent's environment, not the code: list the session's friction, then propose the navigation pointer, automated check, review standard, or steering-file cut that removes it | A session went sideways and the environment should learn from it |
 | `security-analysis` | The security report format and severity matrix, a source-to-sink method, and the vulnerability categories to cover with their CWE ids. Load when performing a security review, auditing dependencies, or investigating a suspected vulnerability. | Auditing code, config, or dependencies for vulnerabilities |
+| `spec-implementation` | Implement a whole spec in one run: tasks as a task graph, parallel implementer subagents across the ready frontier in their own worktrees, one integration branch reviewed against the spec | Building an approved multi-task spec end to end |
 | `spec-writing` | Dialogue-to-spec workflow: scope gate, one-question-at-a-time clarification with lettered options, recommended approaches, staged design, self-review, and a dated spec file | Turning an ambiguous goal into a design spec |
 | `test-strategy` | House rules for proving correctness — test-first vertical slices, the mock limit, coverage targets by category, test naming, and reserved fixture placeholders. Load when deciding how a change will be verified, writing or reviewing tests, or setting a coverage gate. | Choosing test types, coverage targets, or mocking approach |
 | `ticket-writing` | Spec-to-ticket splitting, story/task and bug templates, testable acceptance-criteria rules, and JIRA/Linear platform notes | Splitting a spec into tracker tickets |
@@ -45,6 +47,8 @@ plus the one domain skill that fits; adding more crowds out the actual task.
 | Goal | Suggested flow |
 |---|---|
 | Ambiguous or cross-cutting change | `spec-writing` → `coding-guardrails` + the domain skill → `test-strategy` → `code-review-checklist` |
+| Building an approved spec | `spec-implementation` → `code-review-checklist` |
+| After a session that went sideways | `retro-methodology` |
 | Effort spanning many sessions | `wayfinder-methodology` → `spec-writing` → implementation |
 | Stress-testing a plan | `grill-methodology` → `domain-modeling` for the terms it sharpens |
 | Exploring a design first | `prototype-methodology` → `spec-writing` if it survives |

@@ -21,8 +21,10 @@ Turn a spec, a set of requirements, or a conversation into JIRA or Linear ticket
 1. **Collect the source.** A spec file, a requirements list, or the conversation so far. Done when the goal fits in one sentence.
 2. **List the outcomes.** Each independently shippable, user-visible change is a candidate ticket. Internal work (a refactor, a migration) earns its own ticket only when it ships alone.
 3. **Slice vertically.** Each ticket cuts through every layer its outcome needs — UI, API, storage together. "Build the endpoints" plus "build the UI" leaves nothing shippable until both land.
-4. **Order by dependency.** When a ticket needs another to land first, record the blocker in its Depends on line and sequence the list accordingly.
+4. **Order by dependency.** When a ticket needs another to land first, record the blocker in its Depends on line and sequence the list accordingly. Record only blockers that genuinely gate the work: the Depends on lines form the task graph `spec-implementation` works from, and a false edge serializes work that could run in parallel. A prefactor that makes the change easy is its own ticket, first, blocking the tickets it eases.
 5. **Check coverage.** Done when every requirement in the source appears in exactly one ticket, every ticket traces back to the source, and anything deliberately excluded sits on an Out of scope line.
+
+**A wide refactor is the exception to vertical slicing.** One mechanical change whose effect fans across the codebase (renaming a column, retyping a shared symbol) breaks every call site at once, so no vertical slice lands green. Sequence it as expand, migrate, contract: one ticket adds the new form beside the old; one ticket per batch of call sites (per package or directory) migrates them, each blocked by the expand; a final ticket deletes the old form, blocked by every batch.
 
 Most bug fixes and small features are a single ticket — splitting is for specs and multi-outcome requirements, never a quota.
 

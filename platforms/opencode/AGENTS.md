@@ -73,6 +73,8 @@ Skills are loaded on-demand by agents via the `skill` tool. They provide detaile
 | `architecture-review` | Architecture deepening workflow: find shallow modules, propose depth-increasing refactors, present markdown report of candidates, then grill on the chosen one with CONTEXT.md / ADR integration |
 | `prototype-methodology` | Throwaway prototype workflow — routes between a terminal app for logic/state questions and multiple UI variants for visual questions |
 | `wayfinder-methodology` | Multi-session effort mapping: chart a destination plus decision tickets in-repo, work the frontier one decision per session, hold unsharpened work as fog of war |
+| `spec-implementation` | Implement a whole spec in one run: tasks as a task graph, parallel implementer subagents across the ready frontier in their own worktrees, one integration branch reviewed against the spec |
+| `retro-methodology` | Session retrospective aimed at the agent's environment, not the code: list the session's friction, then propose the navigation pointer, automated check, review standard, or steering-file cut that removes it |
 
 ## Commands
 
@@ -104,6 +106,10 @@ Quick-access commands for common workflows:
 | `/architecture` | Find deepening opportunities in the codebase, present a markdown report of candidates, then grill on the chosen one | architect |
 | `/prototype` | Build a throwaway prototype to explore a design question — logic branch for state/data-model questions, UI branch for visual layout questions | tech-lead |
 | `/zoom-out` | Get a map of relevant modules and callers when unfamiliar with an area, using the project's domain vocabulary | — |
+| `/implement-spec [spec file]` | Implement an approved spec end to end: parallel implementers across the task graph, one integration branch, reviewed against the spec | tech-lead |
+| `/retro [session]` | Look back over a session and propose improvements to the agent's environment: pointers, checks, standards, steering files | — |
+| `/handoff [next focus]` | Compact the conversation into a handoff document for a fresh session | — |
+| `/research <question>` | Research a question against primary sources in a subagent and save cited findings | general |
 | `/loop [interval] <prompt>` | Re-run a prompt or command on a fixed interval, or self-paced when no interval is given — requires the `opencode-loop-plugin` reference in `opencode.json`, whose `file:` path is machine-specific — update it per machine | — |
 
 ## Workflows
@@ -124,7 +130,10 @@ These are common starting points, not rigid rules. Pick the smallest workflow th
 | Release preparation | `/code-review` or `/test` as needed → `/release` |
 | Stress-testing a plan or sharpening domain language | `/grill <plan>` → specialist implementation command → `/commit` |
 | Effort too big to hold in one session | `/wayfinder` to chart the map → `/wayfinder` once per session to work the frontier → `/spec` → specialist implementation command → `/commit` |
+| Multi-task spec built in one run | `/spec` → `/implement-spec` → `/test` → `/commit` |
 | Turning a spec into tracker tickets | `/spec` → `/ticket` |
+| A session went sideways, or a bug is fixed | `/retro` in that session → apply the picked changes → `/commit` |
+| Context is filling up mid-task | `/handoff` → fresh session from the document |
 | Exploring a design before committing to it | `/prototype` → `/spec` if needed → specialist implementation command → `/commit` |
 | Improving codebase architecture or testability | `/zoom-out` (orient first) → `/architecture` → specialist implementation command → `/test` → `/commit` |
 
