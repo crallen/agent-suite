@@ -11,13 +11,18 @@ half of `opencode/.config/opencode/`, with its history intact.
 ```text
 agent-suite/
 ├── AGENTS.md               # How to work on this repo (not any harness's instructions)
+├── .env.example            # Template for the eval runner's auth token
+├── evals/                  # Routing and behavior eval cases, plus parser recordings
 ├── skills/                 # Canonical skills, the one shared tree
 ├── platforms/
 │   ├── claude/             # Claude Code's view: CLAUDE.md, agents/, commands/, settings.json.example
 │   ├── codex/              # Codex's view: AGENTS.md + skills/ (symlinks into skills/)
 │   └── opencode/           # OpenCode's view: AGENTS.md, agent/, commands/, skills/ (symlinks)
 └── scripts/
-    └── validate-config.py  # Reference integrity, index accuracy, shared-skill links
+    ├── validate-config.py  # Reference integrity, index accuracy, shared-skill links
+    ├── run-evals.py        # Runs the evals against a base ref and the working tree
+    ├── check-eval-report.py # CI: a PR body carries an eval report or an opt-out
+    └── test_evals.py       # Eval runner tests, no model calls
 ```
 
 `skills/` is the canonical tree. `platforms/` holds each harness's view of it: an
@@ -44,6 +49,11 @@ command, or any of the three index documents:
 scripts/validate-config.py        # list every check and what it covered; exit 1 on any problem
 scripts/validate-config.py -q     # only failures and the summary, for a git hook
 ```
+
+The validator cannot see behavior: whether a prompt still loads the right skill, or a
+command still follows its workflow. `scripts/run-evals.py` checks that, and a PR
+touching `skills/` or `platforms/` carries its report or an `evals: n/a` line. See
+"Evals" in [AGENTS.md](AGENTS.md#evals) for running and adding cases.
 
 Sharing is opt-in by existence — a platform gets a skill only if someone creates the symlink.
 
