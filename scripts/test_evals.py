@@ -20,6 +20,8 @@ import stat
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 import unittest
 from pathlib import Path
 
@@ -119,6 +121,36 @@ class StreamParserTest(unittest.TestCase):
         self.assertEqual(result.tool_calls[1].parent_tool_use_id, "toolu_parent")
         self.assertEqual(result.routes, ("debugger",))
 
+    def test_background_subagent_run_reads_past_the_first_result(self):
+        # /debugger launches the agent in the background: the main thread
+        # returns a result at once, then the subagent works, then a second
+        # main-thread turn ends with the result that matters.
+        result = read_recording("subagent", route_window=None)
+        self.assertEqual(result.stop, "result")
+        self.assertEqual(result.error_class, "none")
+        self.assertTrue(result.final_text.startswith("Fixed. An order of exactly 10"))
+        agent_call = result.tool_calls[0]
+        self.assertEqual((agent_call.name, agent_call.parent_tool_use_id), ("Agent", None))
+        subagent_calls = [c.name for c in result.tool_calls
+                          if c.parent_tool_use_id == "toolu_015KM4KLp8pnxHeXAW9JTrXc"]
+        self.assertEqual(subagent_calls, ["Bash", "Bash", "Bash", "Edit", "Edit"])
+        self.assertEqual(result.tool_calls[-1].parent_tool_use_id, None)
+
+    def test_forked_command_calls_carry_the_fork_as_parent(self):
+        result = read_recording("fork", route_window=None)
+        self.assertEqual(
+            [(c.name, c.parent_tool_use_id) for c in result.tool_calls],
+            [("Read", "forked-command-code-review"), ("Glob", "forked-command-code-review")],
+        )
+        self.assertIn("db.py:25", result.final_text)
+        self.assertEqual(result.error_class, "none")
+
+    def test_command_whose_shell_injection_was_denied_is_an_error(self):
+        # The CLI never calls the model and reports a clean, empty result.
+        result = read_recording("command-denied", route_window=None)
+        self.assertEqual(result.tool_calls, ())
+        self.assertEqual(result.error_class, "error")
+
     def test_task_is_accepted_as_the_agent_tool_name(self):
         lines = [assistant_tool_use("Task", {"subagent_type": "Plan"}, parent=None)]
         self.assertEqual(run_evals.read_stream(lines, 3).routes, ("Plan",))
@@ -131,6 +163,58 @@ def assistant_tool_use(name: str, tool_input: dict, parent: str | None) -> str:
         "message": {"content": [{"type": "tool_use", "id": "toolu_x", "name": name,
                                  "input": tool_input}]},
     })
+
+
+# Stands in for claude: replays a recording, then sleeps and exits as told.
+FAKE_CLAUDE = (
+    "import sys, time\n"
+    "sys.stdout.write(open(sys.argv[1]).read()); sys.stdout.flush()\n"
+    "time.sleep(float(sys.argv[2])); sys.exit(int(sys.argv[3]))\n"
+)
+
+
+class RunClaudeTest(unittest.TestCase):
+    def run_fake(self, recording: str, sleep: float, exit_code: int, timeout: float,
+                 route_window: int | None = 3):
+        cmd = [sys.executable, "-c", FAKE_CLAUDE, str(RECORDINGS / f"{recording}.jsonl"),
+               str(sleep), str(exit_code)]
+        with tempfile.TemporaryDirectory() as scratch:
+            return run_evals.run_claude(cmd, dict(os.environ), Path(scratch), timeout,
+                                        route_window)
+
+    def test_process_is_killed_at_the_first_route(self):
+        result = self.run_fake("route-skill", sleep=60, exit_code=0, timeout=30)
+        self.assertEqual(result.stop, "route")
+        self.assertEqual(result.error_class, "none")
+        self.assertNotEqual(result.exit_status, 0)
+
+    def test_silent_process_times_out(self):
+        result = self.run_fake("route-skill", sleep=60, exit_code=0, timeout=0.5,
+                               route_window=None)
+        self.assertEqual(result.error_class, "timeout")
+
+    def test_nonzero_exit_after_a_clean_result_is_an_error(self):
+        result = self.run_fake("no-route", sleep=0, exit_code=1, timeout=30)
+        self.assertEqual(result.exit_status, 1)
+        self.assertEqual(result.error_class, "error")
+
+    def test_interrupt_stops_live_runs(self):
+        # What the SIGINT handler does before cleanup unwinds.
+        results = []
+        worker = threading.Thread(target=lambda: results.append(
+            self.run_fake("window", sleep=60, exit_code=0, timeout=60, route_window=None)))
+        worker.start()
+        deadline = time.monotonic() + 10
+        while not run_evals._live and time.monotonic() < deadline:
+            time.sleep(0.05)
+        run_evals.kill_live_runs()
+        worker.join(15)
+        self.assertFalse(worker.is_alive())
+        self.assertEqual(results[0].error_class, "error")
+
+    def test_clean_exit_after_a_result_counts(self):
+        result = self.run_fake("no-route", sleep=0, exit_code=0, timeout=30)
+        self.assertEqual((result.exit_status, result.error_class), (0, "none"))
 
 
 class ClassifyTest(unittest.TestCase):
