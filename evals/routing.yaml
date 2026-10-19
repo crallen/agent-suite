@@ -68,6 +68,7 @@
     which of those is a blocker and which is just a nit?
   expect: code-review-checklist
 
+# known gap: work request, still loads nothing on main (task 15 re-run, 0/3)
 - prompt: |-
     Write my review comments for this change from a teammate's PR, one per
     problem, each marked blocker or nit, ready to paste into GitHub:
@@ -101,6 +102,7 @@
     when I add print statements. How should I go about narrowing it down?
   expect: debugging-methodology
 
+# known gap: work request, still loads nothing on main (task 15 re-run, 0/3)
 - prompt: |-
     This test fails about 1 run in 20 on CI and has never failed on my laptop.
     Find out why and fix it.
@@ -151,6 +153,7 @@
     store or in local useState? Only the header ever opens it.
   expect: frontend-patterns
 
+# known gap: work request, still loads nothing on main (task 15 re-run, 0/3)
 - prompt: |-
     Add a settings modal to this header: the gear button opens it, Escape or a
     click on the backdrop closes it. Nothing else in the app opens it. Give me
@@ -269,6 +272,7 @@
 
 # fixtures/mini-suite: one agent with a tool and a preloaded skill that don't
 # exist, one skill pointing at a reference file that isn't there.
+# known gap: work request, still loads nothing on main (task 15 re-run, 0/3)
 - prompt: >-
     I'm about to share these agents and skills with my team. Go through them and
     flag anything broken: tool lists, skills or files they point at that aren't
@@ -306,6 +310,7 @@
     a phone-sized screen. Don't change any code.
   expect: frontend-auditor
 
+# known gap: work request, still loads nothing on main (task 15 re-run, 0/3)
 - prompt: >-
     Build a settings page in our React app with a form for display name and
     email plus a dark-mode toggle, and check it in a real browser at phone and
