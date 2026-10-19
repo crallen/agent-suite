@@ -145,14 +145,25 @@ counted; timeouts count as failures.
 | FIXED | Base fails, head passes |
 | INCONCLUSIVE | A side has fewer than 2 counted runs; re-run the case |
 
-Three runs are coarse. Before acting on a close call, re-run that case with
-`--only <id> --runs 5`. `--runs 1` is a smoke check only: every case comes out
-INCONCLUSIVE. An isolation warning means a plugin loaded alongside the suite and
+Three runs are coarse, so the runner confirms what they flag: a case scored
+REGRESSION or FIXED runs 5 more times per side and is rescored on all its runs.
+The report shows the combined rates (such as `3/8`) and says whether
+confirmation held; a case it reverses takes its rescored status, and the exit
+code follows. Only flagged cases pay for the extra runs. For any other close
+call, re-run that case with `--only <id> --runs 5`. `--runs 1` is a smoke check
+only: every case comes out INCONCLUSIVE. An isolation warning means a plugin loaded alongside the suite and
 may have competed for routes.
 
 To add a routing case, add an entry to `evals/routing.yaml`: `expect: <name>`,
 `any_of: [..]` when several targets are honestly correct, or `expect: none` for a
-prompt that should load nothing. A behavior case is a directory
+prompt that should load nothing. A routing run starts in an empty directory;
+`fixture: <path under evals/>` names a directory with `before/` and an optional
+`after/`, set up like a behavior fixture, for a request that needs a repo to act
+on. A prompt that fails on base guards nothing. Reword it, or keep it as a known
+gap when real users ask that way: mark it `# known gap` and add a work-shaped
+entry for the same target beside it. Known gaps read FAIL on both sides, so the
+FAIL rows are the skill-improvement backlog, and a change that closes one shows
+FIXED. A behavior case is a directory
 `evals/behavior/<case>/` holding `case.yaml` and an optional `fixture/` with
 `before/` (committed) and `after/` (left uncommitted, or staged with `stage: true`).
 `case.yaml` takes `prompt`, `allowed_tools`, `timeout` (seconds), `stage`, and
