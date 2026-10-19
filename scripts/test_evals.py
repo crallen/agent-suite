@@ -49,12 +49,49 @@ def read_recording(name: str, route_window: int | None = 3):
 
 
 class StreamParserTest(unittest.TestCase):
-    def test_skill_call_is_a_route_and_stops_the_stream(self):
+    def test_skill_call_is_a_route_but_reading_continues(self):
+        # The recording was cut right after the Skill call, so the stream
+        # ends without a result: the parser kept reading instead of stopping.
         result = read_recording("route-skill")
         self.assertEqual(result.routes, ("docker-best-practices",))
-        self.assertEqual(result.stop, "route")
-        self.assertEqual(result.error_class, "none")
+        self.assertEqual(result.stop, "eof")
         self.assertEqual([c.name for c in result.tool_calls], ["Skill"])
+
+    def test_skill_loads_are_collected_until_the_window_closes(self):
+        lines = [
+            assistant_tool_use("Skill", {"skill": "coding-guardrails"}, parent=None),
+            assistant_tool_use("Skill", {"skill": "backend-patterns"}, parent=None),
+            assistant_tool_use("Read", {"file_path": "app.py"}, parent=None),
+            assistant_tool_use("Skill", {"skill": "test-strategy"}, parent=None),
+        ]
+        result = run_evals.read_stream(lines, route_window=3)
+        self.assertEqual(result.routes, ("coding-guardrails", "backend-patterns"))
+        self.assertEqual(result.stop, "window")
+        self.assertEqual(result.error_class, "none")
+        self.assertEqual(len(result.tool_calls), 3)
+
+    def test_skill_load_then_an_answer_reads_to_the_result(self):
+        lines = [
+            assistant_tool_use("Skill", {"skill": "why"}, parent=None),
+            json.dumps({"type": "result", "is_error": False, "result": "Because."}),
+        ]
+        result = run_evals.read_stream(lines, route_window=3)
+        self.assertEqual((result.routes, result.stop), (("why",), "result"))
+        self.assertEqual(result.final_text, "Because.")
+
+    def test_agent_call_stops_the_stream_after_earlier_skill_loads(self):
+        lines = [
+            assistant_tool_use("Read", {"file_path": "skills/why/SKILL.md"}, parent=None),
+            assistant_tool_use("Agent", {"subagent_type": "debugger"}, parent=None),
+            assistant_tool_use("Read", {"file_path": "a.py"}, parent=None),
+        ]
+        result = run_evals.read_stream(lines, route_window=3)
+        self.assertEqual(result.routes, ("why", "debugger"))
+        self.assertEqual(result.stop, "route")
+        self.assertEqual(len(result.tool_calls), 2)
+
+    def test_init_event_model_is_reported(self):
+        self.assertEqual(read_recording("no-route").model, "claude-sonnet-5-5")
 
     def test_agent_call_routes_to_its_subagent_type(self):
         result = read_recording("route-agent")
@@ -66,7 +103,7 @@ class StreamParserTest(unittest.TestCase):
     def test_read_of_a_skill_file_routes_to_that_skill(self):
         result = read_recording("route-read")
         self.assertEqual(result.routes, ("git-conventions",))
-        self.assertEqual(result.stop, "route")
+        self.assertEqual(result.stop, "eof")  # cut after the Read; no kill there
 
     def test_answer_without_tools_has_no_route_and_keeps_the_final_text(self):
         result = read_recording("no-route")
@@ -175,19 +212,31 @@ FAKE_CLAUDE = (
 
 
 class RunClaudeTest(unittest.TestCase):
-    def run_fake(self, recording: str, sleep: float, exit_code: int, timeout: float,
+    def run_fake(self, recording: str | Path, sleep: float, exit_code: int, timeout: float,
                  route_window: int | None = 3):
-        cmd = [sys.executable, "-c", FAKE_CLAUDE, str(RECORDINGS / f"{recording}.jsonl"),
-               str(sleep), str(exit_code)]
+        stream = recording if isinstance(recording, Path) else RECORDINGS / f"{recording}.jsonl"
+        cmd = [sys.executable, "-c", FAKE_CLAUDE, str(stream), str(sleep), str(exit_code)]
         with tempfile.TemporaryDirectory() as scratch:
             return run_evals.run_claude(cmd, dict(os.environ), Path(scratch), timeout,
                                         route_window)
 
-    def test_process_is_killed_at_the_first_route(self):
-        result = self.run_fake("route-skill", sleep=60, exit_code=0, timeout=30)
+    def test_process_is_killed_at_an_agent_call(self):
+        result = self.run_fake("route-agent", sleep=60, exit_code=0, timeout=30)
         self.assertEqual(result.stop, "route")
         self.assertEqual(result.error_class, "none")
         self.assertNotEqual(result.exit_status, 0)
+
+    def test_process_outlives_a_skill_load_until_the_window_closes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            stream = Path(tmp) / "stream.jsonl"
+            stream.write_text("\n".join([
+                assistant_tool_use("Skill", {"skill": "why"}, parent=None),
+                assistant_tool_use("Bash", {"command": "git log"}, parent=None),
+                assistant_tool_use("Bash", {"command": "git blame"}, parent=None),
+            ]) + "\n")
+            result = self.run_fake(stream, sleep=60, exit_code=0, timeout=30)
+        self.assertEqual((result.routes, result.stop), (("why",), "window"))
+        self.assertEqual(result.error_class, "none")
 
     def test_silent_process_times_out(self):
         result = self.run_fake("route-skill", sleep=60, exit_code=0, timeout=0.5,
@@ -276,9 +325,10 @@ class ChildEnvTest(unittest.TestCase):
     def test_strips_inherited_claude_variables_and_sets_config_and_auth(self):
         parent = {"PATH": "/usr/bin", "CLAUDECODE": "1", "CLAUDE_EFFORT": "high",
                   "CLAUDE_CODE_SESSION_ID": "abc", "CLAUDE_CONFIG_DIR": "/elsewhere"}
-        env = run_evals.child_env(Path("/cfg"), {"CLAUDE_CODE_OAUTH_TOKEN": "t"}, parent)
+        env = run_evals.child_env(Path("/cfg"), Path("/home-tmp"),
+                                  {"CLAUDE_CODE_OAUTH_TOKEN": "t"}, parent)
         self.assertEqual(env, {"PATH": "/usr/bin", "CLAUDE_CONFIG_DIR": "/cfg",
-                               "CLAUDE_CODE_OAUTH_TOKEN": "t"})
+                               "HOME": "/home-tmp", "CLAUDE_CODE_OAUTH_TOKEN": "t"})
 
 
 class ClaudeCommandTest(unittest.TestCase):
@@ -350,6 +400,376 @@ class BuildConfigTest(unittest.TestCase):
             subprocess.run([*git, "add", "platforms", "skills/tracked"], check=True)
             names = sorted(p.name for p in (self.build(root) / "skills").iterdir())
         self.assertEqual(names, ["tracked"])
+
+    def test_side_home_links_dot_claude_to_its_config_and_both_are_removed(self):
+        with run_evals.side_dirs("head", ROOT) as side:
+            self.assertTrue((side.home / ".claude").is_symlink())
+            self.assertEqual((side.home / ".claude").resolve(), side.config.resolve())
+            self.assertTrue((side.home / ".claude" / "skills" / "why" / "SKILL.md").is_file())
+        self.assertFalse(side.home.exists())
+        self.assertFalse(side.config.exists())
+
+
+# --- Task 3: cases, fixtures, assertions, scoring, report ------------------
+
+
+def call(name: str, parent: str | None = None, **tool_input) -> object:
+    return run_evals.ToolCall(name, tool_input, parent)
+
+
+def run_result(*calls, final_text: str = "", error_class: str = "none",
+               routes: tuple[str, ...] = (), plugins: tuple[str, ...] = ()) -> object:
+    return run_evals.RunResult(
+        tool_calls=tuple(calls), routes=routes, final_text=final_text, stop="result",
+        exit_status=0, error_class=error_class, plugins=plugins, model="claude-sonnet-5-5",
+    )
+
+
+def git_out(repo: Path, *args: str) -> str:
+    return subprocess.run(["git", "-C", str(repo), *args], capture_output=True,
+                          text=True, check=True).stdout
+
+
+class CaseLoadingTest(unittest.TestCase):
+    def test_routing_ids_name_the_target_and_number_only_repeats(self):
+        self.assertEqual(
+            run_evals.routing_ids(["why", "none", "debugger", "none"]),
+            ["routing/why", "routing/none-1", "routing/debugger", "routing/none-2"],
+        )
+
+    def test_the_suites_cases_load_with_unique_ids(self):
+        cases = run_evals.load_cases(ROOT)
+        ids = [c.id for c in cases]
+        self.assertEqual(len(ids), len(set(ids)))
+        routing = {c.id: c for c in cases if isinstance(c, run_evals.RoutingCase)}
+        self.assertEqual(len(routing), 39)
+        self.assertEqual(routing["routing/why"].targets, frozenset({"why"}))
+        self.assertEqual(routing["routing/code-reviewer"].targets,
+                         frozenset({"code-reviewer", "code-review-checklist"}))
+        self.assertEqual(routing["routing/none-6"].targets, frozenset())
+        behavior = {c.id: c for c in cases if isinstance(c, run_evals.BehaviorCase)}
+        self.assertEqual(sorted(behavior), [
+            "behavior/commit-conventions", "behavior/debugger-phase-0",
+            "behavior/reviewer-planted-bug", "behavior/spec-asks-first",
+        ])
+        self.assertIsNone(behavior["behavior/spec-asks-first"].fixture)
+        self.assertTrue(behavior["behavior/commit-conventions"].stage)
+        self.assertEqual(behavior["behavior/commit-conventions"].timeout, 180)
+
+    def test_only_filters_ids_by_glob(self):
+        cases = run_evals.load_cases(ROOT)
+        self.assertEqual(len(run_evals.select(cases, "behavior/*")), 4)
+        self.assertEqual(len(run_evals.select(cases, "routing/none-*")), 6)
+        self.assertEqual([c.id for c in run_evals.select(cases, "routing/why")], ["routing/why"])
+        self.assertEqual(len(run_evals.select(cases, None)), len(cases))
+
+    def test_only_matching_nothing_is_a_setup_error(self):
+        with self.assertRaises(run_evals.SetupError):
+            run_evals.select(run_evals.load_cases(ROOT), "routing/no-such-target")
+
+    def write_suite(self, routing: str, case: str | None = None) -> Path:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        root = Path(tmp.name)
+        (root / "evals").mkdir()
+        (root / "evals" / "routing.yaml").write_text(routing)
+        if case is not None:
+            (root / "evals" / "behavior" / "c").mkdir(parents=True)
+            (root / "evals" / "behavior" / "c" / "case.yaml").write_text(case)
+        return root
+
+    def test_routing_entry_with_two_target_keys_is_a_setup_error(self):
+        root = self.write_suite("- prompt: hi\n  expect: why\n  any_of: [why]\n")
+        with self.assertRaisesRegex(run_evals.SetupError, "routing.yaml entry 1"):
+            run_evals.load_cases(root)
+
+    def test_unknown_assertion_type_is_a_setup_error(self):
+        root = self.write_suite("[]\n", "prompt: hi\nassert:\n  - says_hello: true\n")
+        with self.assertRaisesRegex(run_evals.SetupError, "says_hello"):
+            run_evals.load_cases(root)
+
+    def test_invalid_regex_is_a_setup_error(self):
+        root = self.write_suite("[]\n", "prompt: hi\nassert:\n  - final_text: {match: ['(']}\n")
+        with self.assertRaisesRegex(run_evals.SetupError, "behavior/c"):
+            run_evals.load_cases(root)
+
+
+class FixtureTest(unittest.TestCase):
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.fixture = Path(tmp.name) / "fixture"
+        self.scratch = Path(tmp.name) / "scratch"
+        self.scratch.mkdir()
+        for path, body in {"before/a.txt": "one\n", "before/sub/c.txt": "c\n",
+                           "after/a.txt": "two\n", "after/b.txt": "new\n"}.items():
+            (self.fixture / path).parent.mkdir(parents=True, exist_ok=True)
+            (self.fixture / path).write_text(body)
+
+    def status(self) -> list[str]:
+        return sorted(git_out(self.scratch, "status", "--porcelain").splitlines())
+
+    def test_before_is_exactly_one_commit_with_the_fixed_identity(self):
+        run_evals.prepare_fixture(self.fixture, self.scratch, stage=False)
+        self.assertEqual(git_out(self.scratch, "rev-list", "--count", "HEAD").strip(), "1")
+        self.assertEqual(git_out(self.scratch, "log", "-1", "--format=%an <%ae>").strip(),
+                         "evals <evals@localhost>")
+        self.assertEqual(git_out(self.scratch, "config", "--local", "user.name").strip(), "evals")
+        self.assertEqual(git_out(self.scratch, "show", "HEAD:a.txt"), "one\n")
+        self.assertEqual(git_out(self.scratch, "show", "HEAD:sub/c.txt"), "c\n")
+
+    def test_after_overlays_as_unstaged_changes(self):
+        run_evals.prepare_fixture(self.fixture, self.scratch, stage=False)
+        self.assertEqual(self.status(), [" M a.txt", "?? b.txt"])
+        self.assertEqual((self.scratch / "a.txt").read_text(), "two\n")
+
+    def test_after_overlays_as_staged_changes_when_stage_is_set(self):
+        run_evals.prepare_fixture(self.fixture, self.scratch, stage=True)
+        self.assertEqual(self.status(), ["A  b.txt", "M  a.txt"])
+
+    def test_no_fixture_is_an_empty_repo_with_identity_and_no_commit(self):
+        run_evals.prepare_fixture(None, self.scratch, stage=False)
+        self.assertEqual(git_out(self.scratch, "config", "--local", "user.email").strip(),
+                         "evals@localhost")
+        head = subprocess.run(["git", "-C", str(self.scratch), "rev-parse", "--verify", "HEAD"],
+                              capture_output=True)
+        self.assertNotEqual(head.returncode, 0)
+        self.assertEqual([p.name for p in self.scratch.iterdir()], [".git"])
+
+
+class AssertionTest(unittest.TestCase):
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.scratch = Path(tmp.name)
+
+    def check(self, assertion: dict, result) -> str | None:
+        return run_evals.check_assertion(assertion, result, self.scratch, dict(os.environ))
+
+    # order
+
+    def test_order_passes_when_first_precedes_before(self):
+        result = run_result(call("Bash", command="python3 -m unittest -v"),
+                            call("Edit", file_path="a.py"))
+        self.assertIsNone(self.check({"order": {"first": "Bash:unittest", "before": "Edit"}},
+                                     result))
+
+    def test_order_fails_when_before_comes_first(self):
+        result = run_result(call("Edit", file_path="a.py"),
+                            call("Bash", command="python3 -m unittest"))
+        self.assertIsNotNone(self.check({"order": {"first": "Bash:unittest", "before": "Edit"}},
+                                        result))
+
+    def test_order_fails_when_first_never_occurs(self):
+        result = run_result(call("Bash", command="ls"), call("Read", file_path="a.py"))
+        self.assertIsNotNone(self.check({"order": {"first": "Bash:unittest", "before": "Edit"}},
+                                        result))
+
+    def test_order_passes_when_before_never_occurs(self):
+        result = run_result(call("Bash", command="python3 -m unittest"))
+        self.assertIsNone(self.check({"order": {"first": "Bash:unittest", "before": "Write"}},
+                                     result))
+
+    def test_order_counts_subagent_calls_in_stream_order(self):
+        result = run_result(
+            call("Agent", subagent_type="debugger"),
+            call("Bash", "toolu_agent", command="python3 -m unittest"),
+            call("Edit", "toolu_agent", file_path="a.py"),
+        )
+        self.assertIsNone(self.check({"order": {"first": "Bash:unittest", "before": "Edit"}},
+                                     result))
+
+    def test_order_regex_has_no_default_flags(self):
+        result = run_result(call("Bash", command="python3 -m unittest"))
+        self.assertIsNotNone(self.check({"order": {"first": "Bash:UNITTEST", "before": "Edit"}},
+                                        result))
+        self.assertIsNone(self.check({"order": {"first": "Bash:(?i)UNITTEST", "before": "Edit"}},
+                                     result))
+
+    def test_order_without_a_regex_matches_the_tool_name(self):
+        result = run_result(call("Read", file_path="a.py"), call("Edit", file_path="a.py"))
+        self.assertIsNone(self.check({"order": {"first": "Read", "before": "Edit"}}, result))
+
+    # tool_not_called
+
+    def test_tool_not_called_passes_when_absent(self):
+        result = run_result(call("Read", file_path="a.py"))
+        self.assertIsNone(self.check({"tool_not_called": ["Write", "Edit"]}, result))
+
+    def test_tool_not_called_fails_on_a_forked_call(self):
+        result = run_result(call("Write", "forked-command-spec", file_path="docs/x.md"))
+        self.assertIsNotNone(self.check({"tool_not_called": ["Write", "Edit"]}, result))
+
+    # final_text
+
+    def test_final_text_passes_when_every_match_hits_and_no_not_match_does(self):
+        result = run_result(final_text="Found it in db.py:25.\nA) one\nB) two")
+        self.assertIsNone(self.check(
+            {"final_text": {"match": [r"db\.py:25", "(?m)^B\\)"], "not_match": ["LGTM"]}},
+            result))
+
+    def test_final_text_fails_on_a_missing_match(self):
+        result = run_result(final_text="LGTM")
+        self.assertIsNotNone(self.check({"final_text": {"match": [r"db\.py"]}}, result))
+
+    def test_final_text_fails_on_a_not_match_hit(self):
+        result = run_result(final_text="## Task Checklist\n- [ ] 1.")
+        self.assertIsNotNone(self.check({"final_text": {"not_match": ["## Task Checklist"]}},
+                                        result))
+
+    def test_final_text_line_anchors_need_an_inline_flag(self):
+        result = run_result(final_text="intro\nA) one")
+        self.assertIsNotNone(self.check({"final_text": {"match": [r"^A\)"]}}, result))
+
+    # shell
+
+    def test_shell_matches_the_commands_stdout_in_scratch(self):
+        (self.scratch / "marker.txt").write_text("fix(greet): add --shout\n")
+        self.assertIsNone(self.check(
+            {"shell": {"run": "cat marker.txt", "match": [r"^fix\(greet\): "],
+                       "not_match": ["Co-Authored-By"]}}, run_result()))
+
+    def test_shell_fails_on_a_not_match_hit(self):
+        self.assertIsNotNone(self.check(
+            {"shell": {"run": "echo 'Co-Authored-By: someone'", "not_match": ["Co-Authored-By"]}},
+            run_result()))
+
+    def test_shell_fails_on_a_missing_match(self):
+        self.assertIsNotNone(self.check({"shell": {"run": "echo 1", "match": ["^2$"]}},
+                                        run_result()))
+
+    # no_paths
+
+    def test_no_paths_passes_when_nothing_matches(self):
+        (self.scratch / "docs").mkdir()
+        self.assertIsNone(self.check({"no_paths": ["docs/specs/*"]}, run_result()))
+
+    def test_no_paths_fails_when_a_file_matches(self):
+        (self.scratch / "docs" / "specs").mkdir(parents=True)
+        (self.scratch / "docs" / "specs" / "2026-10-19-backup.md").write_text("# spec\n")
+        self.assertIsNotNone(self.check({"no_paths": ["docs/specs/*"]}, run_result()))
+
+
+class JudgeTest(unittest.TestCase):
+    def routing(self, *targets: str):
+        return run_evals.RoutingCase(id="routing/x", prompt="p", targets=frozenset(targets))
+
+    def judge(self, case, result):
+        return run_evals.judge(case, result, Path("/nonexistent"), {})
+
+    def test_expected_skill_passes(self):
+        self.assertTrue(self.judge(self.routing("why"), run_result(routes=("why",))).passed)
+
+    def test_extra_loads_alongside_the_target_still_pass(self):
+        result = run_result(routes=("coding-guardrails", "backend-patterns"))
+        self.assertTrue(self.judge(self.routing("backend-patterns"), result).passed)
+
+    def test_any_of_member_passes(self):
+        case = self.routing("code-reviewer", "code-review-checklist")
+        self.assertTrue(self.judge(case, run_result(routes=("code-review-checklist",))).passed)
+
+    def test_wrong_route_fails(self):
+        self.assertFalse(self.judge(self.routing("why"), run_result(routes=("Explore",))).passed)
+
+    def test_no_route_fails_a_case_that_expects_one(self):
+        self.assertFalse(self.judge(self.routing("why"), run_result()).passed)
+
+    def test_expect_none_passes_only_on_an_empty_route(self):
+        self.assertTrue(self.judge(self.routing(), run_result()).passed)
+        self.assertFalse(self.judge(self.routing(), run_result(routes=("why",))).passed)
+
+    def test_error_run_does_not_count(self):
+        verdict = self.judge(self.routing("why"), run_result(routes=("why",), error_class="error"))
+        self.assertFalse(verdict.counted)
+
+    def test_timeout_counts_as_a_failure(self):
+        verdict = self.judge(self.routing(), run_result(error_class="timeout"))
+        self.assertTrue(verdict.counted)
+        self.assertFalse(verdict.passed)
+        self.assertIn("timeout", verdict.detail)
+
+    def test_behavior_case_passes_when_every_assertion_does(self):
+        case = run_evals.BehaviorCase(
+            id="behavior/x", prompt="p", allowed_tools=(), timeout=60, stage=False,
+            asserts=({"tool_not_called": ["Write"]}, {"final_text": {"match": ["ok"]}}),
+            fixture=None)
+        self.assertTrue(self.judge(case, run_result(final_text="ok")).passed)
+        verdict = self.judge(case, run_result(call("Write", file_path="x")))
+        self.assertFalse(verdict.passed)
+        self.assertIn("Write", verdict.detail)
+
+
+class StatusTest(unittest.TestCase):
+    def rate(self, passes: int, counted: int, errors: int = 0):
+        return run_evals.Rate(passes=passes, counted=counted, errors=errors)
+
+    def test_regression_when_base_passes_and_head_fails(self):
+        self.assertEqual(run_evals.status(self.rate(3, 3), self.rate(1, 3)), "REGRESSION")
+
+    def test_fixed_when_base_fails_and_head_passes(self):
+        self.assertEqual(run_evals.status(self.rate(0, 3), self.rate(2, 3)), "FIXED")
+
+    def test_pass_and_fail_when_both_sides_agree(self):
+        self.assertEqual(run_evals.status(self.rate(2, 3), self.rate(3, 3)), "PASS")
+        self.assertEqual(run_evals.status(self.rate(1, 3), self.rate(0, 3)), "FAIL")
+
+    def test_two_thirds_is_the_pass_line(self):
+        self.assertEqual(run_evals.status(self.rate(4, 5), self.rate(3, 5)), "REGRESSION")
+        self.assertEqual(run_evals.status(self.rate(2, 2, 1), self.rate(2, 3)), "PASS")
+
+    def test_fewer_than_two_counted_runs_is_inconclusive_never_regression(self):
+        self.assertEqual(run_evals.status(self.rate(3, 3), self.rate(0, 1, 2)), "INCONCLUSIVE")
+        self.assertEqual(run_evals.status(self.rate(0, 0, 3), self.rate(3, 3)), "INCONCLUSIVE")
+
+    def test_rate_excludes_errors_and_counts_timeouts_as_failures(self):
+        verdicts = [run_evals.Verdict(True, True, ""), run_evals.Verdict(False, True, "timeout"),
+                    run_evals.Verdict(False, False, "error")]
+        self.assertEqual(run_evals.Rate.of(verdicts), self.rate(1, 2, 1))
+
+    def test_exit_code_is_one_only_with_a_regression(self):
+        self.assertEqual(run_evals.exit_code(["PASS", "FIXED", "INCONCLUSIVE", "FAIL"]), 0)
+        self.assertEqual(run_evals.exit_code(["PASS", "REGRESSION"]), 1)
+
+
+check_eval_report = load_script("check-eval-report.py")
+
+
+class ReportTest(unittest.TestCase):
+    def render(self, rows, plugins=()):
+        return run_evals.render_report(
+            rows, base_sha="0123456789abcdef0123456789abcdef01234567", base_ref="main",
+            head_sha="fedcba9876543210fedcba9876543210fedcba98", dirty=True,
+            model="claude-sonnet-5-5", runs=3, plugins=plugins)
+
+    def rows(self):
+        r = run_evals.Rate
+        return [
+            run_evals.Row("routing/why", r(3, 3, 0), r(0, 3, 0)),
+            run_evals.Row("routing/none-1", r(3, 3, 0), r(3, 3, 0)),
+            run_evals.Row("behavior/spec-asks-first", r(1, 1, 2), r(3, 3, 0)),
+        ]
+
+    def test_marker_is_accepted_by_the_report_check(self):
+        report = self.render(self.rows())
+        self.assertTrue(check_eval_report.has_report(report))
+        self.assertTrue(report.rstrip().endswith(
+            "<!-- evals: base=0123456789ab head=fedcba987654-dirty "
+            "model=claude-sonnet-5-5 runs=3 -->"))
+
+    def test_report_lists_notable_cases_and_one_table_per_tier(self):
+        report = self.render(self.rows())
+        self.assertIn("1 REGRESSION", report)
+        self.assertIn("- REGRESSION `routing/why`", report)
+        self.assertIn("- INCONCLUSIVE `behavior/spec-asks-first`", report)
+        self.assertIn("| `routing/why` | 3/3 | 0/3 | REGRESSION |", report)
+        self.assertIn("| `behavior/spec-asks-first` | 1/1, 2 err | 3/3 | INCONCLUSIVE |", report)
+        self.assertLess(report.index("### Routing"), report.index("### Behavior"))
+
+    def test_isolation_warning_names_the_plugins(self):
+        report = self.render(self.rows(), plugins=("cc-plugin-telemetry",))
+        self.assertIn("cc-plugin-telemetry", report)
+        self.assertIn("isolation", report.lower())
+        self.assertNotIn("isolation", self.render(self.rows()).lower())
 
 
 if __name__ == "__main__":
