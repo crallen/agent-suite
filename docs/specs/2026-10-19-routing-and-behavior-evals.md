@@ -43,8 +43,10 @@ Decisions:
 
 - **Per-ref config.** A temporary `CLAUDE_CONFIG_DIR` (mode 0700, removed on exit)
   built from a suite root R: `agents`, `commands`, `CLAUDE.md` link into
-  `R/platforms/claude/`; `skills/` is a real directory with one link per **tracked**
-  `skills/<name>/`, so `synced/` is excluded on both sides; `settings.json` is the
+  `R/platforms/claude/`; `skills/` is a real directory with one link per
+  `skills/<name>/` that git **tracks or would add** (untracked but not ignored, so a
+  new skill on head counts before it is committed), so the gitignored `synced/` is
+  excluded on both sides; `settings.json` is the
   example with `enabledPlugins` replaced by the builtin plugins set to `false`
   (`cc-plugin-plugin-authoring`, `cc-plugin-agents-md`, `cc-plugin-telemetry`, each
   `@builtin`); runs pass `--strict-mcp-config` with no MCP config. A run whose init
@@ -103,7 +105,11 @@ An entry may carry `fixture: <path under evals/>` naming a directory with
 overlay), so a request to review or debug has a repo to act on. Agent entries use
 `expect: <agent>`; `any_of` pairing an agent with its own skill passes on a skill
 load alone, so it does not test agent routing. A case that fails on base in a full
-run guards nothing and is reworded or dropped.
+run guards nothing as a gate; it is reworded, or kept as a **known gap** when real
+users ask that way, marked with a `# known gap` comment, beside a work-shaped entry
+for the same target. Known gaps read as FAIL on both sides, so the report's FAIL
+rows are the skill-improvement backlog, and a description change that closes one
+shows as FIXED.
 
 ### `evals/behavior/<case>/`
 
@@ -124,7 +130,7 @@ uncommitted changes, or staged ones when `stage: true`. An empty fixture still g
 | `order` | `{first: <tool[:regex]>, before: <tool>}` | A call matching `first` occurs, and if `before` is ever called, the first match precedes its first call. Fails when `first` never occurs. For `Bash`, the regex runs against the `command` input. One `before` tool per assertion; "before Edit or Write" is two assertions |
 | `tool_not_called` | `[<tool>, ..]` | None of these tools was called |
 | `final_text` | `{match: [..], not_match: [..]}` | Regexes against the final assistant text |
-| `shell` | `{run, match, not_match}` | Command run in scratch after the session; regexes against its stdout |
+| `shell` | `{run, match, not_match}` | Command run in scratch after the session; fails on a nonzero exit, else regexes against its stdout. Needs at least one of `match` and `not_match` |
 | `no_paths` | `[<glob>, ..]` | No file matching these exists in scratch afterwards |
 
 Agent cases run through their real commands, not `--agent`: an agent's `skills:`
@@ -139,7 +145,7 @@ The four cases:
 
 | Case | Setup | Passes when |
 |---|---|---|
-| `debugger-phase-0` | prompt `/debugger <symptom>`, `Agent` allowed; Python fixture with a failing `unittest` | `order`: a Bash call matching `unittest` precedes the first `Edit`/`Write` |
+| `debugger-phase-0` | prompt `/debugger <symptom>`, `Agent` allowed; Python fixture with a failing `unittest` | `order`: a Bash call running `-m unittest` precedes the first `Edit`/`Write` |
 | `reviewer-planted-bug` | prompt `/code-review`, `Bash(sh *)` allowed; unstaged `after/` adds string-built SQL to `db.py` at a known line | `final_text` matches `db.py` and that line number |
 | `commit-conventions` | prompt `/commit`; `stage: true`; `allowed_tools: ["Bash(git *)"]` | `shell: git log -1 --format=%B` matches `^(feat\|fix\|docs\|style\|refactor\|perf\|test\|build\|ci\|chore)(\(.+\))?!?: .{1,71}$` on the first line and not `Co-Authored-By\|Generated with` |
 | `spec-asks-first` | prompt `/spec <goal>`; empty fixture | `final_text` matches a lettered list and `\(Recommended\)`, not `## Task Checklist`; `tool_not_called: [Write, Edit]`; `no_paths: [docs/specs/*]` |
@@ -203,14 +209,17 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
    every inherited `CLAUDE*` variable except the auth one it sets (a parent session
    exports `CLAUDECODE`, `CLAUDE_EFFORT`, and session ids), and adds `--permission-mode acceptEdits`,
    `--allowedTools`, and `--strict-mcp-config`. It streams until a route hit, the
-   window closes, the timeout fires, or the `result` event arrives.
+   window closes, the timeout fires, or the process exits. A `result` event does
+   not end the stream: a main thread that launched a background agent reports one
+   at once and another when the agent finishes, so the final text is the last
+   result's.
 5. Behavioral `shell` and `no_paths` assertions run in scratch after exit; scratch
    is then deleted.
 6. Results aggregate into per-case pass rates per side, then a status: PASS, FAIL,
    REGRESSION, FIXED, or INCONCLUSIVE. The markdown report goes to stdout or
    `--out`.
-7. A `finally` block and a SIGINT handler remove the worktree and both config
-   directories.
+7. A `finally` block and a SIGINT, SIGTERM, and SIGHUP handler remove the
+   worktree and both config directories.
 
 ## Error Handling
 
@@ -341,10 +350,11 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
 - [x] 12. `.gitignore`: add `.env`, `.env.*`, `!.env.example`; add `.env.example`
   with `CLAUDE_CODE_OAUTH_TOKEN=`. Confirm `git check-ignore .env` matches and
   `.env.example` does not.
-- [ ] 13. Routing case fixes in `evals/routing.yaml`: reword the six advice-style
-  skill prompts that failed on base (`code-review-checklist`,
+- [ ] 13. Routing case fixes in `evals/routing.yaml`: keep the six advice-style
+  skill prompts that failed on base as known gaps and add a work-shaped entry for
+  each (`code-review-checklist`,
   `debugging-methodology`, `doc-templates`, `frontend-patterns`,
-  `security-analysis`, `wayfinder-methodology`) as requests for work; reword the
+  `security-analysis`, `wayfinder-methodology`); reword the
   flaky `git-conventions` and `retro-methodology`; switch every agent entry to
   `expect: <agent>`; give `agent-reviewer`, `code-reviewer`, and `debugger` a
   `fixture` (reuse `behavior/reviewer-planted-bug/fixture` and
