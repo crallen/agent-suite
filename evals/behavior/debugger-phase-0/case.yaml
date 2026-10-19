@@ -1,0 +1,34 @@
+# Guards debugging-methodology Phase 0: the debugger runs a red-capable command
+# before it touches code. The fixture's failing test is that command, so the first
+# `python3 -m unittest` run must come before the first Edit or Write.
+# Red proof: remove reproduce-first from debugging-methodology, coding-guardrails,
+# and the debugger body together (one copy alone stays green); see the spec.
+#
+# The prompt reports the symptom only and never mentions the tests, so running
+# them first comes from the methodology, not from the prompt. Only the test suite
+# is runnable (no bare `python3`), which keeps the loop observable as a `unittest`
+# call and closes editing files through a Python one-liner instead of Edit.
+# Runs through /debugger, not --agent: the debugging-methodology preload applies
+# only when the debugger runs as a subagent. `order` counts the subagent's calls.
+prompt: >-
+  /debugger A customer emailed us: they ordered exactly 10 widgets at $2.50 each and the
+  invoice charged them $25.00 for the widgets. Our site says orders of 10 or more
+  get 10% off, so they expected $22.50. Can you fix it?
+allowed_tools:
+  - Agent
+  - "Bash(python3 -m unittest*)"
+  - Read
+  - Glob
+  - Grep
+  - Edit
+timeout: 300
+assert:
+  # `before` names one tool, so the Edit/Write pair is two assertions. The regex
+  # needs `-m unittest` as words of their own, so a search such as
+  # `grep -rn unittest` does not pass for running the tests.
+  - order:
+      first: 'Bash:(?:^|\s)-m\s+unittest\b'
+      before: Edit
+  - order:
+      first: 'Bash:(?:^|\s)-m\s+unittest\b'
+      before: Write

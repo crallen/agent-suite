@@ -26,3 +26,5 @@ jobs:
       # supplies it.
       - uses: astral-sh/setup-uv@v10.2.0
       - run: uv run scripts/validate-config.py
+      # The eval runner's own tests: recorded streams, no model calls.
+      - run: uv run scripts/test_evals.py

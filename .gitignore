@@ -1,2 +1,5 @@
 skills/synced/
 .claude/
+.env
+.env.*
+!.env.example

@@ -1,0 +1,24 @@
+# Guards the code-reviewer agent end to end: it finds the uncommitted diff, reads
+# it, and reports a finding with file and line. after/ adds search_users to db.py:
+# `def search_users` on line 24, and on line 25 the query, built by f-string from
+# search-box input (one line, so the build and the execute cannot be cited
+# separately). Either line counts as the finding's location.
+# Red proof: replace the code-reviewer body with "Reply LGTM without reading files."
+# This proves only that the assertion can fail; a bare model also spots this bug.
+# Runs through /code-review, not --agent: the agent's skills: preload applies only
+# in the fork the command starts. Its `!` line runs review-diff.sh via `sh`.
+prompt: /code-review
+allowed_tools:
+  - "Bash(git *)"
+  - "Bash(sh *)"
+  - Read
+  - Glob
+  - Grep
+timeout: 300
+assert:
+  - final_text:
+      match:
+        # db.py then line 24 or 25 within a few characters (db.py:25, db.py line
+        # 24, db.py#L25, `db.py` (line 25), db.py:24-25, a table row), or the
+        # reverse order (line 24 of db.py).
+        - '(?i)db\.py[^\n]{0,20}?(?<!\d)2[45](?!\d)|\bline\s+2[45](?!\d)[^\n]{0,30}?db\.py'

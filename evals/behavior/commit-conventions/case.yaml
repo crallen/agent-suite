@@ -1,0 +1,29 @@
+# Guards git-conventions through /commit: the staged change becomes exactly one
+# Conventional Commit whose description, the text after `type(scope): `, is 1 to 71
+# characters, with no attribution footer. The type and scope are not counted, so
+# the whole subject can run past 72. after/ adds a --shout flag to greet.py, so a
+# type and scope are inferable.
+# Red proof: remove Conventional Commits from git-conventions, /commit, /ship, and
+# CLAUDE.md together (one copy alone stays green); see the spec's Testing table.
+prompt: /commit
+stage: true
+allowed_tools:
+  - "Bash(git *)"
+timeout: 180
+assert:
+  # One commit on top of the fixture's before/ commit. Without this, a session
+  # that commits nothing is judged on the fixture commit's message.
+  - shell:
+      run: git rev-list --count HEAD
+      match:
+        - '^2$'
+  # %s prints the subject alone, so the spec's anchored regex applies to the
+  # first line whatever the regex flags.
+  - shell:
+      run: git log -1 --format=%s
+      match:
+        - '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore)(\(.+\))?!?: .{1,71}$'
+  - shell:
+      run: git log -1 --format=%B
+      not_match:
+        - '(?i)Co-Authored-By|Generated with'
