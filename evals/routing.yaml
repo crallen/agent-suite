@@ -1,0 +1,218 @@
+# Routing cases: each prompt should load the named skill or agent within the
+# first few tool calls, in an empty scratch directory.
+#
+# Shapes:
+#   {prompt, expect: <name>}         the route must include <name>
+#   {prompt, any_of: [<name>, ..]}   genuine overlap; any one of them counts
+#   {prompt, expect: none}           no skill or agent should load
+#
+# Write prompts the way a user types them in a repo: concrete, specific, often
+# terse. Never reuse or paraphrase a target's description; a prompt that echoes
+# the description passes without proving anything. Use any_of only where every
+# listed target is honestly correct, not to make a case easier.
+#
+# Order: skills alphabetically, then Claude agents, then negatives.
+
+# --- skills ---
+
+- prompt: >-
+    Make me a subagent that can only use Read and Grep and runs on haiku, for
+    summarizing big log files. Put it wherever Claude Code expects it.
+  expect: agent-authoring
+
+- prompt: >-
+    The order code here is spread across like 15 tiny files and every test has
+    to mock half of them. Find me some places worth consolidating.
+  expect: architecture-review
+
+- prompt: >-
+    Add a POST /invoices endpoint to the Express app. It should check the
+    customer exists and reject negative amounts.
+  expect: backend-patterns
+
+- prompt: >-
+    I'm renaming user_id to account_id in the event payload we publish to
+    Kafka. Before I merge, what's going to break downstream? I don't want a
+    guess.
+  expect: blast-radius
+
+- prompt: >-
+    Set up GitHub Actions for this Go service: lint, vet, test, and build the
+    binary on every PR.
+  expect: ci-pipeline
+
+- prompt: >-
+    A teammate's PR has a function named processData2 and a bare
+    `except: pass` around the network call. I'm writing my review comments —
+    which of those is a blocker and which is just a nit?
+  expect: code-review-checklist
+
+- prompt: >-
+    Add a --dry-run flag to scripts/cleanup.sh that prints what it would delete
+    instead of deleting it.
+  expect: coding-guardrails
+
+- prompt: >-
+    I need to rename users.fullname to display_name in Postgres with zero
+    downtime. The app runs on several instances that deploy one at a time.
+    Write the migrations.
+  expect: database-patterns
+
+- prompt: >-
+    I'm chasing this one myself — a test that fails maybe 1 run in 20 and never
+    when I add print statements. How should I go about narrowing it down?
+  expect: debugging-methodology
+
+- prompt: >-
+    What sections does a README for an internal Go library actually need? Keep
+    it short, I'll write it myself.
+  expect: doc-templates
+
+- prompt: >-
+    Our Python API image is 1.2GB. The Dockerfile is just FROM python:3.12,
+    COPY . ., RUN pip install -r requirements.txt, CMD uvicorn app:app. Get it
+    way down.
+  expect: docker-best-practices
+
+- prompt: >-
+    We use "account", "customer", and "tenant" interchangeably in this codebase
+    and it keeps causing bugs. Help me pin down what each one means and write
+    it down where the team will find it.
+  expect: domain-modeling
+
+- prompt: >-
+    Should the open/closed state of the settings modal live in the zustand
+    store or in local useState? Only the header ever opens it.
+  expect: frontend-patterns
+
+- prompt: >-
+    What should I call the branch and the commit for a change that drops
+    Node 16 support? It's breaking for anyone still on 16.
+  expect: git-conventions
+
+- prompt: >-
+    Plan: move every background job from cron to a Postgres-backed queue, one
+    worker per job type, retries with exponential backoff. Poke holes in it.
+    Ask me the hard questions one at a time until you're convinced.
+  expect: grill-methodology
+
+- prompt: >-
+    I'm not sure the order status flow holds up: pending -> paid -> shipped ->
+    refunded, plus cancel from anywhere? Hack together something throwaway I
+    can poke at in the terminal to try transitions.
+  expect: prototype-methodology
+
+- prompt: >-
+    ugh, that took way too long. you went down the wrong path on the auth bug
+    twice and I had to correct you three times. what should we change in our
+    setup so that doesn't happen next time?
+  expect: retro-methodology
+
+- prompt: >-
+    Is `subprocess.run(f"convert {name} out.png", shell=True)` actually
+    exploitable if name comes straight from the upload form? How bad would you
+    rate it?
+  expect: security-analysis
+
+- prompt: >-
+    The SKILL.md I wrote is 400 lines and the agent keeps ignoring the
+    important rules near the bottom. How should I restructure it?
+  expect: skill-design
+
+- prompt: >-
+    docs/specs/2026-10-02-billing-export.md is approved. Build the whole thing,
+    all eight tasks.
+  expect: spec-implementation
+
+- prompt: >-
+    I want to add multi-currency support to the invoicing service. Don't write
+    any code yet — let's work out the design and write it up first.
+  expect: spec-writing
+
+- prompt: >-
+    Write tests for calculate_shipping(weight, zone) in shipping.py. Orders
+    over $50 ship free and each zone has its own rate.
+  expect: test-strategy
+
+- prompt: >-
+    Turn this into Linear issues: users can't reset their password when their
+    email has a plus sign in it, and enterprise customers want SSO next
+    quarter.
+  expect: ticket-writing
+
+- prompt: >-
+    Clean up this LinkedIn post so it doesn't sound like ChatGPT wrote it: "In
+    today's fast-paced world, I'm thrilled to announce that I've embarked on
+    an exciting new journey — a testament to the power of growth."
+  expect: unslop
+
+- prompt: >-
+    We're turning the monolith into multi-tenant SaaS: auth, billing, data
+    isolation, all of it. It's weeks of work and half of it is still
+    undecided. Where do we even start?
+  expect: wayfinder-methodology
+
+- prompt: >-
+    Why does retry_with_jitter in net/client.py sleep a hard-coded 7 seconds
+    before the first retry? I want to know before I touch it.
+  expect: why
+
+# --- agents ---
+
+- prompt: >-
+    Go through the agents and skills in this repo and flag anything
+    inconsistent or broken: tool lists, references to files that don't exist,
+    that kind of thing. Just report back, don't edit anything.
+  expect: agent-reviewer
+
+- prompt: >-
+    Review the changes on this branch before I open the PR. Don't touch
+    anything, just tell me what's wrong.
+  any_of: [code-reviewer, code-review-checklist]
+
+- prompt: >-
+    /login started returning 500 after this morning's deploy. The logs say
+    KeyError: 'session_ttl'. Track it down.
+  any_of: [debugger, debugging-methodology]
+
+- prompt: >-
+    Generate docs for the endpoints in server/routes/*.ts and put them in
+    docs/api.md.
+  any_of: [documenter, doc-templates]
+
+- prompt: >-
+    Open the checkout page on localhost:3000 and tell me what's off with it on
+    a phone-sized screen. Don't change any code.
+  expect: frontend-auditor
+
+- prompt: >-
+    Build a settings page in our React app with a form for display name and
+    email plus a dark-mode toggle.
+  any_of: [frontend-engineer, frontend-patterns]
+
+- prompt: >-
+    We're about to open-source this repo. Do a security pass over the code,
+    config, and dependencies first. Report only, don't fix anything.
+  any_of: [security-analyst, security-analysis]
+
+# --- negatives ---
+
+- prompt: What's the difference between a process and a thread?
+  expect: none
+
+- prompt: How does the GIL affect multithreaded Python code?
+  expect: none
+
+- prompt: Walk me through how a TCP three-way handshake works.
+  expect: none
+
+- prompt: >-
+    What's the big-O for inserting into a Python dict, average case and worst
+    case?
+  expect: none
+
+- prompt: What does the Rust borrow checker actually check for?
+  expect: none
+
+- prompt: What's the actual difference between let, const, and var in JavaScript?
+  expect: none
