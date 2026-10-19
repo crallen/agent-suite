@@ -381,13 +381,11 @@ class ChildEnvTest(unittest.TestCase):
 
 class ClaudeCommandTest(unittest.TestCase):
     def test_prompt_follows_p_and_allowed_tools_come_last(self):
-        cmd = run_evals.claude_command("hi", agent="debugger", allowed_tools=["Read", "Edit"],
-                                       model="m")
+        cmd = run_evals.claude_command("hi", allowed_tools=["Read", "Edit"], model="m")
         self.assertEqual(cmd[:3], ["claude", "-p", "hi"])
         self.assertEqual(cmd[-3:], ["--allowedTools", "Read", "Edit"])
         for flag in ("--strict-mcp-config", "--include-partial-messages", "--verbose"):
             self.assertIn(flag, cmd)
-        self.assertEqual(cmd[cmd.index("--agent") + 1], "debugger")
         self.assertEqual(cmd[cmd.index("--model") + 1], "m")
         self.assertEqual(cmd[cmd.index("--permission-mode") + 1], "acceptEdits")
 

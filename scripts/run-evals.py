@@ -270,14 +270,12 @@ def eval_sides(head: Path, base_sha: str) -> Iterator[Sides]:
 def claude_command(
     prompt: str,
     *,
-    agent: str | None = None,
     allowed_tools: Sequence[str] = (),
     model: str | None = None,
 ) -> list[str]:
     """The argv for one eval run, ready for run_claude().
 
     prompt         the user message, a `/command args` line included
-    agent          run as this agent (`--agent`); None for the default thread
     allowed_tools  pre-approved tools (`--allowedTools`); anything else is
                    denied, since the run has no one to ask
     model          `--model`; None for the config's default
@@ -290,8 +288,6 @@ def claude_command(
         "--output-format", "stream-json", "--verbose", "--include-partial-messages",
         "--strict-mcp-config", "--permission-mode", "acceptEdits",
     ]
-    if agent:
-        cmd += ["--agent", agent]
     if model:
         cmd += ["--model", model]
     if allowed_tools:
