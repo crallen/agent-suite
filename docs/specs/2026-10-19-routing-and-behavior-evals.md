@@ -45,7 +45,10 @@ Decisions:
   built from a suite root R: `agents`, `commands`, `CLAUDE.md` link into
   `R/platforms/claude/`; `skills/` is a real directory with one link per **tracked**
   `skills/<name>/`, so `synced/` is excluded on both sides; `settings.json` is the
-  example minus `enabledPlugins`; runs pass `--strict-mcp-config` with no MCP config.
+  example with `enabledPlugins` replaced by the builtin plugins set to `false`
+  (`cc-plugin-plugin-authoring`, `cc-plugin-agents-md`, `cc-plugin-telemetry`, each
+  `@builtin`); runs pass `--strict-mcp-config` with no MCP config. A run whose init
+  event still lists a plugin is reported as an isolation warning.
   Base R is a `git worktree add --detach` of `--base` (default `main`); head R is the
   working tree itself, so it runs before commit, and a dirty tree marks `-dirty`.
 - **Auth.** The runner needs `CLAUDE_CODE_OAUTH_TOKEN` (from `claude setup-token`)
@@ -60,8 +63,9 @@ Decisions:
   under the live login.
 - **Routing observation.** A run's route is the set of `Skill` calls
   (`input.skill`), `Agent` calls (`input.subagent_type`), and `Read`s of a `SKILL.md`
-  within the first 3 tool calls. The process is killed on the first route hit or when
-  the window closes, so no subagent runs and nothing touches the scratch directory.
+  within the first 3 tool calls. The process is killed at the `assistant` event carrying
+  the first route hit (the tool starts executing there, before `content_block_stop`)
+  or when the window closes, so no subagent runs and nothing touches the scratch directory.
   A run passes when the route set contains the `expect` target or any `any_of`
   member, other loads alongside it notwithstanding (`coding-guardrails` loads with
   most implementation prompts); `expect: none` passes only on an empty set.
@@ -168,7 +172,8 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
    `evals/`.
 4. Each (case × side × run) gets its own scratch directory and is submitted to a
    pool of `--jobs` workers. `run_claude` passes `CLAUDE_CONFIG_DIR`, strips
-   `CLAUDECODE` so nesting works, and adds `--permission-mode acceptEdits`,
+   every inherited `CLAUDE*` variable except the auth one it sets (a parent session
+   exports `CLAUDECODE`, `CLAUDE_EFFORT`, and session ids), and adds `--permission-mode acceptEdits`,
    `--allowedTools`, and `--strict-mcp-config`. It streams until a route hit, the
    window closes, the timeout fires, or the `result` event arrives.
 5. Behavioral `shell` and `no_paths` assertions run in scratch after exit; scratch
