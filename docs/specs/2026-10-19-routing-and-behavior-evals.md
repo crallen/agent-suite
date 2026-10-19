@@ -211,12 +211,35 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
 
 ## Risks & Open Questions
 
-- **Risk: unverified CLI behavior.** `CLAUDE_CONFIG_DIR` fidelity, whether
-  `CLAUDE_CODE_OAUTH_TOKEN` is accepted outside `--bare`, whether `.claude.json`
-  onboarding state needs seeding, and the shape of `--include-partial-messages`
-  events. Task 1 is a spike that settles all four and updates this section before
-  anything else is built. The stream's `system` init event lists loaded skills and
-  agents, which is the isolation proof.
+- **Settled by the task 1 spike: CLI behavior** (Claude Code 2.1.303; recordings in
+  `evals/recordings/`).
+  - *Isolation: confirmed, with two leftovers.* The model sees only the temp
+    `CLAUDE.md` and the 26 tracked skills, plus `plugin-authoring` from the builtin
+    plugin `cc-plugin-plugin-authoring`; the init `plugins` field lists it with
+    `cc-plugin-agents-md` and `cc-plugin-telemetry`. Setting all three to `false`
+    under `enabledPlugins` (`<name>@builtin`) removes them. The built-in agents
+    `claude`, `Explore`, `general-purpose`, `Plan`, and `statusline-setup` stay;
+    they count as wrong routes. The init `skills` list also carries the 28 commands
+    plus `design` and `doctor`, none of them in the model's skill listing.
+  - *Auth: confirmed.* `CLAUDE_CODE_OAUTH_TOKEN` authenticates outside `--bare`.
+    Init reports `apiKeySource: "none"` regardless, so a `message_start` event is
+    the auth signal.
+  - *`.claude.json`: no seeding.* The CLI creates it on first run.
+  - *Stream shape: confirmed.* The `Agent` tool appears as `Task` in init `tools`
+    but as `Agent` in `tool_use`, so match both. Each content block gets its own
+    `assistant` event, before that block's `content_block_stop`. The tool starts
+    executing at that `assistant` event, so the kill goes there. A route-agent run
+    killed at `content_block_stop` started no subagent.
+  - *Error results.* An API error yields `subtype: "success"` with
+    `is_error: true`, `terminal_reason: "api_error"`, and exit code 1, so classify on
+    `is_error`.
+  - *Invocation.* The prompt goes right after `-p`, because the variadic
+    `--allowedTools` swallows a trailing prompt. Stdin is `/dev/null`, which avoids
+    a 3-second wait for stdin. Stripping `CLAUDECODE` is enough for nesting.
+    `--strict-mcp-config` without `--mcp-config` runs clean.
+  - *`--agent` and commands.* `--agent <name>` and `/spec` both resolve from the
+    temp config. An agent's `skills:` preload is not applied when it runs as the
+    main thread.
 - **Risk: variance.** N=3 is coarse. REGRESSION requires base to pass too; use
   `--runs 5` for close calls. Model drift hits both sides of one run equally, and the
   marker records the model.
@@ -234,7 +257,7 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
 
 ## Task Checklist
 
-- [ ] 1. Spike (throwaway script): build a config dir from the working tree, run
+- [x] 1. Spike (throwaway script): build a config dir from the working tree, run
   `claude -p` under `CLAUDE_CODE_OAUTH_TOKEN`, confirm the init event lists only
   tracked suite skills and agents, and determine whether `.claude.json` needs
   seeding. Save six scrubbed streams (home paths removed) to
