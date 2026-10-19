@@ -644,6 +644,17 @@ class AssertionTest(unittest.TestCase):
         result = run_result(call("Read", file_path="a.py"), call("Edit", file_path="a.py"))
         self.assertIsNone(self.check({"order": {"first": "Read", "before": "Edit"}}, result))
 
+    def test_debugger_case_counts_only_a_unittest_run_as_the_reproduction(self):
+        case = next(c for c in run_evals.load_cases(ROOT) if c.id == "behavior/debugger-phase-0")
+        order = case.asserts[0]
+        searched = run_result(call("Bash", command="grep -rn unittest ."),
+                              call("Edit", file_path="pricing.py"))
+        self.assertIsNotNone(self.check(order, searched))
+        for command in ("python3 -m unittest", "python3 -m unittest -v test_pricing"):
+            with self.subTest(command=command):
+                ran = run_result(call("Bash", command=command), call("Edit", file_path="pricing.py"))
+                self.assertIsNone(self.check(order, ran))
+
     # tool_not_called
 
     def test_tool_not_called_passes_when_absent(self):

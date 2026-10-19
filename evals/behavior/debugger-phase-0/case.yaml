@@ -23,10 +23,12 @@ allowed_tools:
   - Edit
 timeout: 300
 assert:
-  # `before` names one tool, so the Edit/Write pair is two assertions.
+  # `before` names one tool, so the Edit/Write pair is two assertions. The regex
+  # needs `-m unittest` as words of their own, so a search such as
+  # `grep -rn unittest` does not pass for running the tests.
   - order:
-      first: "Bash:unittest"
+      first: 'Bash:(?:^|\s)-m\s+unittest\b'
       before: Edit
   - order:
-      first: "Bash:unittest"
+      first: 'Bash:(?:^|\s)-m\s+unittest\b'
       before: Write

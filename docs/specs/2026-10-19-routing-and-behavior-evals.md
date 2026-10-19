@@ -128,7 +128,7 @@ The four cases:
 
 | Case | Setup | Passes when |
 |---|---|---|
-| `debugger-phase-0` | prompt `/debugger <symptom>`, `Agent` allowed; Python fixture with a failing `unittest` | `order`: a Bash call matching `unittest` precedes the first `Edit`/`Write` |
+| `debugger-phase-0` | prompt `/debugger <symptom>`, `Agent` allowed; Python fixture with a failing `unittest` | `order`: a Bash call running `-m unittest` precedes the first `Edit`/`Write` |
 | `reviewer-planted-bug` | prompt `/code-review`, `Bash(sh *)` allowed; unstaged `after/` adds string-built SQL to `db.py` at a known line | `final_text` matches `db.py` and that line number |
 | `commit-conventions` | prompt `/commit`; `stage: true`; `allowed_tools: ["Bash(git *)"]` | `shell: git log -1 --format=%B` matches `^(feat\|fix\|docs\|style\|refactor\|perf\|test\|build\|ci\|chore)(\(.+\))?!?: .{1,71}$` on the first line and not `Co-Authored-By\|Generated with` |
 | `spec-asks-first` | prompt `/spec <goal>`; empty fixture | `final_text` matches a lettered list and `\(Recommended\)`, not `## Task Checklist`; `tool_not_called: [Write, Edit]`; `no_paths: [docs/specs/*]` |
