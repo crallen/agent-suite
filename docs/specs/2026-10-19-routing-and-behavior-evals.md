@@ -315,7 +315,7 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
   `.github/workflows/validate.yml`. (blocked by 6, 7)
 - [ ] 9. Red proofs: the five mutations on scratch branches, each report kept for
   the PR body. (blocked by 3, 4, 5)
-- [ ] 10. Docs: an "Evals" subsection under Validating in `AGENTS.md` (when to run,
+- [x] 10. Docs: an "Evals" subsection under Validating in `AGENTS.md` (when to run,
   auth setup through `.env.example`, the `n/a` rule, the prompt-writing rule);
   `README.md` layout tree gains `evals/` and the new scripts. (blocked by 3)
 - [ ] 11. Full run against `main` on the branch; report in the PR body.
