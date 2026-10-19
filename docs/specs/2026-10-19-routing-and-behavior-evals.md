@@ -310,7 +310,7 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
   `evals: n/a — \S+`.
 - [x] 7. `scripts/test_evals.py`: the parser, assertion, status, and report-check
   cases from Testing. (blocked by 3, 6)
-- [ ] 8. `.github/workflows/eval-report.yml` (triggers and paths as specified, body
+- [x] 8. `.github/workflows/eval-report.yml` (triggers and paths as specified, body
   through `env:` only), plus a `uv run scripts/test_evals.py` step in
   `.github/workflows/validate.yml`. (blocked by 6, 7)
 - [ ] 9. Red proofs: the five mutations on scratch branches, each report kept for
