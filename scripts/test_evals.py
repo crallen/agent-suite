@@ -532,6 +532,11 @@ class CaseLoadingTest(unittest.TestCase):
         with self.assertRaisesRegex(run_evals.SetupError, "says_hello"):
             run_evals.load_cases(root)
 
+    def test_shell_without_match_or_not_match_is_a_setup_error(self):
+        root = self.write_suite("[]\n", "prompt: hi\nassert:\n  - shell: {run: git log}\n")
+        with self.assertRaisesRegex(run_evals.SetupError, "behavior/c: shell"):
+            run_evals.load_cases(root)
+
     def test_invalid_regex_is_a_setup_error(self):
         root = self.write_suite("[]\n", "prompt: hi\nassert:\n  - final_text: {match: ['(']}\n")
         with self.assertRaisesRegex(run_evals.SetupError, "behavior/c"):
@@ -681,6 +686,14 @@ class AssertionTest(unittest.TestCase):
     def test_shell_fails_on_a_missing_match(self):
         self.assertIsNotNone(self.check({"shell": {"run": "echo 1", "match": ["^2$"]}},
                                         run_result()))
+
+    def test_shell_fails_when_the_command_exits_nonzero(self):
+        # `git log` in a repo without commits prints nothing, which a
+        # not_match alone would accept.
+        failure = self.check({"shell": {"run": "echo partial; exit 3",
+                                        "not_match": ["Co-Authored-By"]}}, run_result())
+        self.assertIsNotNone(failure)
+        self.assertIn("3", failure)
 
     # no_paths
 

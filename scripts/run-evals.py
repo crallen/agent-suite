@@ -799,7 +799,8 @@ def _final_text_problem(spec: object) -> str | None:
 
 def _shell_problem(spec: object) -> str | None:
     if not isinstance(spec, dict) or not isinstance(spec.get("run"), str) \
-            or set(spec) - {"run", "match", "not_match"}:
+            or set(spec) - {"run", "match", "not_match"} \
+            or not ({"match", "not_match"} & set(spec)):
         return "shell takes run and match and/or not_match"
     return _patterns_problem(spec, ["match", "not_match"])
 
@@ -882,6 +883,8 @@ def _check_shell(spec: dict, result: RunResult, scratch: Path, env: Mapping[str,
                               timeout=SHELL_ASSERT_TIMEOUT)
     except subprocess.TimeoutExpired:
         return f"shell `{spec['run']}` timed out"
+    if proc.returncode != 0:
+        return f"shell `{spec['run']}` exited {proc.returncode}: {proc.stderr.strip()[:200]!r}"
     return _regex_failure(proc.stdout, spec, f"shell `{spec['run']}`")
 
 

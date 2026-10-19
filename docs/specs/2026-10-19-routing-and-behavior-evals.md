@@ -113,7 +113,7 @@ uncommitted changes, or staged ones when `stage: true`. An empty fixture still g
 | `order` | `{first: <tool[:regex]>, before: <tool>}` | A call matching `first` occurs, and if `before` is ever called, the first match precedes its first call. Fails when `first` never occurs. For `Bash`, the regex runs against the `command` input. One `before` tool per assertion; "before Edit or Write" is two assertions |
 | `tool_not_called` | `[<tool>, ..]` | None of these tools was called |
 | `final_text` | `{match: [..], not_match: [..]}` | Regexes against the final assistant text |
-| `shell` | `{run, match, not_match}` | Command run in scratch after the session; regexes against its stdout |
+| `shell` | `{run, match, not_match}` | Command run in scratch after the session; fails on a nonzero exit, else regexes against its stdout. Needs at least one of `match` and `not_match` |
 | `no_paths` | `[<glob>, ..]` | No file matching these exists in scratch afterwards |
 
 Agent cases run through their real commands, not `--agent`: an agent's `skills:`
