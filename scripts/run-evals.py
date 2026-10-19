@@ -9,20 +9,37 @@ Each side gets its own Claude Code config directory built from that side's
 suite, so the same prompts run once against `--base` (a detached worktree) and
 once against this working tree, uncommitted edits included.
 
-    scripts/run-evals.py                 compare against main
-    scripts/run-evals.py --base REF      compare against another ref
+    scripts/run-evals.py                          every case against main, 3 runs each
+    scripts/run-evals.py --base REF               compare against another ref
+    scripts/run-evals.py --only 'behavior/*'      only the cases whose id matches
+    scripts/run-evals.py --runs 5 --out r.md      more runs; report to a file
+
+Cases always come from this working tree's evals/; the base ref supplies only
+the suite under test. Case ids, for --only (an fnmatch glob):
+
+    behavior/<dir>        one per evals/behavior/<dir>/case.yaml
+    routing/<target>      one per evals/routing.yaml entry, named for its
+                          `expect`, or the first `any_of` member; a name used
+                          by more than one entry gets -1, -2, ... in file
+                          order on every use (routing/none-1 .. none-6)
+
+The report (markdown, stdout unless --out) ends with the marker that
+scripts/check-eval-report.py looks for. Exit status: 2 on a setup problem, 1
+when any case is a REGRESSION, 0 otherwise.
 
 Auth comes from CLAUDE_CODE_OAUTH_TOKEN or ANTHROPIC_API_KEY in the
-environment, or else from `.env` at the suite root (see `.env.example`). The
-value is placed only in the environment of the `claude` subprocesses; it is
-never printed or written anywhere else.
+environment, or else from `.env` at the suite root (see `.env.example`;
+--env-file names another file). The value is placed only in the environment
+of the `claude` subprocesses; it is never printed or written anywhere else.
 """
 
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
 import os
+import re
 import shutil
 import signal
 import subprocess
@@ -30,9 +47,12 @@ import sys
 import tempfile
 import threading
 from collections.abc import Iterable, Iterator, Mapping, Sequence
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
+
+import yaml
 
 AUTH_VARS = ("CLAUDE_CODE_OAUTH_TOKEN", "ANTHROPIC_API_KEY")
 
@@ -112,21 +132,25 @@ class Setup:
     base_sha: str
 
 
-def preflight(head: Path, base_ref: str, environ: Mapping[str, str]) -> Setup:
+def preflight(
+    head: Path, base_ref: str, environ: Mapping[str, str], env_file: Path | None = None
+) -> Setup:
     """Check the prerequisites for a run, or raise SetupError with the fix.
 
-    Also prunes worktree records left by a run that was killed before cleanup.
+    `env_file` defaults to `<head>/.env`. Also prunes worktree records left by
+    a run that was killed before cleanup.
     """
     if shutil.which("claude") is None:
         raise SetupError(
             "claude is not on PATH. Install Claude Code "
             "(https://docs.claude.com/en/docs/claude-code) and re-run."
         )
-    auth = resolve_auth(environ, head / ".env")
+    env_file = env_file or head / ".env"
+    auth = resolve_auth(environ, env_file)
     if auth is None:
         raise SetupError(
             "no auth for claude. Run `claude setup-token`, then copy "
-            f"{head / '.env.example'} to {head / '.env'} and fill in "
+            f"{head / '.env.example'} to {env_file} and fill in "
             "CLAUDE_CODE_OAUTH_TOKEN, or export CLAUDE_CODE_OAUTH_TOKEN or "
             "ANTHROPIC_API_KEY."
         )
@@ -199,27 +223,43 @@ def base_worktree(head: Path, sha: str) -> Iterator[Path]:
         subprocess.run(["git", "-C", str(head), "worktree", "prune"], capture_output=True)
 
 
+@dataclass(frozen=True)
+class Side:
+    """One side of the comparison: its config dir and the HOME its runs use.
+
+    home/.claude links to config, because command `!` lines name
+    `~/.claude/...` literally and would otherwise run the live suite's files.
+    """
+
+    name: str
+    config: Path
+    home: Path
+
+
 @contextmanager
-def config_dir(root: Path) -> Iterator[Path]:
+def side_dirs(name: str, root: Path) -> Iterator[Side]:
     config = build_config(root)
+    home = Path(tempfile.mkdtemp(prefix="evals-home-"))
     try:
-        yield config
+        (home / ".claude").symlink_to(config)
+        yield Side(name=name, config=config, home=home)
     finally:
+        remove_tree(home)
         remove_tree(config)
 
 
 @dataclass(frozen=True)
 class Sides:
-    base_config: Path
-    head_config: Path
+    base: Side
+    head: Side
 
 
 @contextmanager
 def eval_sides(head: Path, base_sha: str) -> Iterator[Sides]:
-    """Yield a config for each side; remove both and the base worktree on exit."""
+    """Yield both sides; remove their directories and the base worktree on exit."""
     with base_worktree(head, base_sha) as base_root:
-        with config_dir(base_root) as base_cfg, config_dir(head) as head_cfg:
-            yield Sides(base_config=base_cfg, head_config=head_cfg)
+        with side_dirs("base", base_root) as base, side_dirs("head", head) as head_side:
+            yield Sides(base=base, head=head_side)
 
 
 # --- Running claude ---------------------------------------------------------
@@ -258,16 +298,17 @@ def claude_command(
 
 
 def child_env(
-    config: Path, auth: Mapping[str, str], parent: Mapping[str, str] = os.environ
+    config: Path, home: Path, auth: Mapping[str, str], parent: Mapping[str, str] = os.environ
 ) -> dict[str, str]:
-    """The environment for a claude subprocess using `config`.
+    """The environment for a claude subprocess using `config` and `home`.
 
     Every inherited CLAUDE* variable goes (a parent Claude Code session exports
     CLAUDECODE, session ids, and effort), so a run from inside an agent matches
-    a run from a plain terminal; then the config dir and auth are set.
+    a run from a plain terminal; then the config dir, HOME, and auth are set.
     """
     env = {k: v for k, v in parent.items() if not k.startswith("CLAUDE")}
     env["CLAUDE_CONFIG_DIR"] = str(config)
+    env["HOME"] = str(home)
     env.update(auth)
     return env
 
@@ -289,11 +330,13 @@ class RunResult:
     tool_calls   every tool call in stream order, subagent calls included
     routes       skills and agents the main thread loaded within the window
     final_text   the last result's text, or the last main-thread text if killed
-    stop         route or window (killed on purpose), result (the stream ended
-                 after a result event), or eof (it ended without one)
+    stop         route (killed at an Agent call) or window (killed once the
+                 window closed), result (the stream ended after a result
+                 event), or eof (it ended without one)
     exit_status  the process exit status; None when parsed from a recording
-    error_class  none, timeout, or error; only `none` runs count toward a rate
+    error_class  none, timeout, or error; `error` runs are left out of a rate
     plugins      plugins the init event reports; any at all breaks isolation
+    model        the model the first init event reports; "" without one
     """
 
     tool_calls: tuple[ToolCall, ...]
@@ -303,6 +346,7 @@ class RunResult:
     exit_status: int | None
     error_class: str
     plugins: tuple[str, ...]
+    model: str
 
 
 def route_of(call: ToolCall) -> str | None:
@@ -341,6 +385,7 @@ class _Stream:
     stop: str
     is_error: bool
     plugins: tuple[str, ...]
+    model: str
 
     def finish(self, exit_status: int | None, timed_out: bool) -> RunResult:
         return RunResult(
@@ -351,16 +396,20 @@ class _Stream:
             exit_status=exit_status,
             error_class=classify(self.stop, self.is_error, exit_status, timed_out),
             plugins=self.plugins,
+            model=self.model,
         )
 
 
 def read_stream(lines: Iterable[str], route_window: int | None) -> RunResult:
     """Parse stream-json lines from a live process or a recording.
 
-    With a route window, reading stops at the `assistant` event carrying the
-    first route (the tool starts executing there) or once the main thread has
-    made `route_window` calls without one. With None it reads to the end,
-    past any number of `result` events; the final text is the last one's.
+    With a route window, reading stops at the `assistant` event carrying an
+    Agent call (the subagent starts there) or once the main thread has made
+    `route_window` calls. Skill loads and SKILL.md reads in the window are
+    routes too, but reading goes on past them: a skill load has no side
+    effects, and the expected skill may load after another one. With None it
+    reads to the end, past any number of `result` events; the final text is
+    the last one's.
     """
     return _parse(lines, route_window).finish(exit_status=None, timed_out=False)
 
@@ -368,7 +417,9 @@ def read_stream(lines: Iterable[str], route_window: int | None) -> RunResult:
 def _parse(lines: Iterable[str], route_window: int | None) -> _Stream:
     calls: list[ToolCall] = []
     routes: list[str] = []
+    agent_routed = False
     plugins: tuple[str, ...] = ()
+    model = ""
     last_text = ""
     result_text: str | None = None
     is_error = False
@@ -383,6 +434,7 @@ def _parse(lines: Iterable[str], route_window: int | None) -> _Stream:
         kind = event.get("type")
         if kind == "system" and event.get("subtype") == "init":
             plugins = tuple(p.get("name", "") for p in event.get("plugins") or ())
+            model = model or event.get("model") or ""
         elif kind == "result":
             # Not the end: a main thread that launched a background agent
             # reports a result at once, then takes another turn when the
@@ -407,7 +459,8 @@ def _parse(lines: Iterable[str], route_window: int | None) -> _Stream:
                 route = route_of(call)
                 if route and (route_window is None or main_calls <= route_window):
                     routes.append(route)
-            if route_window is not None and routes:
+                    agent_routed = agent_routed or call.name in AGENT_TOOLS
+            if route_window is not None and agent_routed:
                 stop = "route"
                 break
             if route_window is not None and main_calls >= route_window:
@@ -421,6 +474,7 @@ def _parse(lines: Iterable[str], route_window: int | None) -> _Stream:
         stop=stop,
         is_error=is_error,
         plugins=plugins,
+        model=model,
     )
 
 
@@ -428,6 +482,12 @@ def _parse(lines: Iterable[str], route_window: int | None) -> _Stream:
 # new session, which keeps the terminal's Ctrl-C from arriving on its own.
 _live: set[subprocess.Popen] = set()
 _live_lock = threading.Lock()
+# Set by the SIGINT handler; no run starts after it.
+_stopping = threading.Event()
+
+
+class Interrupted(Exception):
+    """A run was not started because the runner is shutting down."""
 
 
 def _kill_group(proc: subprocess.Popen) -> None:
@@ -460,16 +520,21 @@ def run_claude(
 ) -> RunResult:
     """Run claude in `scratch` and parse its stream until it is done.
 
-    The process is killed at the first route or when the route window closes
+    The process is killed at an Agent call or when the route window closes
     (see read_stream), or after `timeout` seconds. stdin is /dev/null, so the
-    CLI does not wait for piped input, and stderr is discarded.
+    CLI does not wait for piped input, and stderr is discarded. Raises
+    Interrupted instead of starting once a SIGINT has arrived.
     """
-    proc = subprocess.Popen(
-        list(cmd), cwd=scratch, env=dict(env), stdin=subprocess.DEVNULL,
-        stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True,
-        start_new_session=True,
-    )
+    # Started under the lock, so a SIGINT either sees this process in _live
+    # or is seen here before it starts.
     with _live_lock:
+        if _stopping.is_set():
+            raise Interrupted
+        proc = subprocess.Popen(
+            list(cmd), cwd=scratch, env=dict(env), stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True,
+            start_new_session=True,
+        )
         _live.add(proc)
     timed_out = threading.Event()
 
@@ -493,6 +558,522 @@ def run_claude(
     return stream.finish(exit_status, timed_out.is_set())
 
 
+# --- Cases ------------------------------------------------------------------
+
+# A routing run's route is what the main thread loads in its first 3 calls.
+ROUTE_WINDOW = 3
+# Seconds. A negative case answers without tools, so it runs to the result.
+ROUTING_TIMEOUT = 180
+DEFAULT_BEHAVIOR_TIMEOUT = 300
+SHELL_ASSERT_TIMEOUT = 60
+CASE_KEYS = {"prompt", "allowed_tools", "timeout", "stage", "assert"}
+
+
+@dataclass(frozen=True)
+class RoutingCase:
+    """An evals/routing.yaml entry. `targets` holds the names that pass it:
+    the `expect` name or the `any_of` members; empty for `expect: none`."""
+
+    id: str
+    prompt: str
+    targets: frozenset[str]
+
+
+@dataclass(frozen=True)
+class BehaviorCase:
+    """An evals/behavior/<dir>/case.yaml. `fixture` is the case's fixture/
+    directory, or None when it has none (an empty fixture)."""
+
+    id: str
+    prompt: str
+    allowed_tools: tuple[str, ...]
+    timeout: float
+    stage: bool
+    asserts: tuple[dict, ...]
+    fixture: Path | None
+
+
+Case = RoutingCase | BehaviorCase
+
+
+def _load_yaml(path: Path, where: str) -> object:
+    try:
+        return yaml.safe_load(path.read_text())
+    except (OSError, yaml.YAMLError) as err:
+        raise SetupError(f"{where}: cannot load {path}: {err}") from None
+
+
+def routing_ids(keys: Sequence[str]) -> list[str]:
+    """`routing/<key>` per entry; a key used more than once is numbered on
+    every use, in file order (`routing/none-1`, `routing/none-2`)."""
+    total = {key: keys.count(key) for key in keys}
+    seen: dict[str, int] = {}
+    ids = []
+    for key in keys:
+        if total[key] == 1:
+            ids.append(f"routing/{key}")
+        else:
+            seen[key] = seen.get(key, 0) + 1
+            ids.append(f"routing/{key}-{seen[key]}")
+    return ids
+
+
+def load_routing(path: Path) -> list[RoutingCase]:
+    entries = _load_yaml(path, "evals/routing.yaml")
+    if not isinstance(entries, list):
+        raise SetupError("evals/routing.yaml: expected a list of entries")
+    parsed = []
+    for n, entry in enumerate(entries, 1):
+        where = f"evals/routing.yaml entry {n}"
+        if not isinstance(entry, dict) or not isinstance(entry.get("prompt"), str):
+            raise SetupError(f"{where}: needs a prompt")
+        if ("expect" in entry) == ("any_of" in entry):
+            raise SetupError(f"{where}: needs exactly one of expect or any_of")
+        if "expect" in entry:
+            expect = entry["expect"]
+            if not isinstance(expect, str) or not expect:
+                raise SetupError(f"{where}: expect names a skill, an agent, or none")
+            parsed.append((expect, frozenset() if expect == "none" else frozenset({expect})))
+        else:
+            members = entry["any_of"]
+            if not isinstance(members, list) or not members or not all(
+                isinstance(m, str) and m for m in members
+            ):
+                raise SetupError(f"{where}: any_of is a non-empty list of names")
+            parsed.append((members[0], frozenset(members)))
+    ids = routing_ids([key for key, _ in parsed])
+    return [
+        RoutingCase(id=case_id, prompt=entry["prompt"], targets=targets)
+        for case_id, entry, (_, targets) in zip(ids, entries, parsed)
+    ]
+
+
+def load_behavior(case_dir: Path) -> BehaviorCase:
+    case_id = f"behavior/{case_dir.name}"
+    data = _load_yaml(case_dir / "case.yaml", case_id)
+    if not isinstance(data, dict) or not isinstance(data.get("prompt"), str):
+        raise SetupError(f"{case_id}: case.yaml needs a prompt")
+    if unknown := sorted(set(data) - CASE_KEYS):
+        raise SetupError(f"{case_id}: unknown case.yaml keys {unknown}")
+    asserts = data.get("assert")
+    if not isinstance(asserts, list) or not asserts:
+        raise SetupError(f"{case_id}: assert needs at least one assertion")
+    for assertion in asserts:
+        if problem := assertion_problem(assertion):
+            raise SetupError(f"{case_id}: {problem}")
+    tools = data.get("allowed_tools") or []
+    if not isinstance(tools, list) or not all(isinstance(t, str) for t in tools):
+        raise SetupError(f"{case_id}: allowed_tools is a list of tool rules")
+    fixture = case_dir / "fixture"
+    if fixture.is_dir() and not (fixture / "before").is_dir():
+        raise SetupError(f"{case_id}: fixture/ needs a before/ directory")
+    return BehaviorCase(
+        id=case_id,
+        prompt=data["prompt"],
+        allowed_tools=tuple(tools),
+        timeout=float(data.get("timeout", DEFAULT_BEHAVIOR_TIMEOUT)),
+        stage=bool(data.get("stage", False)),
+        asserts=tuple(asserts),
+        fixture=fixture if fixture.is_dir() else None,
+    )
+
+
+def load_cases(root: Path) -> list[Case]:
+    """Every case under `root/evals/`: routing entries first, then behavior
+    cases by directory name. Raises SetupError on a malformed case."""
+    evals = root / "evals"
+    cases: list[Case] = list(load_routing(evals / "routing.yaml"))
+    behavior = evals / "behavior"
+    if behavior.is_dir():
+        cases += [load_behavior(d) for d in sorted(behavior.iterdir())
+                  if (d / "case.yaml").is_file()]
+    return cases
+
+
+def select(cases: Sequence[Case], pattern: str | None) -> list[Case]:
+    """The cases whose id matches the --only glob; all of them for None."""
+    if pattern is None:
+        return list(cases)
+    chosen = [c for c in cases if fnmatch.fnmatchcase(c.id, pattern)]
+    if not chosen:
+        raise SetupError(
+            f"--only {pattern!r} matches no case. Ids look like routing/why, "
+            "routing/none-1, or behavior/commit-conventions."
+        )
+    return chosen
+
+
+# --- Fixtures ---------------------------------------------------------------
+
+FIXTURE_IDENTITY = (("user.name", "evals"), ("user.email", "evals@localhost"))
+
+
+def _fixture_git_env() -> dict[str, str]:
+    """No GIT_* variables from a calling hook, and no global or system
+    config, so signing, hooks, or templates on this machine stay out."""
+    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+    env.update(GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")
+    return env
+
+
+def prepare_fixture(fixture: Path | None, scratch: Path, stage: bool) -> None:
+    """Make `scratch` a git repo holding the case's fixture.
+
+    The repo gets the fixed identity in its local config; before/ becomes
+    exactly one commit; after/ is then copied over as uncommitted changes,
+    staged when `stage` is set. With no fixture the repo is left empty, with
+    the identity and no commit.
+    """
+    env = _fixture_git_env()
+
+    def run_git(*args: str) -> None:
+        subprocess.run(["git", "-C", str(scratch), *args], env=env, check=True,
+                       capture_output=True)
+
+    run_git("init", "-q", "-b", "main")
+    for key, value in FIXTURE_IDENTITY:
+        run_git("config", key, value)
+    if fixture is None:
+        return
+    shutil.copytree(fixture / "before", scratch, dirs_exist_ok=True)
+    run_git("add", "-A")
+    run_git("commit", "-q", "-m", "Initial commit")
+    after = fixture / "after"
+    if after.is_dir():
+        shutil.copytree(after, scratch, dirs_exist_ok=True)
+        if stage:
+            run_git("add", "-A")
+
+
+# --- Assertions -------------------------------------------------------------
+#
+# Each assertion is a one-key mapping, {type: spec}. Every regex is applied
+# with re.search and no default flags; a case writes (?i) or (?m) inline.
+
+
+def _patterns_problem(spec: dict, keys: Sequence[str]) -> str | None:
+    for key in keys:
+        patterns = spec.get(key, [])
+        if not isinstance(patterns, list) or not all(isinstance(p, str) for p in patterns):
+            return f"{key} is a list of regexes"
+        for pattern in patterns:
+            try:
+                re.compile(pattern)
+            except re.error as err:
+                return f"bad regex {pattern!r}: {err}"
+    return None
+
+
+def _order_problem(spec: object) -> str | None:
+    if not isinstance(spec, dict) or not all(isinstance(spec.get(k), str) for k in ("first", "before")):
+        return "order needs first: <tool[:regex]> and before: <tool>"
+    return _patterns_problem({"first": [spec["first"].partition(":")[2]]}, ["first"])
+
+
+def _names_problem(kind: str) -> object:
+    def problem(spec: object) -> str | None:
+        if not isinstance(spec, list) or not spec or not all(isinstance(s, str) for s in spec):
+            return f"{kind} is a non-empty list of names"
+        return None
+    return problem
+
+
+def _final_text_problem(spec: object) -> str | None:
+    if not isinstance(spec, dict) or set(spec) - {"match", "not_match"} or not spec:
+        return "final_text takes match and/or not_match"
+    return _patterns_problem(spec, ["match", "not_match"])
+
+
+def _shell_problem(spec: object) -> str | None:
+    if not isinstance(spec, dict) or not isinstance(spec.get("run"), str) \
+            or set(spec) - {"run", "match", "not_match"}:
+        return "shell takes run and match and/or not_match"
+    return _patterns_problem(spec, ["match", "not_match"])
+
+
+ASSERTION_SHAPES = {
+    "order": _order_problem,
+    "tool_not_called": _names_problem("tool_not_called"),
+    "final_text": _final_text_problem,
+    "shell": _shell_problem,
+    "no_paths": _names_problem("no_paths"),
+}
+
+
+def assertion_problem(assertion: object) -> str | None:
+    """Why `assertion` is malformed, or None when it is well formed."""
+    if not isinstance(assertion, dict) or len(assertion) != 1:
+        return f"an assertion is a one-key mapping, not {assertion!r}"
+    [(kind, spec)] = assertion.items()
+    if kind not in ASSERTION_SHAPES:
+        return f"unknown assertion type {kind!r} (known: {', '.join(ASSERTION_SHAPES)})"
+    return ASSERTION_SHAPES[kind](spec)
+
+
+def _is_tool(call: ToolCall, tool: str) -> bool:
+    return call.name == tool or (call.name in AGENT_TOOLS and tool in AGENT_TOOLS)
+
+
+def _call_subject(call: ToolCall) -> str:
+    """What a `<tool>:<regex>` regex runs against: a Bash call's command,
+    otherwise the call's whole input as JSON."""
+    if call.name == "Bash":
+        return str(call.input.get("command", ""))
+    return json.dumps(call.input, sort_keys=True)
+
+
+def _first_index(calls: Sequence[ToolCall], tool: str, pattern: str = "") -> int | None:
+    for index, c in enumerate(calls):
+        if _is_tool(c, tool) and (not pattern or re.search(pattern, _call_subject(c))):
+            return index
+    return None
+
+
+def _regex_failure(text: str, spec: dict, what: str) -> str | None:
+    for pattern in spec.get("match", ()):
+        if not re.search(pattern, text):
+            return f"{what} does not match {pattern!r}"
+    for pattern in spec.get("not_match", ()):
+        if re.search(pattern, text):
+            return f"{what} matches {pattern!r}"
+    return None
+
+
+def _check_order(spec: dict, result: RunResult, scratch: Path, env: Mapping[str, str]) -> str | None:
+    tool, _, pattern = spec["first"].partition(":")
+    first = _first_index(result.tool_calls, tool, pattern)
+    if first is None:
+        return f"order: no {spec['first']} call"
+    before = _first_index(result.tool_calls, spec["before"])
+    if before is not None and before < first:
+        return f"order: {spec['before']} (call {before + 1}) came before {spec['first']} (call {first + 1})"
+    return None
+
+
+def _check_tool_not_called(spec: list, result: RunResult, scratch: Path,
+                           env: Mapping[str, str]) -> str | None:
+    called = sorted({c.name for c in result.tool_calls for tool in spec if _is_tool(c, tool)})
+    return f"tool_not_called: {', '.join(called)} called" if called else None
+
+
+def _check_final_text(spec: dict, result: RunResult, scratch: Path,
+                      env: Mapping[str, str]) -> str | None:
+    failure = _regex_failure(result.final_text, spec, "final_text")
+    return failure and f"{failure}; text: {result.final_text[:300]!r}"
+
+
+def _check_shell(spec: dict, result: RunResult, scratch: Path, env: Mapping[str, str]) -> str | None:
+    try:
+        proc = subprocess.run(spec["run"], shell=True, cwd=scratch, env=dict(env),
+                              stdin=subprocess.DEVNULL, capture_output=True, text=True,
+                              timeout=SHELL_ASSERT_TIMEOUT)
+    except subprocess.TimeoutExpired:
+        return f"shell `{spec['run']}` timed out"
+    return _regex_failure(proc.stdout, spec, f"shell `{spec['run']}`")
+
+
+def _check_no_paths(spec: list, result: RunResult, scratch: Path, env: Mapping[str, str]) -> str | None:
+    found = sorted({str(p.relative_to(scratch)) for pattern in spec for p in scratch.glob(pattern)})
+    return f"no_paths: found {', '.join(found)}" if found else None
+
+
+CHECKS = {
+    "order": _check_order,
+    "tool_not_called": _check_tool_not_called,
+    "final_text": _check_final_text,
+    "shell": _check_shell,
+    "no_paths": _check_no_paths,
+}
+
+
+def check_assertion(assertion: dict, result: RunResult, scratch: Path,
+                    env: Mapping[str, str]) -> str | None:
+    """Why the run fails a well-formed assertion, or None when it holds.
+
+    Tool calls are judged in stream order, subagent and fork calls included.
+    `shell` runs in `scratch` with `env`; `no_paths` globs relative to it.
+    """
+    [(kind, spec)] = assertion.items()
+    return CHECKS[kind](spec, result, scratch, env)
+
+
+# --- Scoring ----------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class Verdict:
+    """One run judged. Error runs are not `counted`; timeouts are, as fails."""
+
+    passed: bool
+    counted: bool
+    detail: str
+
+
+def judge(case: Case, result: RunResult, scratch: Path, env: Mapping[str, str]) -> Verdict:
+    """A routing run passes when its route holds a target (other loads
+    alongside it notwithstanding), or is empty for `expect: none`; a behavior
+    run passes when every assertion holds."""
+    if result.error_class == "error":
+        return Verdict(False, False, f"error: {result.final_text[:120]!r}")
+    if result.error_class == "timeout":
+        return Verdict(False, True, "timeout")
+    if isinstance(case, RoutingCase):
+        routes = set(result.routes)
+        passed = bool(case.targets & routes) if case.targets else not routes
+        return Verdict(passed, True, "route: " + (", ".join(result.routes) or "none"))
+    failures = [f for a in case.asserts if (f := check_assertion(a, result, scratch, env))]
+    return Verdict(not failures, True, "; ".join(failures) or "every assertion holds")
+
+
+@dataclass(frozen=True)
+class Rate:
+    passes: int
+    counted: int
+    errors: int
+
+    @classmethod
+    def of(cls, verdicts: Iterable[Verdict]) -> Rate:
+        verdicts = list(verdicts)
+        counted = [v for v in verdicts if v.counted]
+        return cls(passes=sum(v.passed for v in counted), counted=len(counted),
+                   errors=len(verdicts) - len(counted))
+
+    @property
+    def passing(self) -> bool:
+        return 3 * self.passes >= 2 * self.counted
+
+    def __str__(self) -> str:
+        text = f"{self.passes}/{self.counted}"
+        return f"{text}, {self.errors} err" if self.errors else text
+
+
+def status(base: Rate, head: Rate) -> str:
+    """A side passes at >= 2/3 of its counted runs; fewer than 2 counted
+    runs on either side is INCONCLUSIVE, so errors never pose as regressions."""
+    if base.counted < 2 or head.counted < 2:
+        return "INCONCLUSIVE"
+    if base.passing and head.passing:
+        return "PASS"
+    if not base.passing and not head.passing:
+        return "FAIL"
+    return "REGRESSION" if base.passing else "FIXED"
+
+
+def exit_code(statuses: Iterable[str]) -> int:
+    return 1 if "REGRESSION" in statuses else 0
+
+
+@dataclass(frozen=True)
+class Row:
+    case_id: str
+    base: Rate
+    head: Rate
+
+    @property
+    def status(self) -> str:
+        return status(self.base, self.head)
+
+
+# --- Report -----------------------------------------------------------------
+
+NOTABLE = ("REGRESSION", "FIXED", "INCONCLUSIVE")
+STATUSES = (*NOTABLE, "PASS", "FAIL")
+TIERS = (("routing/", "Routing"), ("behavior/", "Behavior"))
+
+
+def render_report(
+    rows: Sequence[Row], *, base_sha: str, base_ref: str, head_sha: str, dirty: bool,
+    model: str, runs: int, plugins: Sequence[str] = (),
+) -> str:
+    """The markdown report: summary, notable cases, a table per tier, marker."""
+    head = head_sha[:12] + ("-dirty" if dirty else "")
+    counts = {s: sum(r.status == s for r in rows) for s in STATUSES}
+    lines = [
+        "## Eval report",
+        "",
+        f"{len(rows)} cases, {runs} runs per case per side, base `{base_ref}` "
+        f"(`{base_sha[:12]}`) vs head `{head}`: "
+        + " · ".join(f"{counts[s]} {s}" for s in STATUSES),
+        "",
+    ]
+    notable = [r for s in NOTABLE for r in rows if r.status == s]
+    lines += [f"- {r.status} `{r.case_id}`: base {r.base}; head {r.head}" for r in notable] \
+        or ["No regressions, fixes, or inconclusive cases."]
+    if plugins:
+        lines += ["", f"> Isolation warning: init listed plugins ({', '.join(plugins)}); "
+                      "they may have competed with the suite."]
+    for prefix, title in TIERS:
+        tier = [r for r in rows if r.case_id.startswith(prefix)]
+        if not tier:
+            continue
+        lines += ["", f"### {title}", "", "| Case | Base | Head | Status |", "|---|---|---|---|"]
+        lines += [f"| `{r.case_id}` | {r.base} | {r.head} | {r.status} |" for r in tier]
+    lines += ["", f"<!-- evals: base={base_sha[:12]} head={head} model={model} runs={runs} -->", ""]
+    return "\n".join(lines)
+
+
+# --- Running the cases ------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class Outcome:
+    case_id: str
+    side: str
+    verdict: Verdict
+    plugins: tuple[str, ...]
+    model: str
+
+
+def run_one(case: Case, side: Side, auth: Mapping[str, str], model: str | None) -> Outcome:
+    """One run of `case` against `side` in a fresh scratch dir, judged and
+    cleaned up. Routing runs start in an empty directory."""
+    scratch = Path(tempfile.mkdtemp(prefix="evals-run-"))
+    try:
+        env = child_env(side.config, side.home, auth)
+        if isinstance(case, BehaviorCase):
+            prepare_fixture(case.fixture, scratch, case.stage)
+            cmd = claude_command(case.prompt, allowed_tools=case.allowed_tools, model=model)
+            result = run_claude(cmd, env, scratch, case.timeout, route_window=None)
+        else:
+            cmd = claude_command(case.prompt, model=model)
+            result = run_claude(cmd, env, scratch, ROUTING_TIMEOUT, route_window=ROUTE_WINDOW)
+        # Shell assertions get the run's HOME and config, but not the token.
+        verdict = judge(case, result, scratch, child_env(side.config, side.home, {}))
+        return Outcome(case.id, side.name, verdict, result.plugins, result.model)
+    finally:
+        remove_tree(scratch)
+
+
+def run_all(cases: Sequence[Case], sides: Sides, auth: Mapping[str, str], model: str | None,
+            runs: int, jobs: int) -> list[Outcome]:
+    """Every (case, side, run) through a pool of `jobs` workers, base and head
+    interleaved so both meet the same rate limits. Progress goes to stderr."""
+    work = [(case, side, n) for case in cases for n in range(1, runs + 1)
+            for side in (sides.base, sides.head)]
+    outcomes = []
+    pool = ThreadPoolExecutor(max_workers=jobs)
+    try:
+        futures = {pool.submit(run_one, case, side, auth, model): (case, side, n)
+                   for case, side, n in work}
+        for done, future in enumerate(as_completed(futures), 1):
+            case, side, n = futures[future]
+            outcome = future.result()
+            outcomes.append(outcome)
+            verdict = outcome.verdict
+            mark = "pass" if verdict.passed else "fail" if verdict.counted else "error"
+            print(f"[{done}/{len(work)}] {side.name} {case.id} #{n}: {mark} ({verdict.detail})",
+                  file=sys.stderr)
+    finally:
+        pool.shutdown(wait=True, cancel_futures=True)
+    return outcomes
+
+
+def rows_of(cases: Sequence[Case], outcomes: Sequence[Outcome]) -> list[Row]:
+    def rate(case_id: str, side: str) -> Rate:
+        return Rate.of(o.verdict for o in outcomes if o.case_id == case_id and o.side == side)
+    return [Row(c.id, rate(c.id, "base"), rate(c.id, "head")) for c in cases]
+
+
 # --- Entry point ------------------------------------------------------------
 
 
@@ -500,8 +1081,15 @@ def suite_root() -> Path:
     return Path(git(Path(__file__).resolve().parent, "rev-parse", "--show-toplevel"))
 
 
+def head_revision(head: Path) -> tuple[str, bool]:
+    """HEAD's sha, and whether the working tree differs from it (untracked
+    files included: a new command file is loaded without being committed)."""
+    return git(head, "rev-parse", "HEAD"), bool(git(head, "status", "--porcelain"))
+
+
 def raise_interrupt(signum: int, frame: object) -> None:
     """SIGINT: stop the claude process groups, then unwind through cleanup."""
+    _stopping.set()
     kill_live_runs()
     raise KeyboardInterrupt
 
@@ -509,19 +1097,53 @@ def raise_interrupt(signum: int, frame: object) -> None:
 def run(args: argparse.Namespace) -> int:
     head = suite_root()
     try:
-        setup = preflight(head, args.base, os.environ)
+        cases = select(load_cases(head), args.only)
+        setup = preflight(head, args.base, os.environ, args.env_file)
     except SetupError as err:
         print(f"run-evals: {err}", file=sys.stderr)
         return 2
+    head_sha, dirty = head_revision(head)
+    print(f"run-evals: {len(cases)} cases x {args.runs} runs x 2 sides, {args.jobs} jobs; "
+          f"base {args.base} ({setup.base_sha[:12]})", file=sys.stderr)
     with eval_sides(head, setup.base_sha) as sides:
-        print(f"base {setup.base_sha[:12]}: config at {sides.base_config}")
-        print(f"head {head}: config at {sides.head_config}")
-    return 0
+        outcomes = run_all(cases, sides, setup.auth, args.model, args.runs, args.jobs)
+    rows = rows_of(cases, outcomes)
+    report = render_report(
+        rows, base_sha=setup.base_sha, base_ref=args.base, head_sha=head_sha, dirty=dirty,
+        model=next((o.model for o in outcomes if o.model), args.model or "unknown"),
+        runs=args.runs, plugins=sorted({p for o in outcomes for p in o.plugins}),
+    )
+    if args.out:
+        Path(args.out).write_text(report)
+        print(f"run-evals: report written to {args.out}", file=sys.stderr)
+    else:
+        sys.stdout.write(report)
+    return exit_code(r.status for r in rows)
+
+
+def positive_int(text: str) -> int:
+    value = int(text)
+    if value < 1:
+        raise argparse.ArgumentTypeError(f"must be at least 1, not {value}")
+    return value
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(
+        description=__doc__.splitlines()[0],
+        epilog="Case ids: routing/<target> (repeats numbered, e.g. routing/none-1) "
+               "and behavior/<dir>.",
+    )
     parser.add_argument("--base", default="main", help="ref to compare against (default: main)")
+    parser.add_argument("--runs", type=positive_int, default=3,
+                        help="runs per case per side (default: 3)")
+    parser.add_argument("--jobs", type=positive_int, default=4,
+                        help="claude processes at once (default: 4)")
+    parser.add_argument("--model", help="model for every run (default: the config's)")
+    parser.add_argument("--only", metavar="GLOB", help="run only the case ids matching GLOB")
+    parser.add_argument("--out", metavar="FILE", help="write the report here, not to stdout")
+    parser.add_argument("--env-file", type=Path, metavar="FILE",
+                        help="dotenv file holding the auth variable (default: <suite root>/.env)")
     args = parser.parse_args()
     signal.signal(signal.SIGINT, raise_interrupt)
     try:
