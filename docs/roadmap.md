@@ -75,3 +75,11 @@ a commit boundary; the spec's checklist records where.
 - [x] 4a. Skills density: meta (merged 2026-09-22, PR #6)
 - [x] 4b. Skills density: engineering (merged 2026-09-22, PR #7)
 - [x] 4c. Skills density: methodology (merged 2026-09-22, PR #8)
+
+## After the cleanup
+
+| Spec | Sessions | Done when |
+|---|---|---|
+| [Routing and behavior evals](specs/2026-10-19-routing-and-behavior-evals.md) | 2 | `scripts/run-evals.py` reports base vs head for ~40 routing and 4 behavioral cases; CI requires a report or `evals: n/a` on suite PRs; red proofs recorded |
+
+- [ ] 5. Routing and behavior evals
