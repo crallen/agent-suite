@@ -49,6 +49,11 @@ BUILTIN_PLUGINS = (
 # `Agent` in tool_use blocks.
 AGENT_TOOLS = {"Agent", "Task"}
 
+# Marks a slash command the CLI could not expand, such as a `!` shell line
+# whose command the allowed tools do not cover. The run then ends without a
+# model call and with a clean, empty result.
+LOCAL_COMMAND_ERROR = "<local-command-stderr>"
+
 # Grace period between SIGTERM and SIGKILL for a claude process group.
 KILL_GRACE_SECONDS = 5
 
@@ -271,7 +276,9 @@ def child_env(
 class ToolCall:
     name: str
     input: dict
-    # None on the main thread; the spawning Agent call's id inside a subagent.
+    # None on the main thread. Inside a subagent, the id of the Agent call
+    # that spawned it; inside a `context: fork` command, the synthetic id
+    # `forked-command-<name>`.
     parent_tool_use_id: str | None
 
 
@@ -281,8 +288,9 @@ class RunResult:
 
     tool_calls   every tool call in stream order, subagent calls included
     routes       skills and agents the main thread loaded within the window
-    final_text   the result text, or the last main-thread text if killed early
-    stop         why reading stopped: route, window, result, or eof
+    final_text   the last result's text, or the last main-thread text if killed
+    stop         route or window (killed on purpose), result (the stream ended
+                 after a result event), or eof (it ended without one)
     exit_status  the process exit status; None when parsed from a recording
     error_class  none, timeout, or error; only `none` runs count toward a rate
     plugins      plugins the init event reports; any at all breaks isolation
@@ -351,7 +359,8 @@ def read_stream(lines: Iterable[str], route_window: int | None) -> RunResult:
 
     With a route window, reading stops at the `assistant` event carrying the
     first route (the tool starts executing there) or once the main thread has
-    made `route_window` calls without one. With None it reads to the end.
+    made `route_window` calls without one. With None it reads to the end,
+    past any number of `result` events; the final text is the last one's.
     """
     return _parse(lines, route_window).finish(exit_status=None, timed_out=False)
 
@@ -375,10 +384,14 @@ def _parse(lines: Iterable[str], route_window: int | None) -> _Stream:
         if kind == "system" and event.get("subtype") == "init":
             plugins = tuple(p.get("name", "") for p in event.get("plugins") or ())
         elif kind == "result":
+            # Not the end: a main thread that launched a background agent
+            # reports a result at once, then takes another turn when the
+            # agent finishes. The process exits after the last one.
             result_text = event.get("result") or ""
-            is_error = bool(event.get("is_error"))
+            is_error = is_error or bool(event.get("is_error"))
             stop = "result"
-            break
+        elif kind == "user" and LOCAL_COMMAND_ERROR in str(event.get("message", {}).get("content")):
+            is_error = True
         elif kind == "assistant":
             parent = event.get("parent_tool_use_id")
             for block in event.get("message", {}).get("content", ()):
