@@ -790,6 +790,9 @@ class CheckEvalReportTest(unittest.TestCase):
     def test_opt_out_without_a_reason_fails(self):
         self.assertFalse(check_eval_report.has_report("evals: n/a —\n"))
         self.assertFalse(check_eval_report.has_report("evals: n/a\n"))
+        # The reason must sit on the opt-out's own line.
+        self.assertFalse(check_eval_report.has_report("evals: n/a —\n\n## Summary"))
+        self.assertFalse(check_eval_report.has_report("evals: n/a\n- tightened wording"))
 
     def test_absent_report_fails(self):
         self.assertFalse(check_eval_report.has_report(""))

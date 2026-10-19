@@ -26,8 +26,9 @@ MARKER = re.compile(
     r" model=\S+ runs=\d+ -->"
 )
 # An em dash per the spec; an en dash or ASCII hyphens are accepted too,
-# since that is what a keyboard produces.
-OPT_OUT = re.compile(r"^\s*evals: n/a\s*(?:—|–|--?)\s*\S", re.MULTILINE)
+# since that is what a keyboard produces. [ \t] rather than \s, so the reason
+# must be on the opt-out's own line.
+OPT_OUT = re.compile(r"^[ \t]*evals: n/a[ \t]*(?:—|–|--?)[ \t]*\S", re.MULTILINE)
 
 
 def has_report(body: str) -> bool:
