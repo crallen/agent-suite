@@ -362,6 +362,13 @@ class ChildEnvTest(unittest.TestCase):
         self.assertEqual(env, {"PATH": "/usr/bin", "CLAUDE_CONFIG_DIR": "/cfg",
                                "HOME": "/home-tmp", "CLAUDE_CODE_OAUTH_TOKEN": "t"})
 
+    def test_assertion_env_has_the_runs_home_and_config_but_no_auth(self):
+        parent = {"PATH": "/usr/bin", "ANTHROPIC_API_KEY": "inherited",
+                  "CLAUDE_CODE_OAUTH_TOKEN": "inherited", "GIT_DIR": "/outer/.git"}
+        env = run_evals.assertion_env(Path("/cfg"), Path("/home-tmp"), parent)
+        self.assertEqual(env, {"PATH": "/usr/bin", "CLAUDE_CONFIG_DIR": "/cfg",
+                               "HOME": "/home-tmp"})
+
     def test_strips_inherited_git_variables(self):
         # A runner started from a hook or `git rebase -x` carries these; a
         # /commit run would otherwise act on the outer repository.

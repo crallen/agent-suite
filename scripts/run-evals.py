@@ -317,6 +317,17 @@ def child_env(
     return env
 
 
+def assertion_env(
+    config: Path, home: Path, parent: Mapping[str, str] = os.environ
+) -> dict[str, str]:
+    """child_env for a `shell` assertion: the run's config and HOME, with
+    every auth variable dropped, inherited ANTHROPIC_API_KEY included."""
+    env = child_env(config, home, {}, parent)
+    for name in AUTH_VARS:
+        env.pop(name, None)
+    return env
+
+
 @dataclass(frozen=True)
 class ToolCall:
     name: str
@@ -1058,8 +1069,7 @@ def run_one(case: Case, side: Side, auth: Mapping[str, str], model: str | None) 
         else:
             cmd = claude_command(case.prompt, model=model)
             result = run_claude(cmd, env, scratch, ROUTING_TIMEOUT, route_window=ROUTE_WINDOW)
-        # Shell assertions get the run's HOME and config, but not the token.
-        verdict = judge(case, result, scratch, child_env(side.config, side.home, {}))
+        verdict = judge(case, result, scratch, assertion_env(side.config, side.home))
         return Outcome(case.id, side.name, verdict, result.plugins, result.model)
     except Interrupted:
         raise
