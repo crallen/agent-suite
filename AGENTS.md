@@ -14,7 +14,11 @@ platforms/
   claude/               Claude Code's index, its agents, and its commands
   codex/                Codex's index, plus its skill links
   opencode/             OpenCode's index, its own agents and commands, plus skill links
-scripts/                validate-config.py
+evals/
+  routing.yaml          routing cases: a prompt and the skill or agent it should load
+  behavior/<case>/      behavior cases: case.yaml plus a fixture repo
+  recordings/           captured CLI streams the eval tests parse
+scripts/                validate-config.py, run-evals.py, check-eval-report.py, test_evals.py
 ```
 
 The top level is canonical. A platform directory holds that harness's **view**: an
@@ -98,6 +102,69 @@ at `.githooks` (the dotfiles `make install` sets that).
 For the schemas and file layout of agents, skills, and commands, use the
 `agent-authoring` skill — it is the source of truth for frontmatter keys and
 conventions.
+
+### Evals
+
+The validator checks structure. It cannot tell whether a request still loads the
+right skill, or whether `/debugger` still reproduces a bug before editing. The evals
+check that behavior. Routing cases send a prompt and check which skill or agent
+loads. Behavior cases run a command against a fixture repo and assert on its tool
+calls, final text, and the files it leaves.
+
+Run them on any PR that touches `skills/` or `platforms/`, and paste the report into
+the PR body:
+
+```sh
+scripts/run-evals.py --base main            # every case, 3 runs per side
+scripts/run-evals.py --only 'behavior/*'    # case ids matching a glob
+```
+
+The runner builds one Claude Code config from `--base` and one from the working
+tree, uncommitted edits included, and runs every case against both. A PR that
+changes no behavior carries `evals: n/a — <reason>` instead. CI's `eval-report`
+workflow makes no model calls: it fails a PR whose body has neither the report's
+closing marker nor that line. Changes only to `skills/synced/` or
+`platforms/claude/settings.json.example` do not trigger it.
+
+The runner needs `CLAUDE_CODE_OAUTH_TOKEN` or `ANTHROPIC_API_KEY`. Create a token
+with `claude setup-token`, then export it or copy `.env.example` to `.env` and fill
+it in. A variable already in the environment wins over the file. The runner reads
+`.env` itself and passes the token only to the `claude` processes it starts, so an
+agent running the evals never sees it. A worktree has no `.env` of its own; pass
+`--env-file` with the main checkout's.
+
+Each case runs `--runs` times per side (default 3), and a side passes at two thirds
+of its counted runs. Runs that end in an error, such as a rate limit, are not
+counted; timeouts count as failures.
+
+| Status | Meaning |
+|---|---|
+| PASS | Both sides pass |
+| FAIL | Both sides fail, so the failure predates this change |
+| REGRESSION | Base passes, head fails; the runner exits 1 |
+| FIXED | Base fails, head passes |
+| INCONCLUSIVE | A side has fewer than 2 counted runs; re-run the case |
+
+Three runs are coarse. Before acting on a close call, re-run that case with
+`--only <id> --runs 5`. `--runs 1` is a smoke check only: every case comes out
+INCONCLUSIVE. An isolation warning means a plugin loaded alongside the suite and
+may have competed for routes.
+
+To add a routing case, add an entry to `evals/routing.yaml`: `expect: <name>`,
+`any_of: [..]` when several targets are honestly correct, or `expect: none` for a
+prompt that should load nothing. A behavior case is a directory
+`evals/behavior/<case>/` holding `case.yaml` and an optional `fixture/` with
+`before/` (committed) and `after/` (left uncommitted). Its assertions are `order`,
+`tool_not_called`, `final_text`, `shell`, and `no_paths`; the eval spec in
+`docs/specs/` defines their shapes, and the existing cases show each in use.
+
+Write prompts the way a user would ask: concrete, specific, often terse. Never
+paraphrase the target's description. A prompt that echoes the description passes
+without showing that real requests reach the target.
+
+`scripts/test_evals.py` tests the runner's stream parser, assertions, and scoring,
+plus the report check, against `evals/recordings/`. It makes no model calls and runs
+in CI; run it after changing either eval script.
 
 ## Conventions
 
