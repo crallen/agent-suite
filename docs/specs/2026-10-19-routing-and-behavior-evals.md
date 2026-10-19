@@ -278,7 +278,7 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
   `evals/recordings/{route-skill,route-agent,route-read,no-route,window,error}.jsonl`,
   and grep each for the token value before saving; a hit means the stream is
   discarded, not edited. Record findings in this spec's Risks section.
-- [ ] 2. `scripts/run-evals.py` (uv/PEP 723, PyYAML): preflight with `.env` loading
+- [x] 2. `scripts/run-evals.py` (uv/PEP 723, PyYAML): preflight with `.env` loading
   (`load_env(path) -> dict[str, str]`, stdlib only, environment wins),
   `build_config(root) -> Path`, base worktree lifecycle, cleanup, and
   `run_claude(cmd, env, scratch, timeout, route_window) -> RunResult` with stream
