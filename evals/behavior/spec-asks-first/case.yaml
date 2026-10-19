@@ -1,0 +1,24 @@
+# Guards spec-writing Phases 3-4: /spec asks a clarifying question with lettered
+# options, recommended first, and drafts nothing. The fixture is empty (no
+# fixture/ directory), so the goal's open choices cannot be answered from code.
+# Red proof: delete Phases 3-4 from skills/spec-writing/SKILL.md.
+prompt: /spec a command-line tool that backs up my notes folder every night
+allowed_tools:
+  - "Bash(git *)"
+  - Read
+  - Glob
+  - Grep
+timeout: 240
+assert:
+  - final_text:
+      match:
+        # Option A and option B each open a line: "- **A** —", "- A)", "(A)",
+        # "**A.**", "**Approach A:**". A letter followed by a word ("A simple
+        # tool") does not count.
+        - '(?m)^[ \t]*(?:[-*+][ \t]+)?(?:\*\*)?(?:(?:Approach|Option)[ \t]+)?\(?A(?:[.):\]]|\*\*|[ \t]+[—–-])'
+        - '(?m)^[ \t]*(?:[-*+][ \t]+)?(?:\*\*)?(?:(?:Approach|Option)[ \t]+)?\(?B(?:[.):\]]|\*\*|[ \t]+[—–-])'
+        - '\(Recommended\)'
+      not_match:
+        - '## Task Checklist'
+  - tool_not_called: [Write, Edit]
+  - no_paths: ["docs/specs/*"]
