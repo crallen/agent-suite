@@ -1,7 +1,8 @@
 # Guards git-conventions through /commit: the staged change becomes exactly one
 # Conventional Commit with a subject of at most 72 characters and no attribution
 # footer. after/ adds a --shout flag to greet.py, so a type and scope are inferable.
-# Red proof: delete the Conventional Commits section of skills/git-conventions/SKILL.md.
+# Red proof: remove Conventional Commits from git-conventions, /commit, /ship, and
+# CLAUDE.md together (one copy alone stays green); see the spec's Testing table.
 prompt: /commit
 stage: true
 allowed_tools:

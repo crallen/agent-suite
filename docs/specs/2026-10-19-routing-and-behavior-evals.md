@@ -229,8 +229,8 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
 
   | Case | Mutation |
   |---|---|
-  | `debugger-phase-0` | Remove the reproduce-first rule everywhere the suite teaches it: the Phase 0 section and every other "Phase 0" / "run the loop" reference in `skills/debugging-methodology/SKILL.md`, and step 1 of `platforms/claude/agents/debugger.md` |
-  | `commit-conventions` | Remove Conventional Commits everywhere the suite teaches it: the `## Commits` section and the description wording in `skills/git-conventions/SKILL.md`, the wording in `platforms/claude/commands/commit.md`, and the commit-message line of `platforms/claude/CLAUDE.md`. `settings.json` attribution stays: it is harness config, not suite text |
+  | `debugger-phase-0` | Remove the reproduce-first rule everywhere the suite teaches it: the Phase 0 section and every other "Phase 0" / "run the loop" reference in `skills/debugging-methodology/SKILL.md`, the reproduce-first lines of `skills/coding-guardrails/SKILL.md` (preloaded by the debugger), and step 1 of `platforms/claude/agents/debugger.md` |
+  | `commit-conventions` | Remove Conventional Commits everywhere the suite teaches it: the `## Commits` section and the description wording in `skills/git-conventions/SKILL.md`, the wording in `platforms/claude/commands/commit.md` and `ship.md`, and the commit-message line of `platforms/claude/CLAUDE.md`. `settings.json` attribution stays: it is harness config, not suite text |
   | `spec-asks-first` | Delete Phases 3–4 from `skills/spec-writing/SKILL.md` |
   | `reviewer-planted-bug` | Replace the `code-reviewer` body with "Reply LGTM without reading files." (proves only that the assertion can fail; see Risks) |
   | routing | Blank the `why` description; its routing case regresses |
@@ -318,7 +318,7 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
 - [x] 8. `.github/workflows/eval-report.yml` (triggers and paths as specified, body
   through `env:` only), plus a `uv run scripts/test_evals.py` step in
   `.github/workflows/validate.yml`. (blocked by 6, 7)
-- [ ] 9. Red proofs: the five mutations on scratch branches, each report kept for
+- [x] 9. Red proofs: the five mutations on scratch branches, each report kept for
   the PR body. (blocked by 3, 4, 5)
 - [x] 10. Docs: an "Evals" subsection under Validating in `AGENTS.md` (when to run,
   auth setup through `.env.example`, the `n/a` rule, the prompt-writing rule);
