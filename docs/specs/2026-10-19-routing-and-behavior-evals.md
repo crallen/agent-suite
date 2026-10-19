@@ -350,7 +350,7 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
 - [x] 12. `.gitignore`: add `.env`, `.env.*`, `!.env.example`; add `.env.example`
   with `CLAUDE_CODE_OAUTH_TOKEN=`. Confirm `git check-ignore .env` matches and
   `.env.example` does not.
-- [ ] 13. Routing case fixes in `evals/routing.yaml`: keep the six advice-style
+- [x] 13. Routing case fixes in `evals/routing.yaml`: keep the six advice-style
   skill prompts that failed on base as known gaps and add a work-shaped entry for
   each (`code-review-checklist`,
   `debugging-methodology`, `doc-templates`, `frontend-patterns`,
