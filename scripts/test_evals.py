@@ -190,6 +190,22 @@ class StreamParserTest(unittest.TestCase):
         self.assertEqual(result.tool_calls, ())
         self.assertEqual(result.error_class, "error")
 
+    def test_stderr_marker_in_a_tool_result_is_not_a_failed_command(self):
+        # Only the CLI's own main-thread string message marks a denied `!`
+        # line; a tool result that merely contains the text (a file being
+        # read, a subagent's output) does not.
+        def user(content, parent):
+            return json.dumps({"type": "user", "parent_tool_use_id": parent,
+                               "message": {"role": "user", "content": content}})
+        tool_result = [{"type": "tool_result", "tool_use_id": "toolu_x",
+                        "content": "<local-command-stderr>quoted</local-command-stderr>"}]
+        clean = json.dumps({"type": "result", "is_error": False, "result": "Done."})
+        for line in (user(tool_result, None), user(tool_result, "toolu_parent"),
+                     user("<local-command-stderr>x</local-command-stderr>", "toolu_parent")):
+            with self.subTest(line=line):
+                result = run_evals.read_stream([line, clean], route_window=None)
+                self.assertEqual(result.error_class, "none")
+
     def test_task_is_accepted_as_the_agent_tool_name(self):
         lines = [assistant_tool_use("Task", {"subagent_type": "Plan"}, parent=None)]
         self.assertEqual(run_evals.read_stream(lines, 3).routes, ("Plan",))

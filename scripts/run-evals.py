@@ -418,6 +418,15 @@ def read_stream(lines: Iterable[str], route_window: int | None) -> RunResult:
     return _parse(lines, route_window).finish(exit_status=None, timed_out=False)
 
 
+def _is_local_command_error(event: dict) -> bool:
+    """A main-thread user message whose string content is the CLI's report of
+    a slash command it could not expand. A tool result quoting the marker (a
+    file being read, a subagent's output) is a list of blocks, not this."""
+    content = event.get("message", {}).get("content")
+    return (event.get("parent_tool_use_id") is None and isinstance(content, str)
+            and LOCAL_COMMAND_ERROR in content)
+
+
 def _parse(lines: Iterable[str], route_window: int | None) -> _Stream:
     calls: list[ToolCall] = []
     routes: list[str] = []
@@ -446,7 +455,7 @@ def _parse(lines: Iterable[str], route_window: int | None) -> _Stream:
             result_text = event.get("result") or ""
             is_error = is_error or bool(event.get("is_error"))
             stop = "result"
-        elif kind == "user" and LOCAL_COMMAND_ERROR in str(event.get("message", {}).get("content")):
+        elif kind == "user" and _is_local_command_error(event):
             is_error = True
         elif kind == "assistant":
             parent = event.get("parent_tool_use_id")
