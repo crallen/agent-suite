@@ -154,9 +154,11 @@ To add a routing case, add an entry to `evals/routing.yaml`: `expect: <name>`,
 `any_of: [..]` when several targets are honestly correct, or `expect: none` for a
 prompt that should load nothing. A behavior case is a directory
 `evals/behavior/<case>/` holding `case.yaml` and an optional `fixture/` with
-`before/` (committed) and `after/` (left uncommitted). Its assertions are `order`,
-`tool_not_called`, `final_text`, `shell`, and `no_paths`; the eval spec in
-`docs/specs/` defines their shapes, and the existing cases show each in use.
+`before/` (committed) and `after/` (left uncommitted, or staged with `stage: true`).
+`case.yaml` takes `prompt`, `allowed_tools`, `timeout` (seconds), `stage`, and
+`assert`, and no other keys. The assertions are `order`, `tool_not_called`,
+`final_text`, `shell`, and `no_paths`; the eval spec in `docs/specs/` defines their
+shapes, and the existing cases show each in use.
 
 Write prompts the way a user would ask: concrete, specific, often terse. Never
 paraphrase the target's description. A prompt that echoes the description passes

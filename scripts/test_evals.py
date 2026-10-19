@@ -13,9 +13,13 @@ The scripts under test have hyphenated names, so they load through importlib.
 
 from __future__ import annotations
 
+import argparse
+import contextlib
 import importlib.util
+import io
 import json
 import os
+import signal
 import stat
 import subprocess
 import sys
@@ -24,6 +28,7 @@ import threading
 import time
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 SCRIPTS = Path(__file__).resolve().parent
 ROOT = SCRIPTS.parent
@@ -189,6 +194,22 @@ class StreamParserTest(unittest.TestCase):
         self.assertEqual(result.tool_calls, ())
         self.assertEqual(result.error_class, "error")
 
+    def test_stderr_marker_in_a_tool_result_is_not_a_failed_command(self):
+        # Only the CLI's own main-thread string message marks a denied `!`
+        # line; a tool result that merely contains the text (a file being
+        # read, a subagent's output) does not.
+        def user(content, parent):
+            return json.dumps({"type": "user", "parent_tool_use_id": parent,
+                               "message": {"role": "user", "content": content}})
+        tool_result = [{"type": "tool_result", "tool_use_id": "toolu_x",
+                        "content": "<local-command-stderr>quoted</local-command-stderr>"}]
+        clean = json.dumps({"type": "result", "is_error": False, "result": "Done."})
+        for line in (user(tool_result, None), user(tool_result, "toolu_parent"),
+                     user("<local-command-stderr>x</local-command-stderr>", "toolu_parent")):
+            with self.subTest(line=line):
+                result = run_evals.read_stream([line, clean], route_window=None)
+                self.assertEqual(result.error_class, "none")
+
     def test_task_is_accepted_as_the_agent_tool_name(self):
         lines = [assistant_tool_use("Task", {"subagent_type": "Plan"}, parent=None)]
         self.assertEqual(run_evals.read_stream(lines, 3).routes, ("Plan",))
@@ -262,6 +283,21 @@ class RunClaudeTest(unittest.TestCase):
         self.assertFalse(worker.is_alive())
         self.assertEqual(results[0].error_class, "error")
 
+    def test_sigterm_and_sighup_stop_the_runner_like_sigint(self):
+        # Runs start their own session, so only the runner's handler can reach
+        # them; a SIGTERM or SIGHUP that skipped it would orphan them.
+        saved = {s: signal.getsignal(s) for s in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP)}
+        self.addCleanup(lambda: [signal.signal(s, h) for s, h in saved.items()])
+        self.addCleanup(run_evals._stopping.clear)
+        run_evals.install_stop_handlers()
+        for signum in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+            with self.subTest(signal=signum.name):
+                run_evals._stopping.clear()
+                with self.assertRaises(KeyboardInterrupt):
+                    os.kill(os.getpid(), signum)
+                    time.sleep(1)  # the handler runs between bytecodes
+                self.assertTrue(run_evals._stopping.is_set())
+
     def test_clean_exit_after_a_result_counts(self):
         result = self.run_fake("no-route", sleep=0, exit_code=0, timeout=30)
         self.assertEqual((result.exit_status, result.error_class), (0, "none"))
@@ -321,6 +357,53 @@ class LoadEnvTest(unittest.TestCase):
         self.assertIsNone(run_evals.resolve_auth({"ANTHROPIC_API_KEY": ""}, self.path))
 
 
+class PreflightTest(unittest.TestCase):
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.head = Path(tmp.name) / "suite"
+        self.head.mkdir()
+        identity = ["-c", "user.name=evals", "-c", "user.email=evals@localhost"]
+        for args in (["init", "-q"], [*identity, "commit", "-q", "--allow-empty", "-m", "base"]):
+            subprocess.run(["git", "-C", str(self.head), *args], check=True, capture_output=True)
+        # A stand-in claude on PATH, so the checks after it are reachable on a
+        # machine without Claude Code.
+        bin_dir = Path(tmp.name) / "bin"
+        bin_dir.mkdir()
+        (bin_dir / "claude").write_text("#!/bin/sh\n")
+        (bin_dir / "claude").chmod(0o755)
+        path = patch.dict(os.environ, {"PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}"})
+        path.start()
+        self.addCleanup(path.stop)
+        self.no_env_file = Path(tmp.name) / "missing.env"
+        self.auth = {"ANTHROPIC_API_KEY": "placeholder"}
+
+    def test_missing_claude_is_a_setup_error(self):
+        with patch.object(run_evals.shutil, "which", return_value=None):
+            with self.assertRaisesRegex(run_evals.SetupError, "claude is not on PATH"):
+                run_evals.preflight(self.head, "HEAD", self.auth, self.no_env_file)
+
+    def test_missing_auth_is_a_setup_error_naming_setup_token(self):
+        with self.assertRaisesRegex(run_evals.SetupError, "claude setup-token"):
+            run_evals.preflight(self.head, "HEAD", {}, self.no_env_file)
+
+    def test_unresolvable_base_is_a_setup_error(self):
+        with self.assertRaisesRegex(run_evals.SetupError, "--base no-such-ref"):
+            run_evals.preflight(self.head, "no-such-ref", self.auth, self.no_env_file)
+
+    def test_resolvable_base_yields_its_sha_and_the_auth(self):
+        setup = run_evals.preflight(self.head, "HEAD", self.auth, self.no_env_file)
+        self.assertEqual(setup.base_sha, git_out(self.head, "rev-parse", "HEAD").strip())
+        self.assertEqual(setup.auth, self.auth)
+
+    def test_run_exits_2_on_a_setup_error(self):
+        args = argparse.Namespace(only=None, base="no-such-ref", env_file=self.no_env_file,
+                                  runs=1, jobs=1, model=None, out=None)
+        with patch.dict(os.environ, self.auth), contextlib.redirect_stderr(io.StringIO()) as err:
+            self.assertEqual(run_evals.run(args), 2)
+        self.assertIn("--base no-such-ref", err.getvalue())
+
+
 class ChildEnvTest(unittest.TestCase):
     def test_strips_inherited_claude_variables_and_sets_config_and_auth(self):
         parent = {"PATH": "/usr/bin", "CLAUDECODE": "1", "CLAUDE_EFFORT": "high",
@@ -330,16 +413,30 @@ class ChildEnvTest(unittest.TestCase):
         self.assertEqual(env, {"PATH": "/usr/bin", "CLAUDE_CONFIG_DIR": "/cfg",
                                "HOME": "/home-tmp", "CLAUDE_CODE_OAUTH_TOKEN": "t"})
 
+    def test_assertion_env_has_the_runs_home_and_config_but_no_auth(self):
+        parent = {"PATH": "/usr/bin", "ANTHROPIC_API_KEY": "inherited",
+                  "CLAUDE_CODE_OAUTH_TOKEN": "inherited", "GIT_DIR": "/outer/.git"}
+        env = run_evals.assertion_env(Path("/cfg"), Path("/home-tmp"), parent)
+        self.assertEqual(env, {"PATH": "/usr/bin", "CLAUDE_CONFIG_DIR": "/cfg",
+                               "HOME": "/home-tmp"})
+
+    def test_strips_inherited_git_variables(self):
+        # A runner started from a hook or `git rebase -x` carries these; a
+        # /commit run would otherwise act on the outer repository.
+        parent = {"PATH": "/usr/bin", "GIT_DIR": "/outer/.git",
+                  "GIT_INDEX_FILE": "/outer/.git/index", "GIT_WORK_TREE": "/outer"}
+        env = run_evals.child_env(Path("/cfg"), Path("/home-tmp"), {}, parent)
+        self.assertEqual(env, {"PATH": "/usr/bin", "CLAUDE_CONFIG_DIR": "/cfg",
+                               "HOME": "/home-tmp"})
+
 
 class ClaudeCommandTest(unittest.TestCase):
     def test_prompt_follows_p_and_allowed_tools_come_last(self):
-        cmd = run_evals.claude_command("hi", agent="debugger", allowed_tools=["Read", "Edit"],
-                                       model="m")
+        cmd = run_evals.claude_command("hi", allowed_tools=["Read", "Edit"], model="m")
         self.assertEqual(cmd[:3], ["claude", "-p", "hi"])
         self.assertEqual(cmd[-3:], ["--allowedTools", "Read", "Edit"])
         for flag in ("--strict-mcp-config", "--include-partial-messages", "--verbose"):
             self.assertIn(flag, cmd)
-        self.assertEqual(cmd[cmd.index("--agent") + 1], "debugger")
         self.assertEqual(cmd[cmd.index("--model") + 1], "m")
         self.assertEqual(cmd[cmd.index("--permission-mode") + 1], "acceptEdits")
 
@@ -381,10 +478,13 @@ class BuildConfigTest(unittest.TestCase):
         })
         self.assertIn("Read(**/.env)", settings["permissions"]["deny"])
 
-    def test_untracked_skills_are_excluded(self):
+    def test_ignored_skills_are_excluded_but_new_untracked_ones_are_kept(self):
+        # Head is the working tree with uncommitted edits, so a skill not yet
+        # added is part of it; gitignored skills/synced/ is not.
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             for path, body in {
+                ".gitignore": "skills/synced/\n",
                 "platforms/claude/agents/a.md": "a",
                 "platforms/claude/commands/c.md": "c",
                 "platforms/claude/CLAUDE.md": "index",
@@ -397,9 +497,9 @@ class BuildConfigTest(unittest.TestCase):
                 (root / path).write_text(body)
             git = ["git", "-C", tmp]
             subprocess.run([*git, "init", "-q"], check=True)
-            subprocess.run([*git, "add", "platforms", "skills/tracked"], check=True)
+            subprocess.run([*git, "add", ".gitignore", "platforms", "skills/tracked"], check=True)
             names = sorted(p.name for p in (self.build(root) / "skills").iterdir())
-        self.assertEqual(names, ["tracked"])
+        self.assertEqual(names, ["tracked", "untracked"])
 
     def test_side_home_links_dot_claude_to_its_config_and_both_are_removed(self):
         with run_evals.side_dirs("head", ROOT) as side:
@@ -486,6 +586,11 @@ class CaseLoadingTest(unittest.TestCase):
     def test_unknown_assertion_type_is_a_setup_error(self):
         root = self.write_suite("[]\n", "prompt: hi\nassert:\n  - says_hello: true\n")
         with self.assertRaisesRegex(run_evals.SetupError, "says_hello"):
+            run_evals.load_cases(root)
+
+    def test_shell_without_match_or_not_match_is_a_setup_error(self):
+        root = self.write_suite("[]\n", "prompt: hi\nassert:\n  - shell: {run: git log}\n")
+        with self.assertRaisesRegex(run_evals.SetupError, "behavior/c: shell"):
             run_evals.load_cases(root)
 
     def test_invalid_regex_is_a_setup_error(self):
@@ -590,6 +695,30 @@ class AssertionTest(unittest.TestCase):
         result = run_result(call("Read", file_path="a.py"), call("Edit", file_path="a.py"))
         self.assertIsNone(self.check({"order": {"first": "Read", "before": "Edit"}}, result))
 
+    def test_debugger_case_counts_only_a_unittest_run_as_the_reproduction(self):
+        case = next(c for c in run_evals.load_cases(ROOT) if c.id == "behavior/debugger-phase-0")
+        order = case.asserts[0]
+        searched = run_result(call("Bash", command="grep -rn unittest ."),
+                              call("Edit", file_path="pricing.py"))
+        self.assertIsNotNone(self.check(order, searched))
+        for command in ("python3 -m unittest", "python3 -m unittest -v test_pricing"):
+            with self.subTest(command=command):
+                ran = run_result(call("Bash", command=command), call("Edit", file_path="pricing.py"))
+                self.assertIsNone(self.check(order, ran))
+
+    def test_reviewer_case_accepts_the_def_line_or_the_query_line(self):
+        # db.py line 24 is `def search_users`, line 25 the f-string query.
+        case = next(c for c in run_evals.load_cases(ROOT)
+                    if c.id == "behavior/reviewer-planted-bug")
+        [assertion] = case.asserts
+        for text in ("db.py:24", "db.py:25", "`db.py` (line 24)", "db.py:24-25",
+                     "line 24 of db.py", "line 25 of db.py"):
+            with self.subTest(text=text):
+                self.assertIsNone(self.check(assertion, run_result(final_text=text)))
+        for text in ("db.py:23", "db.py:245", "line 26 of db.py", "LGTM"):
+            with self.subTest(text=text):
+                self.assertIsNotNone(self.check(assertion, run_result(final_text=text)))
+
     # tool_not_called
 
     def test_tool_not_called_passes_when_absent(self):
@@ -637,6 +766,14 @@ class AssertionTest(unittest.TestCase):
     def test_shell_fails_on_a_missing_match(self):
         self.assertIsNotNone(self.check({"shell": {"run": "echo 1", "match": ["^2$"]}},
                                         run_result()))
+
+    def test_shell_fails_when_the_command_exits_nonzero(self):
+        # `git log` in a repo without commits prints nothing, which a
+        # not_match alone would accept.
+        failure = self.check({"shell": {"run": "echo partial; exit 3",
+                                        "not_match": ["Co-Authored-By"]}}, run_result())
+        self.assertIsNotNone(failure)
+        self.assertIn("3", failure)
 
     # no_paths
 
@@ -697,6 +834,24 @@ class JudgeTest(unittest.TestCase):
         verdict = self.judge(case, run_result(call("Write", file_path="x")))
         self.assertFalse(verdict.passed)
         self.assertIn("Write", verdict.detail)
+
+
+class RunOneTest(unittest.TestCase):
+    def test_a_run_that_raises_is_an_error_outcome_not_an_abort(self):
+        # An empty before/ makes the fixture's `git commit` fail before claude
+        # starts; the run must come back as an uncounted error naming the cause.
+        with tempfile.TemporaryDirectory() as tmp:
+            fixture = Path(tmp) / "fixture"
+            (fixture / "before").mkdir(parents=True)
+            case = run_evals.BehaviorCase(
+                id="behavior/x", prompt="p", allowed_tools=(), timeout=60, stage=False,
+                asserts=({"tool_not_called": ["Write"]},), fixture=fixture)
+            side = run_evals.Side(name="head", config=Path(tmp) / "cfg", home=Path(tmp) / "home")
+            outcome = run_evals.run_one(case, side, {}, model=None)
+        self.assertEqual((outcome.case_id, outcome.side), ("behavior/x", "head"))
+        self.assertFalse(outcome.verdict.counted)
+        self.assertIn("CalledProcessError", outcome.verdict.detail)
+        self.assertEqual(run_evals.Rate.of([outcome.verdict]).errors, 1)
 
 
 class StatusTest(unittest.TestCase):
@@ -790,6 +945,9 @@ class CheckEvalReportTest(unittest.TestCase):
     def test_opt_out_without_a_reason_fails(self):
         self.assertFalse(check_eval_report.has_report("evals: n/a —\n"))
         self.assertFalse(check_eval_report.has_report("evals: n/a\n"))
+        # The reason must sit on the opt-out's own line.
+        self.assertFalse(check_eval_report.has_report("evals: n/a —\n\n## Summary"))
+        self.assertFalse(check_eval_report.has_report("evals: n/a\n- tightened wording"))
 
     def test_absent_report_fails(self):
         self.assertFalse(check_eval_report.has_report(""))

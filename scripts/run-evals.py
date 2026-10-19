@@ -168,13 +168,15 @@ def preflight(
 # --- Config directories and the base worktree -------------------------------
 
 
-def tracked_skills(root: Path) -> list[str]:
-    """Names of the skills whose SKILL.md is tracked in git at `root`.
+def suite_skills(root: Path) -> list[str]:
+    """Names of the skills whose SKILL.md git at `root` tracks or would add.
 
-    Untracked skill directories, skills/synced/ among them, are left out so
-    both sides of a comparison see the same kind of suite.
+    Untracked skills count, since head is the working tree with its
+    uncommitted edits; gitignored ones, skills/synced/ among them, are left
+    out so both sides of a comparison see the same kind of suite.
     """
-    paths = git(root, "ls-files", "--", "skills/*/SKILL.md").splitlines()
+    paths = git(root, "ls-files", "--cached", "--others", "--exclude-standard",
+                "--", "skills/*/SKILL.md").splitlines()
     return sorted({Path(p).parent.name for p in paths})
 
 
@@ -182,7 +184,7 @@ def build_config(root: Path) -> Path:
     """Build a CLAUDE_CONFIG_DIR exposing the Claude Code suite at `root`.
 
     The directory is private (mode 0700) and holds links to the agents,
-    commands, and index under platforms/claude/, one link per tracked skill,
+    commands, and index under platforms/claude/, one link per suite_skills() name,
     and settings.json from the example with the builtin plugins disabled.
     The caller removes it with remove_tree().
     """
@@ -194,7 +196,7 @@ def build_config(root: Path) -> Path:
         (config / name).symlink_to(platform / name)
     skills = config / "skills"
     skills.mkdir()
-    for name in tracked_skills(root):
+    for name in suite_skills(root):
         (skills / name).symlink_to(root / "skills" / name)
     settings = json.loads((platform / "settings.json.example").read_text())
     settings["enabledPlugins"] = {plugin: False for plugin in BUILTIN_PLUGINS}
@@ -268,14 +270,12 @@ def eval_sides(head: Path, base_sha: str) -> Iterator[Sides]:
 def claude_command(
     prompt: str,
     *,
-    agent: str | None = None,
     allowed_tools: Sequence[str] = (),
     model: str | None = None,
 ) -> list[str]:
     """The argv for one eval run, ready for run_claude().
 
     prompt         the user message, a `/command args` line included
-    agent          run as this agent (`--agent`); None for the default thread
     allowed_tools  pre-approved tools (`--allowedTools`); anything else is
                    denied, since the run has no one to ask
     model          `--model`; None for the config's default
@@ -288,8 +288,6 @@ def claude_command(
         "--output-format", "stream-json", "--verbose", "--include-partial-messages",
         "--strict-mcp-config", "--permission-mode", "acceptEdits",
     ]
-    if agent:
-        cmd += ["--agent", agent]
     if model:
         cmd += ["--model", model]
     if allowed_tools:
@@ -304,12 +302,25 @@ def child_env(
 
     Every inherited CLAUDE* variable goes (a parent Claude Code session exports
     CLAUDECODE, session ids, and effort), so a run from inside an agent matches
-    a run from a plain terminal; then the config dir, HOME, and auth are set.
+    a run from a plain terminal. Every GIT_* variable goes too, so a runner
+    started from a hook or `git rebase -x` cannot point the run's git at the
+    outer repository. Then the config dir, HOME, and auth are set.
     """
-    env = {k: v for k, v in parent.items() if not k.startswith("CLAUDE")}
+    env = {k: v for k, v in parent.items() if not k.startswith(("CLAUDE", "GIT_"))}
     env["CLAUDE_CONFIG_DIR"] = str(config)
     env["HOME"] = str(home)
     env.update(auth)
+    return env
+
+
+def assertion_env(
+    config: Path, home: Path, parent: Mapping[str, str] = os.environ
+) -> dict[str, str]:
+    """child_env for a `shell` assertion: the run's config and HOME, with
+    every auth variable dropped, inherited ANTHROPIC_API_KEY included."""
+    env = child_env(config, home, {}, parent)
+    for name in AUTH_VARS:
+        env.pop(name, None)
     return env
 
 
@@ -414,6 +425,15 @@ def read_stream(lines: Iterable[str], route_window: int | None) -> RunResult:
     return _parse(lines, route_window).finish(exit_status=None, timed_out=False)
 
 
+def _is_local_command_error(event: dict) -> bool:
+    """A main-thread user message whose string content is the CLI's report of
+    a slash command it could not expand. A tool result quoting the marker (a
+    file being read, a subagent's output) is a list of blocks, not this."""
+    content = event.get("message", {}).get("content")
+    return (event.get("parent_tool_use_id") is None and isinstance(content, str)
+            and LOCAL_COMMAND_ERROR in content)
+
+
 def _parse(lines: Iterable[str], route_window: int | None) -> _Stream:
     calls: list[ToolCall] = []
     routes: list[str] = []
@@ -442,7 +462,7 @@ def _parse(lines: Iterable[str], route_window: int | None) -> _Stream:
             result_text = event.get("result") or ""
             is_error = is_error or bool(event.get("is_error"))
             stop = "result"
-        elif kind == "user" and LOCAL_COMMAND_ERROR in str(event.get("message", {}).get("content")):
+        elif kind == "user" and _is_local_command_error(event):
             is_error = True
         elif kind == "assistant":
             parent = event.get("parent_tool_use_id")
@@ -478,11 +498,11 @@ def _parse(lines: Iterable[str], route_window: int | None) -> _Stream:
     )
 
 
-# Live claude process groups, so a SIGINT can reach them: each run starts a
-# new session, which keeps the terminal's Ctrl-C from arriving on its own.
+# Live claude process groups, so a stop signal can reach them: each run starts
+# a new session, which keeps the terminal's Ctrl-C from arriving on its own.
 _live: set[subprocess.Popen] = set()
 _live_lock = threading.Lock()
-# Set by the SIGINT handler; no run starts after it.
+# Set by the stop-signal handler; no run starts after it.
 _stopping = threading.Event()
 
 
@@ -523,9 +543,9 @@ def run_claude(
     The process is killed at an Agent call or when the route window closes
     (see read_stream), or after `timeout` seconds. stdin is /dev/null, so the
     CLI does not wait for piped input, and stderr is discarded. Raises
-    Interrupted instead of starting once a SIGINT has arrived.
+    Interrupted instead of starting once a stop signal has arrived.
     """
-    # Started under the lock, so a SIGINT either sees this process in _live
+    # Started under the lock, so a stop signal either sees this process in _live
     # or is seen here before it starts.
     with _live_lock:
         if _stopping.is_set():
@@ -786,7 +806,8 @@ def _final_text_problem(spec: object) -> str | None:
 
 def _shell_problem(spec: object) -> str | None:
     if not isinstance(spec, dict) or not isinstance(spec.get("run"), str) \
-            or set(spec) - {"run", "match", "not_match"}:
+            or set(spec) - {"run", "match", "not_match"} \
+            or not ({"match", "not_match"} & set(spec)):
         return "shell takes run and match and/or not_match"
     return _patterns_problem(spec, ["match", "not_match"])
 
@@ -869,6 +890,8 @@ def _check_shell(spec: dict, result: RunResult, scratch: Path, env: Mapping[str,
                               timeout=SHELL_ASSERT_TIMEOUT)
     except subprocess.TimeoutExpired:
         return f"shell `{spec['run']}` timed out"
+    if proc.returncode != 0:
+        return f"shell `{spec['run']}` exited {proc.returncode}: {proc.stderr.strip()[:200]!r}"
     return _regex_failure(proc.stdout, spec, f"shell `{spec['run']}`")
 
 
@@ -1026,7 +1049,12 @@ class Outcome:
 
 def run_one(case: Case, side: Side, auth: Mapping[str, str], model: str | None) -> Outcome:
     """One run of `case` against `side` in a fresh scratch dir, judged and
-    cleaned up. Routing runs start in an empty directory."""
+    cleaned up. Routing runs start in an empty directory.
+
+    An exception from the run (fixture setup, parsing, an assertion) comes
+    back as an uncounted error outcome naming it, so one bad run cannot abort
+    the others or the report. Interrupted still propagates.
+    """
     scratch = Path(tempfile.mkdtemp(prefix="evals-run-"))
     try:
         env = child_env(side.config, side.home, auth)
@@ -1037,9 +1065,13 @@ def run_one(case: Case, side: Side, auth: Mapping[str, str], model: str | None) 
         else:
             cmd = claude_command(case.prompt, model=model)
             result = run_claude(cmd, env, scratch, ROUTING_TIMEOUT, route_window=ROUTE_WINDOW)
-        # Shell assertions get the run's HOME and config, but not the token.
-        verdict = judge(case, result, scratch, child_env(side.config, side.home, {}))
+        verdict = judge(case, result, scratch, assertion_env(side.config, side.home))
         return Outcome(case.id, side.name, verdict, result.plugins, result.model)
+    except Interrupted:
+        raise
+    except Exception as err:
+        verdict = Verdict(False, False, f"error: {type(err).__name__}: {str(err)[:200]}")
+        return Outcome(case.id, side.name, verdict, (), "")
     finally:
         remove_tree(scratch)
 
@@ -1087,11 +1119,21 @@ def head_revision(head: Path) -> tuple[str, bool]:
     return git(head, "rev-parse", "HEAD"), bool(git(head, "status", "--porcelain"))
 
 
+# Each one stops the runner. Runs start their own session, so a signal sent
+# to the runner reaches its claude children only through this handler.
+STOP_SIGNALS = (signal.SIGINT, signal.SIGTERM, signal.SIGHUP)
+
+
 def raise_interrupt(signum: int, frame: object) -> None:
-    """SIGINT: stop the claude process groups, then unwind through cleanup."""
+    """Stop the claude process groups, then unwind through cleanup."""
     _stopping.set()
     kill_live_runs()
     raise KeyboardInterrupt
+
+
+def install_stop_handlers() -> None:
+    for signum in STOP_SIGNALS:
+        signal.signal(signum, raise_interrupt)
 
 
 def run(args: argparse.Namespace) -> int:
@@ -1145,7 +1187,7 @@ def main() -> int:
     parser.add_argument("--env-file", type=Path, metavar="FILE",
                         help="dotenv file holding the auth variable (default: <suite root>/.env)")
     args = parser.parse_args()
-    signal.signal(signal.SIGINT, raise_interrupt)
+    install_stop_handlers()
     try:
         return run(args)
     except KeyboardInterrupt:
