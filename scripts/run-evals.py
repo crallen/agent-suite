@@ -592,6 +592,7 @@ ROUTING_TIMEOUT = 180
 DEFAULT_BEHAVIOR_TIMEOUT = 300
 SHELL_ASSERT_TIMEOUT = 60
 CASE_KEYS = {"prompt", "allowed_tools", "timeout", "stage", "assert"}
+ROUTING_KEYS = {"prompt", "expect", "any_of", "fixture"}
 
 
 @dataclass(frozen=True)
@@ -656,7 +657,22 @@ def routing_fixture(evals: Path, value: object, where: str) -> Path:
         raise SetupError(f"{where}: fixture {value!r} is not under evals/")
     if not (fixture / "before").is_dir():
         raise SetupError(f"{where}: fixture {value!r} needs a before/ directory under evals/")
+    reject_symlinks(fixture, where)
     return fixture
+
+
+def reject_symlinks(fixture: Path, where: str) -> None:
+    """Fixtures are copied into scratch with links followed, so a link could
+    pull anything on this machine, a .env included, where the model can read it."""
+    for part in ("before", "after"):
+        top = fixture / part
+        if top.is_symlink():
+            raise SetupError(f"{where}: fixture {part}/ is a symlink")
+        for dirpath, dirnames, filenames in os.walk(top):
+            for name in dirnames + filenames:
+                if (Path(dirpath) / name).is_symlink():
+                    rel = (Path(dirpath) / name).relative_to(fixture)
+                    raise SetupError(f"{where}: fixture holds a symlink, {rel}")
 
 
 def load_routing(path: Path) -> list[RoutingCase]:
@@ -669,6 +685,8 @@ def load_routing(path: Path) -> list[RoutingCase]:
         where = f"evals/routing.yaml entry {n}"
         if not isinstance(entry, dict) or not isinstance(entry.get("prompt"), str):
             raise SetupError(f"{where}: needs a prompt")
+        if unknown := sorted(set(entry) - ROUTING_KEYS):
+            raise SetupError(f"{where}: unknown keys {unknown}")
         if ("expect" in entry) == ("any_of" in entry):
             raise SetupError(f"{where}: needs exactly one of expect or any_of")
         if "expect" in entry:
@@ -685,7 +703,7 @@ def load_routing(path: Path) -> list[RoutingCase]:
             parsed.append((members[0], frozenset(members)))
         fixtures.append(routing_fixture(path.parent, entry["fixture"], where)
                         if "fixture" in entry else None)
-    ids =routing_ids([key for key, _ in parsed])
+    ids = routing_ids([key for key, _ in parsed])
     return [
         RoutingCase(id=case_id, prompt=entry["prompt"], targets=targets, fixture=fixture)
         for case_id, entry, (_, targets), fixture in zip(ids, entries, parsed, fixtures)
@@ -711,6 +729,8 @@ def load_behavior(case_dir: Path) -> BehaviorCase:
     fixture = case_dir / "fixture"
     if fixture.is_dir() and not (fixture / "before").is_dir():
         raise SetupError(f"{case_id}: fixture/ needs a before/ directory")
+    if fixture.is_dir():
+        reject_symlinks(fixture, case_id)
     return BehaviorCase(
         id=case_id,
         prompt=data["prompt"],
@@ -1025,7 +1045,8 @@ class Row:
         return status(self.base, self.head)
 
     @property
-    def confirmed(self) -> bool:
+    def rechecked(self) -> bool:
+        """Confirmation runs happened; they may have changed the status."""
         return self.initial is not None
 
 
@@ -1054,7 +1075,7 @@ def render_report(
     """
     head = head_sha[:12] + ("-dirty" if dirty else "")
     counts = {s: sum(r.status == s for r in rows) for s in STATUSES}
-    confirmed = sum(r.confirmed for r in rows)
+    confirmed = sum(r.rechecked for r in rows)
     reruns = (f" ({confirmed} flagged {'case' if confirmed == 1 else 'cases'} re-run "
               f"{CONFIRM_RUNS} more times per side)") if confirmed else ""
     lines = [
@@ -1066,7 +1087,7 @@ def render_report(
         "",
     ]
     notable = [r for s in NOTABLE for r in rows if r.status == s]
-    notable += [r for r in rows if r.confirmed and r.status not in NOTABLE]
+    notable += [r for r in rows if r.rechecked and r.status not in NOTABLE]
     lines += [f"- {r.status} `{r.case_id}`: base {r.base}; head {r.head}{_confirmation(r)}"
               for r in notable] or ["No regressions, fixes, or inconclusive cases."]
     if plugins:
@@ -1083,7 +1104,7 @@ def render_report(
 
 
 def _confirmation(row: Row) -> str:
-    if not row.confirmed:
+    if not row.rechecked:
         return ""
     if row.status == row.initial:
         return f" (confirmed by {CONFIRM_RUNS} more runs per side)"

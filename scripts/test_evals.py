@@ -631,6 +631,30 @@ class CaseLoadingTest(unittest.TestCase):
         with self.assertRaisesRegex(run_evals.SetupError, "routing.yaml entry 1"):
             run_evals.load_cases(root)
 
+    def test_unknown_routing_key_is_a_setup_error(self):
+        # A misspelt fixture would otherwise run in an empty dir and read as a gap.
+        root = self.write_suite("- prompt: hi\n  expect: why\n  fixutre: fixtures/repo\n")
+        with self.assertRaisesRegex(run_evals.SetupError, "routing.yaml entry 1: unknown keys.*fixutre"):
+            run_evals.load_cases(root)
+
+    def test_symlink_inside_a_routing_fixture_is_a_setup_error(self):
+        root = self.write_suite("- prompt: hi\n  expect: why\n  fixture: fixtures/repo\n")
+        self.write_fixture(root, "fixtures/repo")
+        (root / "secret").write_text("token\n")
+        (root / "evals" / "fixtures" / "repo" / "before" / "x").symlink_to(root / "secret")
+        with self.assertRaisesRegex(run_evals.SetupError, "routing.yaml entry 1: .*symlink"):
+            run_evals.load_cases(root)
+
+    def test_symlink_inside_a_behavior_fixture_is_a_setup_error(self):
+        root = self.write_suite("[]\n", "prompt: hi\nassert:\n  - tool_not_called: [Write]\n")
+        case = next((root / "evals" / "behavior").iterdir())
+        after = case / "fixture" / "after"
+        (case / "fixture" / "before").mkdir(parents=True)
+        after.mkdir(parents=True)
+        (after / "y").symlink_to("../../../../../secret")
+        with self.assertRaisesRegex(run_evals.SetupError, "symlink"):
+            run_evals.load_cases(root)
+
     def test_unknown_assertion_type_is_a_setup_error(self):
         root = self.write_suite("[]\n", "prompt: hi\nassert:\n  - says_hello: true\n")
         with self.assertRaisesRegex(run_evals.SetupError, "says_hello"):
@@ -1069,7 +1093,7 @@ class ConfirmationTest(unittest.TestCase):
         # base 3/3 then 1/5 is 4/8, under two thirds; head 1/3 then 1/5 is 2/8.
         row = self.evaluate({"routing/noisy": ("ppp" + "fpfff", "fpf" + "ffpff")})["routing/noisy"]
         self.assertEqual((str(row.base), str(row.head)), ("4/8", "2/8"))
-        self.assertEqual((row.status, row.initial, row.confirmed), ("FAIL", "REGRESSION", True))
+        self.assertEqual((row.status, row.initial, row.rechecked), ("FAIL", "REGRESSION", True))
         self.assertEqual(run_evals.exit_code([row.status]), 0)
 
     def test_stop_signal_during_confirmation_unwinds_like_the_main_pass(self):
@@ -1081,7 +1105,8 @@ class ConfirmationTest(unittest.TestCase):
         def stop_at_the_first_confirmation_run(case, side, n):
             if n == 4 and side.name == "base":
                 os.kill(os.getpid(), signal.SIGTERM)
-                time.sleep(1)  # the handler runs in the main thread meanwhile
+                # Block until the handler has run, however the OS delivers it.
+                self.assertTrue(run_evals._stopping.wait(5))
 
         with self.assertRaises(KeyboardInterrupt):
             self.evaluate({"routing/regression": ("ppp" + "ppppp", "fff" + "fffff")},

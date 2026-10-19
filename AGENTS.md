@@ -151,25 +151,27 @@ The report shows the combined rates (such as `3/8`) and says whether
 confirmation held; a case it reverses takes its rescored status, and the exit
 code follows. Only flagged cases pay for the extra runs. For any other close
 call, re-run that case with `--only <id> --runs 5`. `--runs 1` is a smoke check
-only: every case comes out INCONCLUSIVE. An isolation warning means a plugin loaded alongside the suite and
-may have competed for routes.
+only: every case comes out INCONCLUSIVE. An isolation warning means a plugin
+loaded alongside the suite and may have competed for routes.
 
 To add a routing case, add an entry to `evals/routing.yaml`: `expect: <name>`,
 `any_of: [..]` when several targets are honestly correct, or `expect: none` for a
 prompt that should load nothing. A routing run starts in an empty directory;
 `fixture: <path under evals/>` names a directory with `before/` and an optional
-`after/`, set up like a behavior fixture, for a request that needs a repo to act
-on. A prompt that fails on base guards nothing. Reword it, or keep it as a known
-gap when real users ask that way: mark it `# known gap` and add a work-shaped
-entry for the same target beside it. Known gaps read FAIL on both sides, so the
-FAIL rows are the skill-improvement backlog, and a change that closes one shows
-FIXED. A behavior case is a directory
-`evals/behavior/<case>/` holding `case.yaml` and an optional `fixture/` with
-`before/` (committed) and `after/` (left uncommitted, or staged with `stage: true`).
-`case.yaml` takes `prompt`, `allowed_tools`, `timeout` (seconds), `stage`, and
-`assert`, and no other keys. The assertions are `order`, `tool_not_called`,
-`final_text`, `shell`, and `no_paths`; the eval spec in `docs/specs/` defines their
-shapes, and the existing cases show each in use.
+`after/`, set up like a behavior fixture with `after/` left unstaged, for a request
+that needs a repo to act on. A prompt that fails on base guards nothing. Reword it,
+or keep it as a known gap when real users ask that way: mark it `# known gap` and
+add a work-shaped entry for the same target beside it. Known gaps read FAIL on both
+sides, so the FAIL rows are the skill-improvement backlog, and a change that closes
+one shows FIXED.
+
+A behavior case is a directory `evals/behavior/<case>/` holding `case.yaml` and an
+optional `fixture/` with `before/` (committed) and `after/` (left uncommitted, or
+staged with `stage: true`). `case.yaml` takes `prompt`, `allowed_tools`, `timeout`
+(seconds), `stage`, and `assert`, and no other keys; no fixture may hold a
+symlink, since scratch copies follow them. The assertions are `order`,
+`tool_not_called`, `final_text`, `shell`, and `no_paths`; the eval spec in
+`docs/specs/` defines their shapes, and the existing cases show each in use.
 
 Write prompts the way a user would ask: concrete, specific, often terse. Never
 paraphrase the target's description. A prompt that echoes the description passes

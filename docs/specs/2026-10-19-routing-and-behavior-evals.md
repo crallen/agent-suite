@@ -94,8 +94,8 @@ Decisions:
 
 About 40 entries: one prompt per tracked skill (26), one per agent (7), and about 6
 negatives that should route nowhere (conceptual questions). Each entry is
-`{prompt, expect: <name>}`, `{prompt, any_of: [..]}` for genuine overlap (such as
-`code-reviewer` vs `code-review-checklist`), or `{prompt, expect: none}`. Prompts are
+`{prompt, expect: <name>}`, `{prompt, any_of: [..]}` for genuine overlap between
+skills, or `{prompt, expect: none}`. Prompts are
 written the way a user would ask, never paraphrased from the description, and ask
 for work rather than advice: the task 11 run showed advice questions get answered
 inline with nothing loaded, on base and head alike.
