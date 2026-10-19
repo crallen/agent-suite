@@ -255,7 +255,7 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
   exit codes. (blocked by 2)
 - [x] 4. `evals/routing.yaml`: about 40 entries, one per tracked skill and agent plus
   about 6 `none`, prompts written as a user would ask.
-- [ ] 5. `evals/behavior/{debugger-phase-0,reviewer-planted-bug,commit-conventions,spec-asks-first}/`:
+- [x] 5. `evals/behavior/{debugger-phase-0,reviewer-planted-bug,commit-conventions,spec-asks-first}/`:
   `case.yaml` and fixtures as specified under Components.
 - [x] 6. `scripts/check-eval-report.py`: read `PR_BODY`; exit 0 on the marker regex or
   `evals: n/a — \S+`.
