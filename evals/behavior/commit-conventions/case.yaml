@@ -1,6 +1,8 @@
 # Guards git-conventions through /commit: the staged change becomes exactly one
-# Conventional Commit with a subject of at most 72 characters and no attribution
-# footer. after/ adds a --shout flag to greet.py, so a type and scope are inferable.
+# Conventional Commit whose description, the text after `type(scope): `, is 1 to 71
+# characters, with no attribution footer. The type and scope are not counted, so
+# the whole subject can run past 72. after/ adds a --shout flag to greet.py, so a
+# type and scope are inferable.
 # Red proof: remove Conventional Commits from git-conventions, /commit, /ship, and
 # CLAUDE.md together (one copy alone stays green); see the spec's Testing table.
 prompt: /commit
