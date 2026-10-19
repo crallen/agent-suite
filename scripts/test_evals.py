@@ -406,10 +406,13 @@ class BuildConfigTest(unittest.TestCase):
         })
         self.assertIn("Read(**/.env)", settings["permissions"]["deny"])
 
-    def test_untracked_skills_are_excluded(self):
+    def test_ignored_skills_are_excluded_but_new_untracked_ones_are_kept(self):
+        # Head is the working tree with uncommitted edits, so a skill not yet
+        # added is part of it; gitignored skills/synced/ is not.
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             for path, body in {
+                ".gitignore": "skills/synced/\n",
                 "platforms/claude/agents/a.md": "a",
                 "platforms/claude/commands/c.md": "c",
                 "platforms/claude/CLAUDE.md": "index",
@@ -422,9 +425,9 @@ class BuildConfigTest(unittest.TestCase):
                 (root / path).write_text(body)
             git = ["git", "-C", tmp]
             subprocess.run([*git, "init", "-q"], check=True)
-            subprocess.run([*git, "add", "platforms", "skills/tracked"], check=True)
+            subprocess.run([*git, "add", ".gitignore", "platforms", "skills/tracked"], check=True)
             names = sorted(p.name for p in (self.build(root) / "skills").iterdir())
-        self.assertEqual(names, ["tracked"])
+        self.assertEqual(names, ["tracked", "untracked"])
 
     def test_side_home_links_dot_claude_to_its_config_and_both_are_removed(self):
         with run_evals.side_dirs("head", ROOT) as side:

@@ -168,13 +168,15 @@ def preflight(
 # --- Config directories and the base worktree -------------------------------
 
 
-def tracked_skills(root: Path) -> list[str]:
-    """Names of the skills whose SKILL.md is tracked in git at `root`.
+def suite_skills(root: Path) -> list[str]:
+    """Names of the skills whose SKILL.md git at `root` tracks or would add.
 
-    Untracked skill directories, skills/synced/ among them, are left out so
-    both sides of a comparison see the same kind of suite.
+    Untracked skills count, since head is the working tree with its
+    uncommitted edits; gitignored ones, skills/synced/ among them, are left
+    out so both sides of a comparison see the same kind of suite.
     """
-    paths = git(root, "ls-files", "--", "skills/*/SKILL.md").splitlines()
+    paths = git(root, "ls-files", "--cached", "--others", "--exclude-standard",
+                "--", "skills/*/SKILL.md").splitlines()
     return sorted({Path(p).parent.name for p in paths})
 
 
@@ -182,7 +184,7 @@ def build_config(root: Path) -> Path:
     """Build a CLAUDE_CONFIG_DIR exposing the Claude Code suite at `root`.
 
     The directory is private (mode 0700) and holds links to the agents,
-    commands, and index under platforms/claude/, one link per tracked skill,
+    commands, and index under platforms/claude/, one link per suite_skills() name,
     and settings.json from the example with the builtin plugins disabled.
     The caller removes it with remove_tree().
     """
@@ -194,7 +196,7 @@ def build_config(root: Path) -> Path:
         (config / name).symlink_to(platform / name)
     skills = config / "skills"
     skills.mkdir()
-    for name in tracked_skills(root):
+    for name in suite_skills(root):
         (skills / name).symlink_to(root / "skills" / name)
     settings = json.loads((platform / "settings.json.example").read_text())
     settings["enabledPlugins"] = {plugin: False for plugin in BUILTIN_PLUGINS}

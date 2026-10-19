@@ -43,8 +43,10 @@ Decisions:
 
 - **Per-ref config.** A temporary `CLAUDE_CONFIG_DIR` (mode 0700, removed on exit)
   built from a suite root R: `agents`, `commands`, `CLAUDE.md` link into
-  `R/platforms/claude/`; `skills/` is a real directory with one link per **tracked**
-  `skills/<name>/`, so `synced/` is excluded on both sides; `settings.json` is the
+  `R/platforms/claude/`; `skills/` is a real directory with one link per
+  `skills/<name>/` that git **tracks or would add** (untracked but not ignored, so a
+  new skill on head counts before it is committed), so the gitignored `synced/` is
+  excluded on both sides; `settings.json` is the
   example with `enabledPlugins` replaced by the builtin plugins set to `false`
   (`cc-plugin-plugin-authoring`, `cc-plugin-agents-md`, `cc-plugin-telemetry`, each
   `@builtin`); runs pass `--strict-mcp-config` with no MCP config. A run whose init
