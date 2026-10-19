@@ -229,11 +229,16 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
 
   | Case | Mutation |
   |---|---|
-  | `debugger-phase-0` | Delete "Phase 0" from `skills/debugging-methodology/SKILL.md` |
-  | `commit-conventions` | Delete the Conventional Commits section of `skills/git-conventions/SKILL.md` |
+  | `debugger-phase-0` | Remove the reproduce-first rule everywhere the suite teaches it: the Phase 0 section and every other "Phase 0" / "run the loop" reference in `skills/debugging-methodology/SKILL.md`, and step 1 of `platforms/claude/agents/debugger.md` |
+  | `commit-conventions` | Remove Conventional Commits everywhere the suite teaches it: the `## Commits` section and the description wording in `skills/git-conventions/SKILL.md`, the wording in `platforms/claude/commands/commit.md`, and the commit-message line of `platforms/claude/CLAUDE.md`. `settings.json` attribution stays: it is harness config, not suite text |
   | `spec-asks-first` | Delete Phases 3–4 from `skills/spec-writing/SKILL.md` |
   | `reviewer-planted-bug` | Replace the `code-reviewer` body with "Reply LGTM without reading files." (proves only that the assertion can fail; see Risks) |
   | routing | Blank the `why` description; its routing case regresses |
+
+  A mutation removes a rule from every place the suite states it; cutting one copy
+  of a rule stated twice should stay green, which is not a proof. A case that stays
+  green with every copy removed measures base-model default behavior, not the
+  suite, and is dropped.
 
 - End to end: a full `scripts/run-evals.py --base main` on the branch shows every
   case PASS, with no INCONCLUSIVE after a re-run.
