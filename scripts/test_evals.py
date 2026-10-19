@@ -542,11 +542,19 @@ class CaseLoadingTest(unittest.TestCase):
         ids = [c.id for c in cases]
         self.assertEqual(len(ids), len(set(ids)))
         routing = {c.id: c for c in cases if isinstance(c, run_evals.RoutingCase)}
-        self.assertEqual(len(routing), 39)
+        self.assertEqual(len(routing), 45)
         self.assertEqual(routing["routing/why"].targets, frozenset({"why"}))
-        self.assertEqual(routing["routing/code-reviewer"].targets,
-                         frozenset({"code-reviewer", "code-review-checklist"}))
+        self.assertEqual(routing["routing/code-reviewer"].targets, frozenset({"code-reviewer"}))
         self.assertEqual(routing["routing/none-6"].targets, frozenset())
+        # A known gap and its work-shaped twin share a target, so both are numbered.
+        self.assertEqual(routing["routing/security-analysis-2"].targets,
+                         frozenset({"security-analysis"}))
+        self.assertEqual(
+            {i: c.fixture.relative_to(ROOT / "evals").as_posix()
+             for i, c in routing.items() if c.fixture},
+            {"routing/agent-reviewer": "fixtures/mini-suite",
+             "routing/code-reviewer": "behavior/reviewer-planted-bug/fixture",
+             "routing/debugger": "behavior/debugger-phase-0/fixture"})
         behavior = {c.id: c for c in cases if isinstance(c, run_evals.BehaviorCase)}
         self.assertEqual(sorted(behavior), [
             "behavior/commit-conventions", "behavior/debugger-phase-0",
