@@ -655,6 +655,19 @@ class AssertionTest(unittest.TestCase):
                 ran = run_result(call("Bash", command=command), call("Edit", file_path="pricing.py"))
                 self.assertIsNone(self.check(order, ran))
 
+    def test_reviewer_case_accepts_the_def_line_or_the_query_line(self):
+        # db.py line 24 is `def search_users`, line 25 the f-string query.
+        case = next(c for c in run_evals.load_cases(ROOT)
+                    if c.id == "behavior/reviewer-planted-bug")
+        [assertion] = case.asserts
+        for text in ("db.py:24", "db.py:25", "`db.py` (line 24)", "db.py:24-25",
+                     "line 24 of db.py", "line 25 of db.py"):
+            with self.subTest(text=text):
+                self.assertIsNone(self.check(assertion, run_result(final_text=text)))
+        for text in ("db.py:23", "db.py:245", "line 26 of db.py", "LGTM"):
+            with self.subTest(text=text):
+                self.assertIsNotNone(self.check(assertion, run_result(final_text=text)))
+
     # tool_not_called
 
     def test_tool_not_called_passes_when_absent(self):
