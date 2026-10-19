@@ -353,5 +353,6 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
 - [ ] 14. `scripts/run-evals.py`: the routing `fixture` key and automatic
   confirmation of REGRESSION/FIXED cases, with tests in `scripts/test_evals.py`;
   `AGENTS.md` Evals section updated for both.
-- [ ] 15. Re-run every case task 13 changed, plus a full run; both reports in the
-  PR body. (blocked by 13, 14)
+- [ ] 15. Re-run every case task 13 changed (`--only` per id, 3 runs per side);
+  drop any that still fails on base; the report goes in the PR body beside task
+  11's. (blocked by 13, 14)
