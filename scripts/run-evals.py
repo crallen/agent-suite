@@ -1028,7 +1028,12 @@ class Outcome:
 
 def run_one(case: Case, side: Side, auth: Mapping[str, str], model: str | None) -> Outcome:
     """One run of `case` against `side` in a fresh scratch dir, judged and
-    cleaned up. Routing runs start in an empty directory."""
+    cleaned up. Routing runs start in an empty directory.
+
+    An exception from the run (fixture setup, parsing, an assertion) comes
+    back as an uncounted error outcome naming it, so one bad run cannot abort
+    the others or the report. Interrupted still propagates.
+    """
     scratch = Path(tempfile.mkdtemp(prefix="evals-run-"))
     try:
         env = child_env(side.config, side.home, auth)
@@ -1042,6 +1047,11 @@ def run_one(case: Case, side: Side, auth: Mapping[str, str], model: str | None) 
         # Shell assertions get the run's HOME and config, but not the token.
         verdict = judge(case, result, scratch, child_env(side.config, side.home, {}))
         return Outcome(case.id, side.name, verdict, result.plugins, result.model)
+    except Interrupted:
+        raise
+    except Exception as err:
+        verdict = Verdict(False, False, f"error: {type(err).__name__}: {str(err)[:200]}")
+        return Outcome(case.id, side.name, verdict, (), "")
     finally:
         remove_tree(scratch)
 

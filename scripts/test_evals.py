@@ -708,6 +708,24 @@ class JudgeTest(unittest.TestCase):
         self.assertIn("Write", verdict.detail)
 
 
+class RunOneTest(unittest.TestCase):
+    def test_a_run_that_raises_is_an_error_outcome_not_an_abort(self):
+        # An empty before/ makes the fixture's `git commit` fail before claude
+        # starts; the run must come back as an uncounted error naming the cause.
+        with tempfile.TemporaryDirectory() as tmp:
+            fixture = Path(tmp) / "fixture"
+            (fixture / "before").mkdir(parents=True)
+            case = run_evals.BehaviorCase(
+                id="behavior/x", prompt="p", allowed_tools=(), timeout=60, stage=False,
+                asserts=({"tool_not_called": ["Write"]},), fixture=fixture)
+            side = run_evals.Side(name="head", config=Path(tmp) / "cfg", home=Path(tmp) / "home")
+            outcome = run_evals.run_one(case, side, {}, model=None)
+        self.assertEqual((outcome.case_id, outcome.side), ("behavior/x", "head"))
+        self.assertFalse(outcome.verdict.counted)
+        self.assertIn("CalledProcessError", outcome.verdict.detail)
+        self.assertEqual(run_evals.Rate.of([outcome.verdict]).errors, 1)
+
+
 class StatusTest(unittest.TestCase):
     def rate(self, passes: int, counted: int, errors: int = 0):
         return run_evals.Rate(passes=passes, counted=counted, errors=errors)
