@@ -62,6 +62,9 @@ Decisions:
   (`input.skill`), `Agent` calls (`input.subagent_type`), and `Read`s of a `SKILL.md`
   within the first 3 tool calls. The process is killed on the first route hit or when
   the window closes, so no subagent runs and nothing touches the scratch directory.
+  A run passes when the route set contains the `expect` target or any `any_of`
+  member, other loads alongside it notwithstanding (`coding-guardrails` loads with
+  most implementation prompts); `expect: none` passes only on an empty set.
 - **Scoring.** N runs per case (default 3); a case passes at ≥ 2/3. The report marks
   **REGRESSION** when base passes and head fails, **FIXED** for the reverse, and
   **INCONCLUSIVE** when either side has fewer than 2 runs that count. The human
@@ -250,7 +253,7 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
   (`git init`, commit `before/`, overlay `after/`, `stage`), the five assertion types,
   routing scoring, status calculation, report rendering with the marker, CLI flags,
   exit codes. (blocked by 2)
-- [ ] 4. `evals/routing.yaml`: about 40 entries, one per tracked skill and agent plus
+- [x] 4. `evals/routing.yaml`: about 40 entries, one per tracked skill and agent plus
   about 6 `none`, prompts written as a user would ask.
 - [ ] 5. `evals/behavior/{debugger-phase-0,reviewer-planted-bug,commit-conventions,spec-asks-first}/`:
   `case.yaml` and fixtures as specified under Components.
