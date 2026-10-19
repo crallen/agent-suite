@@ -858,7 +858,8 @@ def _check_tool_not_called(spec: list, result: RunResult, scratch: Path,
 
 def _check_final_text(spec: dict, result: RunResult, scratch: Path,
                       env: Mapping[str, str]) -> str | None:
-    return _regex_failure(result.final_text, spec, "final_text")
+    failure = _regex_failure(result.final_text, spec, "final_text")
+    return failure and f"{failure}; text: {result.final_text[:300]!r}"
 
 
 def _check_shell(spec: dict, result: RunResult, scratch: Path, env: Mapping[str, str]) -> str | None:
