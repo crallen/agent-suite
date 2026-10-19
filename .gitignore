@@ -1,7 +1,6 @@
 skills/synced/
 .claude/
 # Fixture repos under evals/ carry their own .claude/ suites.
-!evals/fixtures/*/before/.claude/
 .env
 .env.*
 !.env.example
