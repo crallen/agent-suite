@@ -137,7 +137,12 @@ The four cases:
 
 uv/PEP 723 script, PyYAML only. Flags: `--base REF` (default `main`), `--runs N`
 (default 3), `--jobs N` (default 4), `--model`, `--only <glob>` (matched against
-case ids like `routing/why` or `behavior/commit-conventions`), `--out FILE`.
+case ids like `routing/why` or `behavior/commit-conventions`; a routing id is its
+`expect` target or first `any_of` member, numbered on every use when repeated, so
+the negatives are `routing/none-1` to `none-6`), `--out FILE`, `--env-file FILE`
+(auth file, default `<head root>/.env`; worktrees have no `.env` of their own).
+`--runs 1` is a smoke check only: every case comes out INCONCLUSIVE under the
+two-counted-runs rule.
 Internals: `build_config(root) -> Path`, `run_claude(cmd, env, scratch, timeout,
 route_window) -> RunResult`, fixture setup, assertion evaluation, scoring, report
 rendering. `RunResult` carries ordered tool calls (name, input), final text, exit
@@ -293,7 +298,7 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
   `build_config(root) -> Path`, base worktree lifecycle, cleanup, and
   `run_claude(cmd, env, scratch, timeout, route_window) -> RunResult` with stream
   parsing and early kill. (blocked by 1)
-- [ ] 3. `scripts/run-evals.py`: case loading from head `evals/`, fixture setup
+- [x] 3. `scripts/run-evals.py`: case loading from head `evals/`, fixture setup
   (`git init`, commit `before/`, overlay `after/`, `stage`), the five assertion types,
   routing scoring, status calculation, report rendering with the marker, CLI flags,
   exit codes. (blocked by 2)
@@ -303,7 +308,7 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
   `case.yaml` and fixtures as specified under Components.
 - [x] 6. `scripts/check-eval-report.py`: read `PR_BODY`; exit 0 on the marker regex or
   `evals: n/a — \S+`.
-- [ ] 7. `scripts/test_evals.py`: the parser, assertion, status, and report-check
+- [x] 7. `scripts/test_evals.py`: the parser, assertion, status, and report-check
   cases from Testing. (blocked by 3, 6)
 - [ ] 8. `.github/workflows/eval-report.yml` (triggers and paths as specified, body
   through `env:` only), plus a `uv run scripts/test_evals.py` step in
