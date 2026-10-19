@@ -1,0 +1,33 @@
+name: eval-report
+
+# A PR that changes the suite carries the report from scripts/run-evals.py in
+# its body, or an explicit `evals: n/a — <reason>`. The evals themselves need a
+# model and run locally; this job only checks the body, so it makes no model
+# calls and needs no secret. `edited` re-runs it when the body changes.
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, edited, synchronize, reopened]
+    paths:
+      - "skills/**"
+      - "platforms/**"
+      - "!skills/synced/**"
+      - "!platforms/claude/settings.json.example"
+
+concurrency:
+  group: eval-report-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  body:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The body goes through env, never into the script text, so a crafted
+      # description cannot inject shell.
+      - env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: python3 scripts/check-eval-report.py
