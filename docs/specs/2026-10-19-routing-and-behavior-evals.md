@@ -192,7 +192,10 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
    every inherited `CLAUDE*` variable except the auth one it sets (a parent session
    exports `CLAUDECODE`, `CLAUDE_EFFORT`, and session ids), and adds `--permission-mode acceptEdits`,
    `--allowedTools`, and `--strict-mcp-config`. It streams until a route hit, the
-   window closes, the timeout fires, or the `result` event arrives.
+   window closes, the timeout fires, or the process exits. A `result` event does
+   not end the stream: a main thread that launched a background agent reports one
+   at once and another when the agent finishes, so the final text is the last
+   result's.
 5. Behavioral `shell` and `no_paths` assertions run in scratch after exit; scratch
    is then deleted.
 6. Results aggregate into per-case pass rates per side, then a status: PASS, FAIL,
