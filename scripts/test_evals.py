@@ -772,5 +772,40 @@ class ReportTest(unittest.TestCase):
         self.assertNotIn("isolation", self.render(self.rows()).lower())
 
 
+
+class CheckEvalReportTest(unittest.TestCase):
+    MARKER = "<!-- evals: base=0123456 head=89abcde model=claude-sonnet-5-5 runs=3 -->"
+
+    def test_marker_passes(self):
+        self.assertTrue(check_eval_report.has_report(f"Summary.\n\n{self.MARKER}\n"))
+
+    def test_dirty_head_marker_passes(self):
+        self.assertTrue(check_eval_report.has_report(self.MARKER.replace("89abcde", "89abcde-dirty")))
+
+    def test_opt_out_with_a_reason_passes(self):
+        for dash in ("—", "–", "-", "--"):
+            with self.subTest(dash=dash):
+                self.assertTrue(check_eval_report.has_report(f"Fix.\n\nevals: n/a {dash} typo only\n"))
+
+    def test_opt_out_without_a_reason_fails(self):
+        self.assertFalse(check_eval_report.has_report("evals: n/a —\n"))
+        self.assertFalse(check_eval_report.has_report("evals: n/a\n"))
+
+    def test_absent_report_fails(self):
+        self.assertFalse(check_eval_report.has_report(""))
+        self.assertFalse(check_eval_report.has_report("Tightened the why description."))
+
+    def test_malformed_marker_fails(self):
+        self.assertFalse(check_eval_report.has_report("<!-- evals: base=main head=HEAD -->"))
+
+    def test_main_reads_the_body_from_the_environment(self):
+        script = SCRIPTS / "check-eval-report.py"
+        def run(body):
+            env = {**os.environ, "PR_BODY": body}
+            return subprocess.run([sys.executable, str(script)], env=env,
+                                  capture_output=True, text=True).returncode
+        self.assertEqual(run(self.MARKER), 0)
+        self.assertEqual(run("no report"), 1)
+
 if __name__ == "__main__":
     unittest.main()
