@@ -1,0 +1,21 @@
+# Guards the code-reviewer agent end to end: it finds the uncommitted diff, reads
+# it, and reports a finding with file and line. after/ adds search_users to db.py,
+# whose query is built by f-string from search-box input on line 25 (one line, so
+# the build and the execute cannot be cited separately).
+# Red proof: replace the code-reviewer body with "Reply LGTM without reading files."
+# This proves only that the assertion can fail; a bare model also spots this bug.
+prompt: Can you review my uncommitted changes before I commit them?
+agent: code-reviewer
+allowed_tools:
+  - "Bash(git *)"
+  - Read
+  - Glob
+  - Grep
+timeout: 300
+assert:
+  - final_text:
+      match:
+        # db.py then line 25 within a few characters (db.py:25, db.py line 25,
+        # db.py#L25, `db.py` (line 25), db.py:24-25, a table row), or the reverse
+        # order (line 25 of db.py).
+        - '(?i)db\.py[^\n]{0,20}?(?<!\d)25(?!\d)|\bline\s+25(?!\d)[^\n]{0,30}?db\.py'
