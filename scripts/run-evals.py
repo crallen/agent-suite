@@ -592,11 +592,14 @@ CASE_KEYS = {"prompt", "allowed_tools", "timeout", "stage", "assert"}
 @dataclass(frozen=True)
 class RoutingCase:
     """An evals/routing.yaml entry. `targets` holds the names that pass it:
-    the `expect` name or the `any_of` members; empty for `expect: none`."""
+    the `expect` name or the `any_of` members; empty for `expect: none`.
+    `fixture` is the directory its `fixture` key names, set up like a
+    behavior case's, or None for a run in an empty, non-git directory."""
 
     id: str
     prompt: str
     targets: frozenset[str]
+    fixture: Path | None = None
 
 
 @dataclass(frozen=True)
@@ -638,11 +641,25 @@ def routing_ids(keys: Sequence[str]) -> list[str]:
     return ids
 
 
+def routing_fixture(evals: Path, value: object, where: str) -> Path:
+    """The fixture directory a routing entry's `fixture` key names: a path
+    relative to evals/, inside it, holding before/."""
+    if not isinstance(value, str) or not value:
+        raise SetupError(f"{where}: fixture is a path under evals/")
+    fixture = (evals / value).resolve()
+    if not fixture.is_relative_to(evals.resolve()):
+        raise SetupError(f"{where}: fixture {value!r} is not under evals/")
+    if not (fixture / "before").is_dir():
+        raise SetupError(f"{where}: fixture {value!r} needs a before/ directory under evals/")
+    return fixture
+
+
 def load_routing(path: Path) -> list[RoutingCase]:
     entries = _load_yaml(path, "evals/routing.yaml")
     if not isinstance(entries, list):
         raise SetupError("evals/routing.yaml: expected a list of entries")
     parsed = []
+    fixtures = []
     for n, entry in enumerate(entries, 1):
         where = f"evals/routing.yaml entry {n}"
         if not isinstance(entry, dict) or not isinstance(entry.get("prompt"), str):
@@ -661,10 +678,12 @@ def load_routing(path: Path) -> list[RoutingCase]:
             ):
                 raise SetupError(f"{where}: any_of is a non-empty list of names")
             parsed.append((members[0], frozenset(members)))
-    ids = routing_ids([key for key, _ in parsed])
+        fixtures.append(routing_fixture(path.parent, entry["fixture"], where)
+                        if "fixture" in entry else None)
+    ids =routing_ids([key for key, _ in parsed])
     return [
-        RoutingCase(id=case_id, prompt=entry["prompt"], targets=targets)
-        for case_id, entry, (_, targets) in zip(ids, entries, parsed)
+        RoutingCase(id=case_id, prompt=entry["prompt"], targets=targets, fixture=fixture)
+        for case_id, entry, (_, targets), fixture in zip(ids, entries, parsed, fixtures)
     ]
 
 
@@ -1049,7 +1068,8 @@ class Outcome:
 
 def run_one(case: Case, side: Side, auth: Mapping[str, str], model: str | None) -> Outcome:
     """One run of `case` against `side` in a fresh scratch dir, judged and
-    cleaned up. Routing runs start in an empty directory.
+    cleaned up. A routing run starts in its fixture's repo when it has one,
+    else in an empty directory.
 
     An exception from the run (fixture setup, parsing, an assertion) comes
     back as an uncounted error outcome naming it, so one bad run cannot abort
@@ -1063,6 +1083,8 @@ def run_one(case: Case, side: Side, auth: Mapping[str, str], model: str | None) 
             cmd = claude_command(case.prompt, allowed_tools=case.allowed_tools, model=model)
             result = run_claude(cmd, env, scratch, case.timeout, route_window=None)
         else:
+            if case.fixture is not None:
+                prepare_fixture(case.fixture, scratch, stage=False)
             cmd = claude_command(case.prompt, model=model)
             result = run_claude(cmd, env, scratch, ROUTING_TIMEOUT, route_window=ROUTE_WINDOW)
         verdict = judge(case, result, scratch, assertion_env(side.config, side.home))

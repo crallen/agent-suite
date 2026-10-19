@@ -578,6 +578,46 @@ class CaseLoadingTest(unittest.TestCase):
             (root / "evals" / "behavior" / "c" / "case.yaml").write_text(case)
         return root
 
+    def write_fixture(self, root: Path, rel: str, before: bool = True) -> None:
+        part = root / "evals" / rel / ("before" if before else "after")
+        part.mkdir(parents=True)
+        (part / "a.txt").write_text("a\n")
+
+    def test_routing_fixture_resolves_under_evals_and_repeats_keep_numbered_ids(self):
+        # A known gap sits beside a work-shaped entry for the same target, so
+        # the two get -1 and -2 in file order; the fixture stays with its entry.
+        root = self.write_suite(
+            "- prompt: how should I review this?\n  expect: code-reviewer\n"
+            "- prompt: review my changes\n  expect: code-reviewer\n  fixture: fixtures/repo\n")
+        self.write_fixture(root, "fixtures/repo")
+        first, second = run_evals.load_cases(root)
+        self.assertEqual((first.id, second.id),
+                         ("routing/code-reviewer-1", "routing/code-reviewer-2"))
+        self.assertIsNone(first.fixture)
+        self.assertEqual(second.fixture, (root / "evals" / "fixtures" / "repo").resolve())
+
+    def test_routing_fixture_outside_evals_is_a_setup_error(self):
+        root = self.write_suite("[]\n")
+        (root / "outside" / "before").mkdir(parents=True)
+        for value in ("../outside", str(root / "outside")):
+            with self.subTest(fixture=value):
+                (root / "evals" / "routing.yaml").write_text(
+                    f"- prompt: hi\n  expect: why\n  fixture: {value}\n")
+                with self.assertRaisesRegex(run_evals.SetupError,
+                                            "routing.yaml entry 1: fixture .* under evals/"):
+                    run_evals.load_cases(root)
+
+    def test_routing_fixture_without_before_is_a_setup_error(self):
+        root = self.write_suite("- prompt: hi\n  expect: why\n  fixture: fixtures/repo\n")
+        self.write_fixture(root, "fixtures/repo", before=False)
+        with self.assertRaisesRegex(run_evals.SetupError, "routing.yaml entry 1: .*before/"):
+            run_evals.load_cases(root)
+
+    def test_missing_routing_fixture_is_a_setup_error(self):
+        root = self.write_suite("- prompt: hi\n  expect: why\n  fixture: no/such/dir\n")
+        with self.assertRaisesRegex(run_evals.SetupError, "routing.yaml entry 1: .*no/such/dir"):
+            run_evals.load_cases(root)
+
     def test_routing_entry_with_two_target_keys_is_a_setup_error(self):
         root = self.write_suite("- prompt: hi\n  expect: why\n  any_of: [why]\n")
         with self.assertRaisesRegex(run_evals.SetupError, "routing.yaml entry 1"):
@@ -852,6 +892,40 @@ class RunOneTest(unittest.TestCase):
         self.assertFalse(outcome.verdict.counted)
         self.assertIn("CalledProcessError", outcome.verdict.detail)
         self.assertEqual(run_evals.Rate.of([outcome.verdict]).errors, 1)
+
+    def routing_scratch(self, fixture: Path | None) -> dict:
+        """What a routing run's scratch dir holds when claude starts in it."""
+        seen = {}
+
+        def fake_run_claude(cmd, env, scratch, timeout, route_window):
+            seen["window"] = route_window
+            seen["files"] = sorted(p.name for p in scratch.iterdir())
+            if (scratch / ".git").is_dir():
+                seen["status"] = sorted(git_out(scratch, "status", "--porcelain").splitlines())
+                seen["commits"] = git_out(scratch, "rev-list", "--count", "HEAD").strip()
+            return run_result(routes=("code-reviewer",))
+
+        case = run_evals.RoutingCase(id="routing/code-reviewer", prompt="review my changes",
+                                     targets=frozenset({"code-reviewer"}), fixture=fixture)
+        side = run_evals.Side(name="head", config=Path("/cfg"), home=Path("/home-tmp"))
+        with patch.object(run_evals, "run_claude", side_effect=fake_run_claude):
+            outcome = run_evals.run_one(case, side, {}, model=None)
+        self.assertTrue(outcome.verdict.passed, outcome.verdict.detail)
+        return seen
+
+    def test_routing_run_without_a_fixture_starts_in_an_empty_directory(self):
+        seen = self.routing_scratch(None)
+        self.assertEqual(seen, {"window": run_evals.ROUTE_WINDOW, "files": []})
+
+    def test_routing_run_with_a_fixture_starts_in_its_repo(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fixture = Path(tmp)
+            for path, body in {"before/db.py": "one\n", "after/db.py": "two\n"}.items():
+                (fixture / path).parent.mkdir(parents=True, exist_ok=True)
+                (fixture / path).write_text(body)
+            seen = self.routing_scratch(fixture)
+        self.assertEqual(seen, {"window": run_evals.ROUTE_WINDOW, "files": [".git", "db.py"],
+                                "status": [" M db.py"], "commits": "1"})
 
 
 class StatusTest(unittest.TestCase):
