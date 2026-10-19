@@ -330,6 +330,15 @@ class ChildEnvTest(unittest.TestCase):
         self.assertEqual(env, {"PATH": "/usr/bin", "CLAUDE_CONFIG_DIR": "/cfg",
                                "HOME": "/home-tmp", "CLAUDE_CODE_OAUTH_TOKEN": "t"})
 
+    def test_strips_inherited_git_variables(self):
+        # A runner started from a hook or `git rebase -x` carries these; a
+        # /commit run would otherwise act on the outer repository.
+        parent = {"PATH": "/usr/bin", "GIT_DIR": "/outer/.git",
+                  "GIT_INDEX_FILE": "/outer/.git/index", "GIT_WORK_TREE": "/outer"}
+        env = run_evals.child_env(Path("/cfg"), Path("/home-tmp"), {}, parent)
+        self.assertEqual(env, {"PATH": "/usr/bin", "CLAUDE_CONFIG_DIR": "/cfg",
+                               "HOME": "/home-tmp"})
+
 
 class ClaudeCommandTest(unittest.TestCase):
     def test_prompt_follows_p_and_allowed_tools_come_last(self):

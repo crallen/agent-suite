@@ -304,9 +304,11 @@ def child_env(
 
     Every inherited CLAUDE* variable goes (a parent Claude Code session exports
     CLAUDECODE, session ids, and effort), so a run from inside an agent matches
-    a run from a plain terminal; then the config dir, HOME, and auth are set.
+    a run from a plain terminal. Every GIT_* variable goes too, so a runner
+    started from a hook or `git rebase -x` cannot point the run's git at the
+    outer repository. Then the config dir, HOME, and auth are set.
     """
-    env = {k: v for k, v in parent.items() if not k.startswith("CLAUDE")}
+    env = {k: v for k, v in parent.items() if not k.startswith(("CLAUDE", "GIT_"))}
     env["CLAUDE_CONFIG_DIR"] = str(config)
     env["HOME"] = str(home)
     env.update(auth)
