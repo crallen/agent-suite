@@ -1,15 +1,35 @@
 # Routing cases: each prompt should load the named skill or agent within the
-# first few tool calls, in an empty scratch directory.
+# first few tool calls, in an empty scratch directory unless the entry names a
+# fixture.
 #
 # Shapes:
 #   {prompt, expect: <name>}         the route must include <name>
-#   {prompt, any_of: [<name>, ..]}   genuine overlap; any one of them counts
+#   {prompt, any_of: [<name>, ..]}   genuine overlap between skills; any counts
 #   {prompt, expect: none}           no skill or agent should load
+#
+# Optional key:
+#   fixture: <path under evals/>     a directory with before/ and optional
+#                                    after/, set up like a behavior fixture
+#                                    (before/ committed, after/ unstaged), so a
+#                                    request to review or debug has a repo
 #
 # Write prompts the way a user types them in a repo: concrete, specific, often
 # terse. Never reuse or paraphrase a target's description; a prompt that echoes
-# the description passes without proving anything. Use any_of only where every
-# listed target is honestly correct, not to make a case easier.
+# the description passes without proving anything. Ask for work, not advice:
+# a question gets answered inline with nothing loaded. Without a fixture the
+# prompt must be self-contained, so paste the snippet it acts on.
+#
+# Agent entries use expect: <agent> and ask for what the agent enforces (read-
+# only review, an isolated investigation, a cheaper model, a browser). An any_of
+# pairing an agent with its own skill passes on the skill load alone, so it
+# tests nothing about agent routing. Use any_of only where every listed target
+# is honestly correct, not to make a case easier.
+#
+# Known gaps: an entry marked `# known gap` is a prompt users do type that loads
+# nothing today. It FAILs on both sides by design; that FAIL is the backlog for
+# improving the target's description, and a fix shows up as FIXED. Its
+# work-shaped sibling follows it with the same target. Repeated targets get
+# numbered ids in file order (routing/doc-templates-1, routing/doc-templates-2).
 #
 # Order: skills alphabetically, then Claude agents, then negatives.
 
@@ -41,10 +61,27 @@
     binary on every PR.
   expect: ci-pipeline
 
+# known gap: advice question, loads nothing today
 - prompt: >-
     A teammate's PR has a function named processData2 and a bare
     `except: pass` around the network call. I'm writing my review comments —
     which of those is a blocker and which is just a nit?
+  expect: code-review-checklist
+
+- prompt: |-
+    Write my review comments for this change from a teammate's PR, one per
+    problem, each marked blocker or nit, ready to paste into GitHub:
+
+        -def post_order(order):
+        +def processData2(order):
+             try:
+                 resp = requests.post(ORDERS_URL, json=order, timeout=5)
+        -    except requests.Timeout:
+        -        log.warning("order %s timed out", order["id"])
+        -        raise
+        +    except:
+        +        pass
+             return resp.json()
   expect: code-review-checklist
 
 - prompt: >-
@@ -58,14 +95,42 @@
     Write the migrations.
   expect: database-patterns
 
+# known gap: advice question, loads nothing today
 - prompt: >-
     I'm chasing this one myself — a test that fails maybe 1 run in 20 and never
     when I add print statements. How should I go about narrowing it down?
   expect: debugging-methodology
 
+- prompt: |-
+    This test fails about 1 run in 20 on CI and has never failed on my laptop.
+    Find out why and fix it.
+
+        # test_cache.py
+        def test_entry_expires_after_ttl():
+            cache = TTLCache(ttl=0.05)
+            cache.set("k", 1)
+            time.sleep(0.05)
+            assert cache.get("k") is None
+
+        # cache.py
+        def get(self, key):
+            value, stored_at = self._data.get(key, (None, 0.0))
+            if time.time() - stored_at > self.ttl:
+                return None
+            return value
+  expect: debugging-methodology
+
+# known gap: advice question, loads nothing today
 - prompt: >-
     What sections does a README for an internal Go library actually need? Keep
     it short, I'll write it myself.
+  expect: doc-templates
+
+- prompt: >-
+    Draft the README for our internal Go library, example.com/platform/ratelimit,
+    and paste it here; I'll commit it myself. It exposes New(rate, burst),
+    Allow(key) bool, and Wait(ctx, key) error, keeps one token bucket per key in
+    memory, and needs Go 1.22.
   expect: doc-templates
 
 - prompt: >-
@@ -80,14 +145,33 @@
     it down where the team will find it.
   expect: domain-modeling
 
+# known gap: advice question, loads nothing today
 - prompt: >-
     Should the open/closed state of the settings modal live in the zustand
     store or in local useState? Only the header ever opens it.
   expect: frontend-patterns
 
+- prompt: |-
+    Add a settings modal to this header: the gear button opens it, Escape or a
+    click on the backdrop closes it. Nothing else in the app opens it. Give me
+    the updated component here.
+
+        export function Header({ user }) {
+          return (
+            <header className="flex items-center justify-between px-4 py-2">
+              <Logo />
+              <button aria-label="Settings" onClick={() => {}}>
+                <GearIcon />
+              </button>
+            </header>
+          );
+        }
+  expect: frontend-patterns
+
 - prompt: >-
-    What should I call the branch and the commit for a change that drops
-    Node 16 support? It's breaking for anyone still on 16.
+    I dropped Node 16 from `engines` in package.json and from the CI matrix, so
+    anyone still on 16 can't install anymore. Give me the exact commands to put
+    this on a new branch and commit it.
   expect: git-conventions
 
 - prompt: >-
@@ -103,15 +187,31 @@
   expect: prototype-methodology
 
 - prompt: >-
-    ugh, that took way too long. you went down the wrong path on the auth bug
-    twice and I had to correct you three times. what should we change in our
-    setup so that doesn't happen next time?
+    Post-mortem time. In the session I just finished, the agent went down the
+    wrong path on the auth bug twice: it edited middleware/session.ts before
+    reading the failing test, and I had to correct it three times about where
+    tokens get refreshed. Write up what we should change in our setup so the
+    next session doesn't repeat it.
   expect: retro-methodology
 
+# known gap: advice question, loads nothing today
 - prompt: >-
     Is `subprocess.run(f"convert {name} out.png", shell=True)` actually
     exploitable if name comes straight from the upload form? How bad would you
     rate it?
+  expect: security-analysis
+
+- prompt: |-
+    Write up this upload handler for our security channel: can someone exploit
+    it, how bad is it, and what does the patched code look like?
+
+        @app.post("/avatar")
+        def avatar():
+            f = request.files["file"]
+            name = f.filename
+            f.save(f"/tmp/{name}")
+            subprocess.run(f"convert /tmp/{name} -resize 128x128 out.png", shell=True)
+            return "ok"
   expect: security-analysis
 
 - prompt: >-
@@ -146,10 +246,18 @@
     an exciting new journey — a testament to the power of growth."
   expect: unslop
 
+# known gap: advice question, loads nothing today
 - prompt: >-
     We're turning the monolith into multi-tenant SaaS: auth, billing, data
     isolation, all of it. It's weeks of work and half of it is still
     undecided. Where do we even start?
+  expect: wayfinder-methodology
+
+- prompt: >-
+    We're turning the monolith into multi-tenant SaaS: auth, billing, data
+    isolation, all of it. It's weeks of work, too big for one spec, and half
+    the calls aren't made yet. Set us up in the repo with something we can
+    come back to every morning and keep chipping away at.
   expect: wayfinder-methodology
 
 - prompt: >-
@@ -159,26 +267,39 @@
 
 # --- agents ---
 
+# fixtures/mini-suite: one agent with a tool and a preloaded skill that don't
+# exist, one skill pointing at a reference file that isn't there.
 - prompt: >-
-    Go through the agents and skills in this repo and flag anything
-    inconsistent or broken: tool lists, references to files that don't exist,
-    that kind of thing. Just report back, don't edit anything.
+    I'm about to share these agents and skills with my team. Go through them and
+    flag anything broken: tool lists, skills or files they point at that aren't
+    there. Report back only; leave the files alone.
   expect: agent-reviewer
+  fixture: fixtures/mini-suite
 
+# The fixture leaves an unstaged search_users with a SQL injection in db.py.
 - prompt: >-
-    Review the changes on this branch before I open the PR. Don't touch
-    anything, just tell me what's wrong.
-  any_of: [code-reviewer, code-review-checklist]
+    Get me a second opinion on my uncommitted changes before I commit: someone
+    who reads them cold and tells me what's wrong, without editing anything.
+  expect: code-reviewer
+  fixture: behavior/reviewer-planted-bug/fixture
 
+# The fixture's pricing.py skips the discount at exactly 10 units.
 - prompt: >-
-    /login started returning 500 after this morning's deploy. The logs say
-    KeyError: 'session_ttl'. Track it down.
-  any_of: [debugger, debugging-methodology]
+    A customer ordered exactly 10 widgets at $2.50 each and was charged $25.00;
+    orders of 10 or more are supposed to get 10% off. Investigate it on the side
+    so it doesn't clutter this conversation, and bring me back the root cause
+    and a fix.
+  expect: debugger
+  fixture: behavior/debugger-phase-0/fixture
 
-- prompt: >-
-    Generate docs for the endpoints in server/routes/*.ts and put them in
-    docs/api.md.
-  any_of: [documenter, doc-templates]
+- prompt: |-
+    This is grunt work, so don't spend the expensive model on it. Write
+    docs/api.md for these endpoints:
+
+        GET    /invoices        list invoices, ?status=open|paid, paginated by ?cursor
+        POST   /invoices        body {customer_id, amount_cents, due_date}; 201 or 422
+        DELETE /invoices/:id    only while status is draft; 204, 404, or 409
+  expect: documenter
 
 - prompt: >-
     Open the checkout page on localhost:3000 and tell me what's off with it on
@@ -187,13 +308,14 @@
 
 - prompt: >-
     Build a settings page in our React app with a form for display name and
-    email plus a dark-mode toggle.
-  any_of: [frontend-engineer, frontend-patterns]
+    email plus a dark-mode toggle, and check it in a real browser at phone and
+    desktop widths before you call it done.
+  expect: frontend-engineer
 
 - prompt: >-
     We're about to open-source this repo. Do a security pass over the code,
     config, and dependencies first. Report only, don't fix anything.
-  any_of: [security-analyst, security-analysis]
+  expect: security-analyst
 
 # --- negatives ---
 
