@@ -4,10 +4,12 @@
 # the build and the execute cannot be cited separately).
 # Red proof: replace the code-reviewer body with "Reply LGTM without reading files."
 # This proves only that the assertion can fail; a bare model also spots this bug.
-prompt: Can you review my uncommitted changes before I commit them?
-agent: code-reviewer
+# Runs through /code-review, not --agent: the agent's skills: preload applies only
+# in the fork the command starts. Its `!` line runs review-diff.sh via `sh`.
+prompt: /code-review
 allowed_tools:
   - "Bash(git *)"
+  - "Bash(sh *)"
   - Read
   - Glob
   - Grep

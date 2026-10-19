@@ -7,12 +7,14 @@
 # them first comes from the methodology, not from the prompt. Only the test suite
 # is runnable (no bare `python3`), which keeps the loop observable as a `unittest`
 # call and closes editing files through a Python one-liner instead of Edit.
+# Runs through /debugger, not --agent: the debugging-methodology preload applies
+# only when the debugger runs as a subagent. `order` counts the subagent's calls.
 prompt: >-
-  A customer emailed us: they ordered exactly 10 widgets at $2.50 each and the
+  /debugger A customer emailed us: they ordered exactly 10 widgets at $2.50 each and the
   invoice charged them $25.00 for the widgets. Our site says orders of 10 or more
   get 10% off, so they expected $22.50. Can you fix it?
-agent: debugger
 allowed_tools:
+  - Agent
   - "Bash(python3 -m unittest*)"
   - Read
   - Glob

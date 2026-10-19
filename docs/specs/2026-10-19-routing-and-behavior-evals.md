@@ -48,7 +48,10 @@ Decisions:
   example with `enabledPlugins` replaced by the builtin plugins set to `false`
   (`cc-plugin-plugin-authoring`, `cc-plugin-agents-md`, `cc-plugin-telemetry`, each
   `@builtin`); runs pass `--strict-mcp-config` with no MCP config. A run whose init
-  event still lists a plugin is reported as an isolation warning.
+  event still lists a plugin is reported as an isolation warning. Each run also gets
+  a temporary `HOME` whose `.claude` links to that config dir, because command `!`
+  lines hardcode `~/.claude/...` (`/code-review`, `/full-review`, `/agent-review`,
+  `/agent-builder`) and would otherwise run the live suite's scripts on both sides.
   Base R is a `git worktree add --detach` of `--base` (default `main`); head R is the
   working tree itself, so it runs before commit, and a dirty tree marks `-dirty`.
 - **Auth.** The runner needs `CLAUDE_CODE_OAUTH_TOKEN` (from `claude setup-token`)
@@ -63,9 +66,11 @@ Decisions:
   under the live login.
 - **Routing observation.** A run's route is the set of `Skill` calls
   (`input.skill`), `Agent` calls (`input.subagent_type`), and `Read`s of a `SKILL.md`
-  within the first 3 tool calls. The process is killed at the `assistant` event carrying
-  the first route hit (the tool starts executing there, before `content_block_stop`)
-  or when the window closes, so no subagent runs and nothing touches the scratch directory.
+  within the first 3 main-thread tool calls. The process is killed at the `assistant`
+  event carrying an `Agent` call (the tool starts executing there, before
+  `content_block_stop`), so no subagent runs; `Skill` and `SKILL.md` `Read` hits are
+  recorded and reading continues until the window closes, since a skill load has no
+  side effects and the expected skill may load after another one.
   A run passes when the route set contains the `expect` target or any `any_of`
   member, other loads alongside it notwithstanding (`coding-guardrails` loads with
   most implementation prompts); `expect: none` passes only on an empty set.
@@ -97,7 +102,7 @@ commit), commits `before/` as exactly one commit, then overlays `after/` as
 uncommitted changes, or staged ones when `stage: true`. An empty fixture still gets
 `git init` and the identity, with no commit.
 
-`case.yaml` keys: `prompt`; optional `agent` (passed as `--agent`);
+`case.yaml` keys: `prompt`;
 `allowed_tools` (narrow, e.g. `["Bash(python3 -m unittest*)", "Edit"]`);
 `timeout`; `stage`; and `assert`, a list using five types:
 
@@ -109,6 +114,11 @@ uncommitted changes, or staged ones when `stage: true`. An empty fixture still g
 | `shell` | `{run, match, not_match}` | Command run in scratch after the session; regexes against its stdout |
 | `no_paths` | `[<glob>, ..]` | No file matching these exists in scratch afterwards |
 
+Agent cases run through their real commands, not `--agent`: an agent's `skills:`
+preload applies only when it runs as a subagent or fork. Tool calls from a subagent
+or fork carry a `parent_tool_use_id` and count in `order` and `tool_not_called`
+alongside main-thread calls, in stream order.
+
 Every regex in an assertion is applied with `re.search` and no default flags;
 a case that needs case folding or line anchors writes `(?i)` or `(?m)` inline.
 
@@ -116,8 +126,8 @@ The four cases:
 
 | Case | Setup | Passes when |
 |---|---|---|
-| `debugger-phase-0` | `agent: debugger`; Python fixture with a failing `unittest` | `order`: a Bash call matching `unittest` precedes the first `Edit`/`Write` |
-| `reviewer-planted-bug` | `agent: code-reviewer`; unstaged `after/` adds string-built SQL to `db.py` at a known line | `final_text` matches `db.py` and that line number |
+| `debugger-phase-0` | prompt `/debugger <symptom>`, `Agent` allowed; Python fixture with a failing `unittest` | `order`: a Bash call matching `unittest` precedes the first `Edit`/`Write` |
+| `reviewer-planted-bug` | prompt `/code-review`, `Bash(sh *)` allowed; unstaged `after/` adds string-built SQL to `db.py` at a known line | `final_text` matches `db.py` and that line number |
 | `commit-conventions` | prompt `/commit`; `stage: true`; `allowed_tools: ["Bash(git *)"]` | `shell: git log -1 --format=%B` matches `^(feat\|fix\|docs\|style\|refactor\|perf\|test\|build\|ci\|chore)(\(.+\))?!?: .{1,71}$` on the first line and not `Co-Authored-By\|Generated with` |
 | `spec-asks-first` | prompt `/spec <goal>`; empty fixture | `final_text` matches a lettered list and `\(Recommended\)`, not `## Task Checklist`; `tool_not_called: [Write, Edit]`; `no_paths: [docs/specs/*]` |
 
