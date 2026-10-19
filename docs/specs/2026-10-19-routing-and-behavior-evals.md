@@ -76,7 +76,11 @@ Decisions:
   most implementation prompts); `expect: none` passes only on an empty set.
 - **Scoring.** N runs per case (default 3); a case passes at ≥ 2/3. The report marks
   **REGRESSION** when base passes and head fails, **FIXED** for the reverse, and
-  **INCONCLUSIVE** when either side has fewer than 2 runs that count. The human
+  **INCONCLUSIVE** when either side has fewer than 2 runs that count. Any case first
+  scored REGRESSION or FIXED is confirmed automatically: 5 more runs per side, then
+  rescored on all of them under the same rule, and the report shows the combined
+  rates and that the case was confirmed. At N=3 a case near 50% flips on noise (task
+  11 scored `routing/git-conventions` FIXED with no suite change). The human
   reading the report judges it; CI checks only that it is present.
 - **Gate trigger.** Any PR changing `skills/**` or `platforms/**`, excluding
   `skills/synced/**` and `platforms/claude/settings.json.example`. A PR that changes
@@ -90,7 +94,16 @@ About 40 entries: one prompt per tracked skill (26), one per agent (7), and abou
 negatives that should route nowhere (conceptual questions). Each entry is
 `{prompt, expect: <name>}`, `{prompt, any_of: [..]}` for genuine overlap (such as
 `code-reviewer` vs `code-review-checklist`), or `{prompt, expect: none}`. Prompts are
-written the way a user would ask, never paraphrased from the description.
+written the way a user would ask, never paraphrased from the description, and ask
+for work rather than advice: the task 11 run showed advice questions get answered
+inline with nothing loaded, on base and head alike.
+
+An entry may carry `fixture: <path under evals/>` naming a directory with
+`before/` and optional `after/`, set up exactly like a behavior fixture (unstaged
+overlay), so a request to review or debug has a repo to act on. Agent entries use
+`expect: <agent>`; `any_of` pairing an agent with its own skill passes on a skill
+load alone, so it does not test agent routing. A case that fails on base in a full
+run guards nothing and is reworded or dropped.
 
 ### `evals/behavior/<case>/`
 
@@ -323,8 +336,22 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
 - [x] 10. Docs: an "Evals" subsection under Validating in `AGENTS.md` (when to run,
   auth setup through `.env.example`, the `n/a` rule, the prompt-writing rule);
   `README.md` layout tree gains `evals/` and the new scripts. (blocked by 3)
-- [ ] 11. Full run against `main` on the branch; report in the PR body.
+- [x] 11. Full run against `main` on the branch; report in the PR body.
   (blocked by 7, 8, 9, 10, 12)
 - [x] 12. `.gitignore`: add `.env`, `.env.*`, `!.env.example`; add `.env.example`
   with `CLAUDE_CODE_OAUTH_TOKEN=`. Confirm `git check-ignore .env` matches and
   `.env.example` does not.
+- [ ] 13. Routing case fixes in `evals/routing.yaml`: reword the six advice-style
+  skill prompts that failed on base (`code-review-checklist`,
+  `debugging-methodology`, `doc-templates`, `frontend-patterns`,
+  `security-analysis`, `wayfinder-methodology`) as requests for work; reword the
+  flaky `git-conventions` and `retro-methodology`; switch every agent entry to
+  `expect: <agent>`; give `agent-reviewer`, `code-reviewer`, and `debugger` a
+  `fixture` (reuse `behavior/reviewer-planted-bug/fixture` and
+  `behavior/debugger-phase-0/fixture`; add `evals/fixtures/mini-suite/` for
+  `agent-reviewer`).
+- [ ] 14. `scripts/run-evals.py`: the routing `fixture` key and automatic
+  confirmation of REGRESSION/FIXED cases, with tests in `scripts/test_evals.py`;
+  `AGENTS.md` Evals section updated for both.
+- [ ] 15. Re-run every case task 13 changed, plus a full run; both reports in the
+  PR body. (blocked by 13, 14)
