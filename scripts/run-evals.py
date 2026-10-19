@@ -480,11 +480,11 @@ def _parse(lines: Iterable[str], route_window: int | None) -> _Stream:
     )
 
 
-# Live claude process groups, so a SIGINT can reach them: each run starts a
-# new session, which keeps the terminal's Ctrl-C from arriving on its own.
+# Live claude process groups, so a stop signal can reach them: each run starts
+# a new session, which keeps the terminal's Ctrl-C from arriving on its own.
 _live: set[subprocess.Popen] = set()
 _live_lock = threading.Lock()
-# Set by the SIGINT handler; no run starts after it.
+# Set by the stop-signal handler; no run starts after it.
 _stopping = threading.Event()
 
 
@@ -525,9 +525,9 @@ def run_claude(
     The process is killed at an Agent call or when the route window closes
     (see read_stream), or after `timeout` seconds. stdin is /dev/null, so the
     CLI does not wait for piped input, and stderr is discarded. Raises
-    Interrupted instead of starting once a SIGINT has arrived.
+    Interrupted instead of starting once a stop signal has arrived.
     """
-    # Started under the lock, so a SIGINT either sees this process in _live
+    # Started under the lock, so a stop signal either sees this process in _live
     # or is seen here before it starts.
     with _live_lock:
         if _stopping.is_set():
@@ -1099,11 +1099,21 @@ def head_revision(head: Path) -> tuple[str, bool]:
     return git(head, "rev-parse", "HEAD"), bool(git(head, "status", "--porcelain"))
 
 
+# Each one stops the runner. Runs start their own session, so a signal sent
+# to the runner reaches its claude children only through this handler.
+STOP_SIGNALS = (signal.SIGINT, signal.SIGTERM, signal.SIGHUP)
+
+
 def raise_interrupt(signum: int, frame: object) -> None:
-    """SIGINT: stop the claude process groups, then unwind through cleanup."""
+    """Stop the claude process groups, then unwind through cleanup."""
     _stopping.set()
     kill_live_runs()
     raise KeyboardInterrupt
+
+
+def install_stop_handlers() -> None:
+    for signum in STOP_SIGNALS:
+        signal.signal(signum, raise_interrupt)
 
 
 def run(args: argparse.Namespace) -> int:
@@ -1157,7 +1167,7 @@ def main() -> int:
     parser.add_argument("--env-file", type=Path, metavar="FILE",
                         help="dotenv file holding the auth variable (default: <suite root>/.env)")
     args = parser.parse_args()
-    signal.signal(signal.SIGINT, raise_interrupt)
+    install_stop_handlers()
     try:
         return run(args)
     except KeyboardInterrupt:

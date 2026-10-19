@@ -16,6 +16,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import signal
 import stat
 import subprocess
 import sys
@@ -261,6 +262,21 @@ class RunClaudeTest(unittest.TestCase):
         worker.join(15)
         self.assertFalse(worker.is_alive())
         self.assertEqual(results[0].error_class, "error")
+
+    def test_sigterm_and_sighup_stop_the_runner_like_sigint(self):
+        # Runs start their own session, so only the runner's handler can reach
+        # them; a SIGTERM or SIGHUP that skipped it would orphan them.
+        saved = {s: signal.getsignal(s) for s in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP)}
+        self.addCleanup(lambda: [signal.signal(s, h) for s, h in saved.items()])
+        self.addCleanup(run_evals._stopping.clear)
+        run_evals.install_stop_handlers()
+        for signum in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+            with self.subTest(signal=signum.name):
+                run_evals._stopping.clear()
+                with self.assertRaises(KeyboardInterrupt):
+                    os.kill(os.getpid(), signum)
+                    time.sleep(1)  # the handler runs between bytecodes
+                self.assertTrue(run_evals._stopping.is_set())
 
     def test_clean_exit_after_a_result_counts(self):
         result = self.run_fake("no-route", sleep=0, exit_code=0, timeout=30)

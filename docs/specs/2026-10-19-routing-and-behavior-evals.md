@@ -196,8 +196,8 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
 6. Results aggregate into per-case pass rates per side, then a status: PASS, FAIL,
    REGRESSION, FIXED, or INCONCLUSIVE. The markdown report goes to stdout or
    `--out`.
-7. A `finally` block and a SIGINT handler remove the worktree and both config
-   directories.
+7. A `finally` block and a SIGINT, SIGTERM, and SIGHUP handler remove the
+   worktree and both config directories.
 
 ## Error Handling
 
