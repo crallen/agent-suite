@@ -103,7 +103,11 @@ An entry may carry `fixture: <path under evals/>` naming a directory with
 overlay), so a request to review or debug has a repo to act on. Agent entries use
 `expect: <agent>`; `any_of` pairing an agent with its own skill passes on a skill
 load alone, so it does not test agent routing. A case that fails on base in a full
-run guards nothing and is reworded or dropped.
+run guards nothing as a gate; it is reworded, or kept as a **known gap** when real
+users ask that way, marked with a `# known gap` comment, beside a work-shaped entry
+for the same target. Known gaps read as FAIL on both sides, so the report's FAIL
+rows are the skill-improvement backlog, and a description change that closes one
+shows as FIXED.
 
 ### `evals/behavior/<case>/`
 
@@ -341,10 +345,11 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
 - [x] 12. `.gitignore`: add `.env`, `.env.*`, `!.env.example`; add `.env.example`
   with `CLAUDE_CODE_OAUTH_TOKEN=`. Confirm `git check-ignore .env` matches and
   `.env.example` does not.
-- [ ] 13. Routing case fixes in `evals/routing.yaml`: reword the six advice-style
-  skill prompts that failed on base (`code-review-checklist`,
+- [ ] 13. Routing case fixes in `evals/routing.yaml`: keep the six advice-style
+  skill prompts that failed on base as known gaps and add a work-shaped entry for
+  each (`code-review-checklist`,
   `debugging-methodology`, `doc-templates`, `frontend-patterns`,
-  `security-analysis`, `wayfinder-methodology`) as requests for work; reword the
+  `security-analysis`, `wayfinder-methodology`); reword the
   flaky `git-conventions` and `retro-methodology`; switch every agent entry to
   `expect: <agent>`; give `agent-reviewer`, `code-reviewer`, and `debugger` a
   `fixture` (reuse `behavior/reviewer-planted-bug/fixture` and
