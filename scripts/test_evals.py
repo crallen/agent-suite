@@ -13,7 +13,10 @@ The scripts under test have hyphenated names, so they load through importlib.
 
 from __future__ import annotations
 
+import argparse
+import contextlib
 import importlib.util
+import io
 import json
 import os
 import signal
@@ -25,6 +28,7 @@ import threading
 import time
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 SCRIPTS = Path(__file__).resolve().parent
 ROOT = SCRIPTS.parent
@@ -351,6 +355,53 @@ class LoadEnvTest(unittest.TestCase):
     def test_empty_values_are_not_auth(self):
         self.path.write_text("CLAUDE_CODE_OAUTH_TOKEN=\n")
         self.assertIsNone(run_evals.resolve_auth({"ANTHROPIC_API_KEY": ""}, self.path))
+
+
+class PreflightTest(unittest.TestCase):
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.head = Path(tmp.name) / "suite"
+        self.head.mkdir()
+        identity = ["-c", "user.name=evals", "-c", "user.email=evals@localhost"]
+        for args in (["init", "-q"], [*identity, "commit", "-q", "--allow-empty", "-m", "base"]):
+            subprocess.run(["git", "-C", str(self.head), *args], check=True, capture_output=True)
+        # A stand-in claude on PATH, so the checks after it are reachable on a
+        # machine without Claude Code.
+        bin_dir = Path(tmp.name) / "bin"
+        bin_dir.mkdir()
+        (bin_dir / "claude").write_text("#!/bin/sh\n")
+        (bin_dir / "claude").chmod(0o755)
+        path = patch.dict(os.environ, {"PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}"})
+        path.start()
+        self.addCleanup(path.stop)
+        self.no_env_file = Path(tmp.name) / "missing.env"
+        self.auth = {"ANTHROPIC_API_KEY": "placeholder"}
+
+    def test_missing_claude_is_a_setup_error(self):
+        with patch.object(run_evals.shutil, "which", return_value=None):
+            with self.assertRaisesRegex(run_evals.SetupError, "claude is not on PATH"):
+                run_evals.preflight(self.head, "HEAD", self.auth, self.no_env_file)
+
+    def test_missing_auth_is_a_setup_error_naming_setup_token(self):
+        with self.assertRaisesRegex(run_evals.SetupError, "claude setup-token"):
+            run_evals.preflight(self.head, "HEAD", {}, self.no_env_file)
+
+    def test_unresolvable_base_is_a_setup_error(self):
+        with self.assertRaisesRegex(run_evals.SetupError, "--base no-such-ref"):
+            run_evals.preflight(self.head, "no-such-ref", self.auth, self.no_env_file)
+
+    def test_resolvable_base_yields_its_sha_and_the_auth(self):
+        setup = run_evals.preflight(self.head, "HEAD", self.auth, self.no_env_file)
+        self.assertEqual(setup.base_sha, git_out(self.head, "rev-parse", "HEAD").strip())
+        self.assertEqual(setup.auth, self.auth)
+
+    def test_run_exits_2_on_a_setup_error(self):
+        args = argparse.Namespace(only=None, base="no-such-ref", env_file=self.no_env_file,
+                                  runs=1, jobs=1, model=None, out=None)
+        with patch.dict(os.environ, self.auth), contextlib.redirect_stderr(io.StringIO()) as err:
+            self.assertEqual(run_evals.run(args), 2)
+        self.assertIn("--base no-such-ref", err.getvalue())
 
 
 class ChildEnvTest(unittest.TestCase):
