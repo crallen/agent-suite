@@ -31,6 +31,7 @@ RECORDINGS = ROOT / "evals" / "recordings"
 
 
 def load_script(filename: str):
+    sys.dont_write_bytecode = True  # no scripts/__pycache__ left behind
     name = filename.removesuffix(".py").replace("-", "_")
     spec = importlib.util.spec_from_file_location(name, SCRIPTS / filename)
     module = importlib.util.module_from_spec(spec)
