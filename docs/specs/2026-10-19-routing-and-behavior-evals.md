@@ -85,10 +85,13 @@ written the way a user would ask, never paraphrased from the description.
 
 ### `evals/behavior/<case>/`
 
-`case.yaml` plus `fixture/before/` and an optional `fixture/after/`. `before/` is
-optional when the fixture is empty. The runner copies the fixture to scratch,
-`git init`s it, commits `before/`, then overlays `after/` as uncommitted changes, or
-staged ones when `stage: true`.
+`case.yaml` plus `fixture/before/` and an optional `fixture/after/`. An empty
+fixture is a case with no `fixture/` directory at all. The runner copies the
+fixture to scratch, `git init`s it with a fixed identity (`user.name evals`,
+`user.email evals@localhost`, set in the scratch repo's config so `/commit` can
+commit), commits `before/` as exactly one commit, then overlays `after/` as
+uncommitted changes, or staged ones when `stage: true`. An empty fixture still gets
+`git init` and the identity, with no commit.
 
 `case.yaml` keys: `prompt`; optional `agent` (passed as `--agent`);
 `allowed_tools` (narrow, e.g. `["Bash(python3 -m unittest*)", "Edit"]`);
@@ -96,11 +99,14 @@ staged ones when `stage: true`.
 
 | Type | Shape | Checks |
 |---|---|---|
-| `order` | `{first: <tool[:regex]>, before: <tool>}` | The first matching call precedes the first call of `before` |
+| `order` | `{first: <tool[:regex]>, before: <tool>}` | A call matching `first` occurs, and if `before` is ever called, the first match precedes its first call. Fails when `first` never occurs. For `Bash`, the regex runs against the `command` input. One `before` tool per assertion; "before Edit or Write" is two assertions |
 | `tool_not_called` | `[<tool>, ..]` | None of these tools was called |
 | `final_text` | `{match: [..], not_match: [..]}` | Regexes against the final assistant text |
 | `shell` | `{run, match, not_match}` | Command run in scratch after the session; regexes against its stdout |
 | `no_paths` | `[<glob>, ..]` | No file matching these exists in scratch afterwards |
+
+Every regex in an assertion is applied with `re.search` and no default flags;
+a case that needs case folding or line anchors writes `(?i)` or `(?m)` inline.
 
 The four cases:
 
