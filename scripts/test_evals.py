@@ -542,11 +542,19 @@ class CaseLoadingTest(unittest.TestCase):
         ids = [c.id for c in cases]
         self.assertEqual(len(ids), len(set(ids)))
         routing = {c.id: c for c in cases if isinstance(c, run_evals.RoutingCase)}
-        self.assertEqual(len(routing), 39)
+        self.assertEqual(len(routing), 45)
         self.assertEqual(routing["routing/why"].targets, frozenset({"why"}))
-        self.assertEqual(routing["routing/code-reviewer"].targets,
-                         frozenset({"code-reviewer", "code-review-checklist"}))
+        self.assertEqual(routing["routing/code-reviewer"].targets, frozenset({"code-reviewer"}))
         self.assertEqual(routing["routing/none-6"].targets, frozenset())
+        # A known gap and its work-shaped twin share a target, so both are numbered.
+        self.assertEqual(routing["routing/security-analysis-2"].targets,
+                         frozenset({"security-analysis"}))
+        self.assertEqual(
+            {i: c.fixture.relative_to(ROOT / "evals").as_posix()
+             for i, c in routing.items() if c.fixture},
+            {"routing/agent-reviewer": "fixtures/mini-suite",
+             "routing/code-reviewer": "behavior/reviewer-planted-bug/fixture",
+             "routing/debugger": "behavior/debugger-phase-0/fixture"})
         behavior = {c.id: c for c in cases if isinstance(c, run_evals.BehaviorCase)}
         self.assertEqual(sorted(behavior), [
             "behavior/commit-conventions", "behavior/debugger-phase-0",
@@ -577,6 +585,46 @@ class CaseLoadingTest(unittest.TestCase):
             (root / "evals" / "behavior" / "c").mkdir(parents=True)
             (root / "evals" / "behavior" / "c" / "case.yaml").write_text(case)
         return root
+
+    def write_fixture(self, root: Path, rel: str, before: bool = True) -> None:
+        part = root / "evals" / rel / ("before" if before else "after")
+        part.mkdir(parents=True)
+        (part / "a.txt").write_text("a\n")
+
+    def test_routing_fixture_resolves_under_evals_and_repeats_keep_numbered_ids(self):
+        # A known gap sits beside a work-shaped entry for the same target, so
+        # the two get -1 and -2 in file order; the fixture stays with its entry.
+        root = self.write_suite(
+            "- prompt: how should I review this?\n  expect: code-reviewer\n"
+            "- prompt: review my changes\n  expect: code-reviewer\n  fixture: fixtures/repo\n")
+        self.write_fixture(root, "fixtures/repo")
+        first, second = run_evals.load_cases(root)
+        self.assertEqual((first.id, second.id),
+                         ("routing/code-reviewer-1", "routing/code-reviewer-2"))
+        self.assertIsNone(first.fixture)
+        self.assertEqual(second.fixture, (root / "evals" / "fixtures" / "repo").resolve())
+
+    def test_routing_fixture_outside_evals_is_a_setup_error(self):
+        root = self.write_suite("[]\n")
+        (root / "outside" / "before").mkdir(parents=True)
+        for value in ("../outside", str(root / "outside")):
+            with self.subTest(fixture=value):
+                (root / "evals" / "routing.yaml").write_text(
+                    f"- prompt: hi\n  expect: why\n  fixture: {value}\n")
+                with self.assertRaisesRegex(run_evals.SetupError,
+                                            "routing.yaml entry 1: fixture .* under evals/"):
+                    run_evals.load_cases(root)
+
+    def test_routing_fixture_without_before_is_a_setup_error(self):
+        root = self.write_suite("- prompt: hi\n  expect: why\n  fixture: fixtures/repo\n")
+        self.write_fixture(root, "fixtures/repo", before=False)
+        with self.assertRaisesRegex(run_evals.SetupError, "routing.yaml entry 1: .*before/"):
+            run_evals.load_cases(root)
+
+    def test_missing_routing_fixture_is_a_setup_error(self):
+        root = self.write_suite("- prompt: hi\n  expect: why\n  fixture: no/such/dir\n")
+        with self.assertRaisesRegex(run_evals.SetupError, "routing.yaml entry 1: .*no/such/dir"):
+            run_evals.load_cases(root)
 
     def test_routing_entry_with_two_target_keys_is_a_setup_error(self):
         root = self.write_suite("- prompt: hi\n  expect: why\n  any_of: [why]\n")
@@ -853,6 +901,40 @@ class RunOneTest(unittest.TestCase):
         self.assertIn("CalledProcessError", outcome.verdict.detail)
         self.assertEqual(run_evals.Rate.of([outcome.verdict]).errors, 1)
 
+    def routing_scratch(self, fixture: Path | None) -> dict:
+        """What a routing run's scratch dir holds when claude starts in it."""
+        seen = {}
+
+        def fake_run_claude(cmd, env, scratch, timeout, route_window):
+            seen["window"] = route_window
+            seen["files"] = sorted(p.name for p in scratch.iterdir())
+            if (scratch / ".git").is_dir():
+                seen["status"] = sorted(git_out(scratch, "status", "--porcelain").splitlines())
+                seen["commits"] = git_out(scratch, "rev-list", "--count", "HEAD").strip()
+            return run_result(routes=("code-reviewer",))
+
+        case = run_evals.RoutingCase(id="routing/code-reviewer", prompt="review my changes",
+                                     targets=frozenset({"code-reviewer"}), fixture=fixture)
+        side = run_evals.Side(name="head", config=Path("/cfg"), home=Path("/home-tmp"))
+        with patch.object(run_evals, "run_claude", side_effect=fake_run_claude):
+            outcome = run_evals.run_one(case, side, {}, model=None)
+        self.assertTrue(outcome.verdict.passed, outcome.verdict.detail)
+        return seen
+
+    def test_routing_run_without_a_fixture_starts_in_an_empty_directory(self):
+        seen = self.routing_scratch(None)
+        self.assertEqual(seen, {"window": run_evals.ROUTE_WINDOW, "files": []})
+
+    def test_routing_run_with_a_fixture_starts_in_its_repo(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fixture = Path(tmp)
+            for path, body in {"before/db.py": "one\n", "after/db.py": "two\n"}.items():
+                (fixture / path).parent.mkdir(parents=True, exist_ok=True)
+                (fixture / path).write_text(body)
+            seen = self.routing_scratch(fixture)
+        self.assertEqual(seen, {"window": run_evals.ROUTE_WINDOW, "files": [".git", "db.py"],
+                                "status": [" M db.py"], "commits": "1"})
+
 
 class StatusTest(unittest.TestCase):
     def rate(self, passes: int, counted: int, errors: int = 0):
@@ -925,6 +1007,110 @@ class ReportTest(unittest.TestCase):
         self.assertIn("cc-plugin-telemetry", report)
         self.assertIn("isolation", report.lower())
         self.assertNotIn("isolation", self.render(self.rows()).lower())
+
+
+class ConfirmationTest(unittest.TestCase):
+    """The main pass, then 5 more runs per side for each REGRESSION or FIXED
+    case. run_one is stubbed: each (case, side) replays a script of passes."""
+
+    SIDES = run_evals.Sides(
+        base=run_evals.Side(name="base", config=Path("/cfg-base"), home=Path("/home-base")),
+        head=run_evals.Side(name="head", config=Path("/cfg-head"), home=Path("/home-head")),
+    )
+
+    def evaluate(self, scripts: dict[str, tuple[str, str]], on_run=None) -> dict:
+        """scripts maps a case id to (base, head) strings of p and f, one per run."""
+        cases = [run_evals.RoutingCase(id=i, prompt="p", targets=frozenset({"why"}))
+                 for i in scripts]
+        self.calls: dict[tuple[str, str], int] = {}
+        lock = threading.Lock()
+
+        def fake_run_one(case, side, auth, model):
+            with lock:
+                n = self.calls.get((case.id, side.name), 0) + 1
+                self.calls[(case.id, side.name)] = n
+            if on_run:
+                on_run(case, side, n)
+            script = scripts[case.id][side.name == "head"]
+            verdict = run_evals.Verdict(script[n - 1] == "p", True, "stub")
+            return run_evals.Outcome(case.id, side.name, verdict, (), "claude-sonnet-5-5")
+
+        with patch.object(run_evals, "run_one", side_effect=fake_run_one), \
+                contextlib.redirect_stderr(io.StringIO()) as self.progress:
+            rows, _ = run_evals.evaluate(cases, self.SIDES, {}, None, runs=3, jobs=1)
+        return {r.case_id: r for r in rows}
+
+    def test_only_flagged_cases_get_five_more_runs_per_side(self):
+        rows = self.evaluate({
+            "routing/pass": ("ppp", "ppp"),
+            "routing/fail": ("fff", "fpf"),
+            "routing/regression": ("ppp" + "ppppp", "fff" + "fffff"),
+            "routing/fixed": ("fff" + "fffff", "ppp" + "ppppp"),
+        })
+        self.assertEqual(self.calls, {
+            ("routing/pass", "base"): 3, ("routing/pass", "head"): 3,
+            ("routing/fail", "base"): 3, ("routing/fail", "head"): 3,
+            ("routing/regression", "base"): 8, ("routing/regression", "head"): 8,
+            ("routing/fixed", "base"): 8, ("routing/fixed", "head"): 8,
+        })
+        self.assertEqual({i: (str(r.base), str(r.head), r.status, r.initial)
+                          for i, r in rows.items()}, {
+            "routing/pass": ("3/3", "3/3", "PASS", None),
+            "routing/fail": ("0/3", "1/3", "FAIL", None),
+            "routing/regression": ("8/8", "0/8", "REGRESSION", "REGRESSION"),
+            "routing/fixed": ("0/8", "8/8", "FIXED", "FIXED"),
+        })
+        self.assertEqual(run_evals.exit_code(r.status for r in rows.values()), 1)
+        # Confirmation runs are numbered on from the main pass's.
+        self.assertIn("head routing/fixed #8:", self.progress.getvalue())
+        self.assertNotIn("#9:", self.progress.getvalue())
+
+    def test_a_flagged_case_is_rescored_on_all_its_runs_and_may_flip_back(self):
+        # base 3/3 then 1/5 is 4/8, under two thirds; head 1/3 then 1/5 is 2/8.
+        row = self.evaluate({"routing/noisy": ("ppp" + "fpfff", "fpf" + "ffpff")})["routing/noisy"]
+        self.assertEqual((str(row.base), str(row.head)), ("4/8", "2/8"))
+        self.assertEqual((row.status, row.initial, row.confirmed), ("FAIL", "REGRESSION", True))
+        self.assertEqual(run_evals.exit_code([row.status]), 0)
+
+    def test_stop_signal_during_confirmation_unwinds_like_the_main_pass(self):
+        saved = {s: signal.getsignal(s) for s in run_evals.STOP_SIGNALS}
+        self.addCleanup(lambda: [signal.signal(s, h) for s, h in saved.items()])
+        self.addCleanup(run_evals._stopping.clear)
+        run_evals.install_stop_handlers()
+
+        def stop_at_the_first_confirmation_run(case, side, n):
+            if n == 4 and side.name == "base":
+                os.kill(os.getpid(), signal.SIGTERM)
+                time.sleep(1)  # the handler runs in the main thread meanwhile
+
+        with self.assertRaises(KeyboardInterrupt):
+            self.evaluate({"routing/regression": ("ppp" + "ppppp", "fff" + "fffff")},
+                          on_run=stop_at_the_first_confirmation_run)
+        self.assertTrue(run_evals._stopping.is_set())
+        # The queued confirmation runs were cancelled while the first slept.
+        self.assertEqual(self.calls, {("routing/regression", "base"): 4,
+                                      ("routing/regression", "head"): 3})
+
+    def test_report_shows_combined_rates_and_marks_confirmed_cases(self):
+        r = run_evals.Rate
+        rows = [
+            run_evals.Row("routing/why", r(8, 8, 0), r(2, 8, 0), initial="REGRESSION"),
+            run_evals.Row("routing/noisy", r(4, 8, 0), r(2, 8, 0), initial="REGRESSION"),
+            run_evals.Row("routing/none-1", r(3, 3, 0), r(3, 3, 0)),
+        ]
+        report = run_evals.render_report(
+            rows, base_sha="0123456789abcdef0123456789abcdef01234567", base_ref="main",
+            head_sha="fedcba9876543210fedcba9876543210fedcba98", dirty=False,
+            model="claude-sonnet-5-5", runs=3)
+        self.assertIn("2 flagged cases re-run 5 more times per side", report)
+        self.assertIn("- REGRESSION `routing/why`: base 8/8; head 2/8 "
+                      "(confirmed by 5 more runs per side)", report)
+        self.assertIn("- FAIL `routing/noisy`: base 4/8; head 2/8 "
+                      "(first scored REGRESSION; 5 more runs per side did not confirm it)", report)
+        self.assertIn("| `routing/why` | 8/8 | 2/8 | REGRESSION |", report)
+        self.assertIn("| `routing/noisy` | 4/8 | 2/8 | FAIL |", report)
+        self.assertNotIn("routing/none-1`:", report)
+        self.assertTrue(report.rstrip().endswith("runs=3 -->"))
 
 
 

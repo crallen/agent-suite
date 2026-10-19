@@ -360,7 +360,7 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
   `fixture` (reuse `behavior/reviewer-planted-bug/fixture` and
   `behavior/debugger-phase-0/fixture`; add `evals/fixtures/mini-suite/` for
   `agent-reviewer`).
-- [ ] 14. `scripts/run-evals.py`: the routing `fixture` key and automatic
+- [x] 14. `scripts/run-evals.py`: the routing `fixture` key and automatic
   confirmation of REGRESSION/FIXED cases, with tests in `scripts/test_evals.py`;
   `AGENTS.md` Evals section updated for both.
 - [ ] 15. Re-run every case task 13 changed (`--only` per id, 3 runs per side);

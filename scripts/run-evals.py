@@ -23,9 +23,14 @@ the suite under test. Case ids, for --only (an fnmatch glob):
                           by more than one entry gets -1, -2, ... in file
                           order on every use (routing/none-1 .. none-6)
 
-The report (markdown, stdout unless --out) ends with the marker that
+A routing entry runs in an empty directory, or, when it names a `fixture`
+under evals/, in a repo built from it the way a behavior fixture is.
+
+A case the main pass scores REGRESSION or FIXED is confirmed: 5 more runs per
+side, then rescored on all of them. The report (markdown, stdout unless --out)
+shows the combined rates and ends with the marker that
 scripts/check-eval-report.py looks for. Exit status: 2 on a setup problem, 1
-when any case is a REGRESSION, 0 otherwise.
+when any case is a REGRESSION after confirmation, 0 otherwise.
 
 Auth comes from CLAUDE_CODE_OAUTH_TOKEN or ANTHROPIC_API_KEY in the
 environment, or else from `.env` at the suite root (see `.env.example`;
@@ -49,7 +54,7 @@ import threading
 from collections.abc import Iterable, Iterator, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 import yaml
@@ -592,11 +597,14 @@ CASE_KEYS = {"prompt", "allowed_tools", "timeout", "stage", "assert"}
 @dataclass(frozen=True)
 class RoutingCase:
     """An evals/routing.yaml entry. `targets` holds the names that pass it:
-    the `expect` name or the `any_of` members; empty for `expect: none`."""
+    the `expect` name or the `any_of` members; empty for `expect: none`.
+    `fixture` is the directory its `fixture` key names, set up like a
+    behavior case's, or None for a run in an empty, non-git directory."""
 
     id: str
     prompt: str
     targets: frozenset[str]
+    fixture: Path | None = None
 
 
 @dataclass(frozen=True)
@@ -638,11 +646,25 @@ def routing_ids(keys: Sequence[str]) -> list[str]:
     return ids
 
 
+def routing_fixture(evals: Path, value: object, where: str) -> Path:
+    """The fixture directory a routing entry's `fixture` key names: a path
+    relative to evals/, inside it, holding before/."""
+    if not isinstance(value, str) or not value:
+        raise SetupError(f"{where}: fixture is a path under evals/")
+    fixture = (evals / value).resolve()
+    if not fixture.is_relative_to(evals.resolve()):
+        raise SetupError(f"{where}: fixture {value!r} is not under evals/")
+    if not (fixture / "before").is_dir():
+        raise SetupError(f"{where}: fixture {value!r} needs a before/ directory under evals/")
+    return fixture
+
+
 def load_routing(path: Path) -> list[RoutingCase]:
     entries = _load_yaml(path, "evals/routing.yaml")
     if not isinstance(entries, list):
         raise SetupError("evals/routing.yaml: expected a list of entries")
     parsed = []
+    fixtures = []
     for n, entry in enumerate(entries, 1):
         where = f"evals/routing.yaml entry {n}"
         if not isinstance(entry, dict) or not isinstance(entry.get("prompt"), str):
@@ -661,10 +683,12 @@ def load_routing(path: Path) -> list[RoutingCase]:
             ):
                 raise SetupError(f"{where}: any_of is a non-empty list of names")
             parsed.append((members[0], frozenset(members)))
-    ids = routing_ids([key for key, _ in parsed])
+        fixtures.append(routing_fixture(path.parent, entry["fixture"], where)
+                        if "fixture" in entry else None)
+    ids =routing_ids([key for key, _ in parsed])
     return [
-        RoutingCase(id=case_id, prompt=entry["prompt"], targets=targets)
-        for case_id, entry, (_, targets) in zip(ids, entries, parsed)
+        RoutingCase(id=case_id, prompt=entry["prompt"], targets=targets, fixture=fixture)
+        for case_id, entry, (_, targets), fixture in zip(ids, entries, parsed, fixtures)
     ]
 
 
@@ -988,13 +1012,28 @@ def exit_code(statuses: Iterable[str]) -> int:
 
 @dataclass(frozen=True)
 class Row:
+    """A case's rates over all its runs. `initial` is the status the main
+    pass gave a case that was then confirmed; None for every other case."""
+
     case_id: str
     base: Rate
     head: Rate
+    initial: str | None = None
 
     @property
     def status(self) -> str:
         return status(self.base, self.head)
+
+    @property
+    def confirmed(self) -> bool:
+        return self.initial is not None
+
+
+# A case the main pass scores REGRESSION or FIXED gets this many more runs
+# per side and is rescored on all of them: at 3 runs, a case near a 50% pass
+# rate flips on noise.
+CONFIRM_STATUSES = ("REGRESSION", "FIXED")
+CONFIRM_RUNS = 5
 
 
 # --- Report -----------------------------------------------------------------
@@ -1008,20 +1047,28 @@ def render_report(
     rows: Sequence[Row], *, base_sha: str, base_ref: str, head_sha: str, dirty: bool,
     model: str, runs: int, plugins: Sequence[str] = (),
 ) -> str:
-    """The markdown report: summary, notable cases, a table per tier, marker."""
+    """The markdown report: summary, notable cases, a table per tier, marker.
+
+    Notable cases are the REGRESSION, FIXED, and INCONCLUSIVE ones, then any
+    confirmed case whose extra runs scored it something else.
+    """
     head = head_sha[:12] + ("-dirty" if dirty else "")
     counts = {s: sum(r.status == s for r in rows) for s in STATUSES}
+    confirmed = sum(r.confirmed for r in rows)
+    reruns = (f" ({confirmed} flagged {'case' if confirmed == 1 else 'cases'} re-run "
+              f"{CONFIRM_RUNS} more times per side)") if confirmed else ""
     lines = [
         "## Eval report",
         "",
-        f"{len(rows)} cases, {runs} runs per case per side, base `{base_ref}` "
+        f"{len(rows)} cases, {runs} runs per case per side{reruns}, base `{base_ref}` "
         f"(`{base_sha[:12]}`) vs head `{head}`: "
         + " · ".join(f"{counts[s]} {s}" for s in STATUSES),
         "",
     ]
     notable = [r for s in NOTABLE for r in rows if r.status == s]
-    lines += [f"- {r.status} `{r.case_id}`: base {r.base}; head {r.head}" for r in notable] \
-        or ["No regressions, fixes, or inconclusive cases."]
+    notable += [r for r in rows if r.confirmed and r.status not in NOTABLE]
+    lines += [f"- {r.status} `{r.case_id}`: base {r.base}; head {r.head}{_confirmation(r)}"
+              for r in notable] or ["No regressions, fixes, or inconclusive cases."]
     if plugins:
         lines += ["", f"> Isolation warning: init listed plugins ({', '.join(plugins)}); "
                       "they may have competed with the suite."]
@@ -1033,6 +1080,14 @@ def render_report(
         lines += [f"| `{r.case_id}` | {r.base} | {r.head} | {r.status} |" for r in tier]
     lines += ["", f"<!-- evals: base={base_sha[:12]} head={head} model={model} runs={runs} -->", ""]
     return "\n".join(lines)
+
+
+def _confirmation(row: Row) -> str:
+    if not row.confirmed:
+        return ""
+    if row.status == row.initial:
+        return f" (confirmed by {CONFIRM_RUNS} more runs per side)"
+    return f" (first scored {row.initial}; {CONFIRM_RUNS} more runs per side did not confirm it)"
 
 
 # --- Running the cases ------------------------------------------------------
@@ -1049,7 +1104,8 @@ class Outcome:
 
 def run_one(case: Case, side: Side, auth: Mapping[str, str], model: str | None) -> Outcome:
     """One run of `case` against `side` in a fresh scratch dir, judged and
-    cleaned up. Routing runs start in an empty directory.
+    cleaned up. A routing run starts in its fixture's repo when it has one,
+    else in an empty directory.
 
     An exception from the run (fixture setup, parsing, an assertion) comes
     back as an uncounted error outcome naming it, so one bad run cannot abort
@@ -1063,6 +1119,8 @@ def run_one(case: Case, side: Side, auth: Mapping[str, str], model: str | None) 
             cmd = claude_command(case.prompt, allowed_tools=case.allowed_tools, model=model)
             result = run_claude(cmd, env, scratch, case.timeout, route_window=None)
         else:
+            if case.fixture is not None:
+                prepare_fixture(case.fixture, scratch, stage=False)
             cmd = claude_command(case.prompt, model=model)
             result = run_claude(cmd, env, scratch, ROUTING_TIMEOUT, route_window=ROUTE_WINDOW)
         verdict = judge(case, result, scratch, assertion_env(side.config, side.home))
@@ -1077,10 +1135,11 @@ def run_one(case: Case, side: Side, auth: Mapping[str, str], model: str | None) 
 
 
 def run_all(cases: Sequence[Case], sides: Sides, auth: Mapping[str, str], model: str | None,
-            runs: int, jobs: int) -> list[Outcome]:
+            runs: int, jobs: int, first_run: int = 1) -> list[Outcome]:
     """Every (case, side, run) through a pool of `jobs` workers, base and head
-    interleaved so both meet the same rate limits. Progress goes to stderr."""
-    work = [(case, side, n) for case in cases for n in range(1, runs + 1)
+    interleaved so both meet the same rate limits. Progress goes to stderr,
+    numbering each case's runs from `first_run`."""
+    work = [(case, side, n) for case in cases for n in range(first_run, first_run + runs)
             for side in (sides.base, sides.head)]
     outcomes = []
     pool = ThreadPoolExecutor(max_workers=jobs)
@@ -1104,6 +1163,25 @@ def rows_of(cases: Sequence[Case], outcomes: Sequence[Outcome]) -> list[Row]:
     def rate(case_id: str, side: str) -> Rate:
         return Rate.of(o.verdict for o in outcomes if o.case_id == case_id and o.side == side)
     return [Row(c.id, rate(c.id, "base"), rate(c.id, "head")) for c in cases]
+
+
+def evaluate(cases: Sequence[Case], sides: Sides, auth: Mapping[str, str], model: str | None,
+             runs: int, jobs: int) -> tuple[list[Row], list[Outcome]]:
+    """Run every case `runs` times per side, then confirm: each case scored
+    REGRESSION or FIXED runs CONFIRM_RUNS more times per side through the
+    same pool and is rescored on all its runs. Returns the rows and every
+    outcome."""
+    outcomes = run_all(cases, sides, auth, model, runs, jobs)
+    initial = {row.case_id: row.status for row in rows_of(cases, outcomes)}
+    flagged = [c for c in cases if initial[c.id] in CONFIRM_STATUSES]
+    if flagged:
+        print(f"run-evals: confirming {len(flagged)} REGRESSION/FIXED cases with "
+              f"{CONFIRM_RUNS} more runs per side", file=sys.stderr)
+        outcomes += run_all(flagged, sides, auth, model, CONFIRM_RUNS, jobs, first_run=runs + 1)
+    confirmed = {c.id for c in flagged}
+    rows = [replace(row, initial=initial[row.case_id]) if row.case_id in confirmed else row
+            for row in rows_of(cases, outcomes)]
+    return rows, outcomes
 
 
 # --- Entry point ------------------------------------------------------------
@@ -1148,8 +1226,7 @@ def run(args: argparse.Namespace) -> int:
     print(f"run-evals: {len(cases)} cases x {args.runs} runs x 2 sides, {args.jobs} jobs; "
           f"base {args.base} ({setup.base_sha[:12]})", file=sys.stderr)
     with eval_sides(head, setup.base_sha) as sides:
-        outcomes = run_all(cases, sides, setup.auth, args.model, args.runs, args.jobs)
-    rows = rows_of(cases, outcomes)
+        rows, outcomes = evaluate(cases, sides, setup.auth, args.model, args.runs, args.jobs)
     report = render_report(
         rows, base_sha=setup.base_sha, base_ref=args.base, head_sha=head_sha, dirty=dirty,
         model=next((o.model for o in outcomes if o.model), args.model or "unknown"),
