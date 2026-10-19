@@ -254,7 +254,7 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
   about 6 `none`, prompts written as a user would ask.
 - [ ] 5. `evals/behavior/{debugger-phase-0,reviewer-planted-bug,commit-conventions,spec-asks-first}/`:
   `case.yaml` and fixtures as specified under Components.
-- [ ] 6. `scripts/check-eval-report.py`: read `PR_BODY`; exit 0 on the marker regex or
+- [x] 6. `scripts/check-eval-report.py`: read `PR_BODY`; exit 0 on the marker regex or
   `evals: n/a — \S+`.
 - [ ] 7. `scripts/test_evals.py`: the parser, assertion, status, and report-check
   cases from Testing. (blocked by 3, 6)
@@ -268,6 +268,6 @@ injection path. `validate.yml` gains a `uv run scripts/test_evals.py` step.
   `README.md` layout tree gains `evals/` and the new scripts. (blocked by 3)
 - [ ] 11. Full run against `main` on the branch; report in the PR body.
   (blocked by 7, 8, 9, 10, 12)
-- [ ] 12. `.gitignore`: add `.env`, `.env.*`, `!.env.example`; add `.env.example`
+- [x] 12. `.gitignore`: add `.env`, `.env.*`, `!.env.example`; add `.env.example`
   with `CLAUDE_CODE_OAUTH_TOKEN=`. Confirm `git check-ignore .env` matches and
   `.env.example` does not.
