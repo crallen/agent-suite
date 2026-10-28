@@ -47,7 +47,8 @@
       "Read(**/secrets*.yaml)",
       "Read(**/secrets*.yml)",
       "Read(**/secrets*.json)",
-      "Read(**/secrets/**)"
+      "Read(**/secrets/**)",
+      "Read(~/.zsh_secrets)"
     ],
     "defaultMode": "auto"
   },
