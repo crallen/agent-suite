@@ -98,6 +98,7 @@ Where the detail lives depends on how hard the decision is to reverse. Load `dom
 - **Hard to reverse** — write an **ADR** in `docs/adr/` and cite it from the map line. This is the same durable-decision mechanism `grill-methodology` and `architecture-review` already use, so a wayfinder decision lands where every other architectural decision in the repo lands. The map holds the gist; the ADR holds the argument.
 - **Easy to reverse** — the one-line gist on the map is the whole record. Do not manufacture an ADR for it.
 - **A term the domain now needs** — add it to `CONTEXT.md`, again per `domain-modeling`.
+- **A workaround for a platform the effort builds on** — a decision that routes around a limitation in a repo or tool the effort lands in, or leans on its documented escape hatch, is a **deviation**, never "conventional placement". Name the limitation, put the platform fix (extend the schema, the generator, the shared module) beside the workaround as an option, and record which one the user chose and why. Other work copies an accepted deviation, so it is hard to reverse: give it an ADR.
 
 Because the substance graduates out, the map can be deleted once the effort lands, with nothing of value lost.
 

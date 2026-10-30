@@ -15,6 +15,8 @@ A request that describes one cohesive change with a clear boundary is a single s
 
 Read the code the request will touch before speculating. Every non-trivial claim in the spec rests on something read: if the spec says the auth module handles X, the auth module was read. Note problems in surrounding code that materially affect this work (a file grown too large, tangled responsibilities) and include targeted improvements when they serve the goal; unrelated refactoring stays out.
 
+For every repo a component lands in, read its documented conventions too: README, contributing guide, its own steering file. A component that bypasses a convention, or uses an escape hatch for something other work will also want, is a **deviation**. Raise it in Phase 4 with the platform fix as one of the approaches, rather than settling it as a placement detail. A plan or map handed in as input doesn't exempt its decisions from this check.
+
 ## Phase 3: Clarifying Questions
 
 One question per message. Prefer multiple choice; open-ended is fine when the problem is truly exploratory.
@@ -93,6 +95,7 @@ Re-read with fresh eyes and fix inline; no second review after fixing.
 - [ ] **Internal consistency**: Do any sections contradict each other? Does the approach match the component list? Do the tasks match the approach?
 - [ ] **Scope check**: Is this focused enough for a single implementation plan, or does it need decomposition? If it grew too large during dialogue, return to Phase 1.
 - [ ] **Ambiguity**: Could any requirement be read two ways? Pick one interpretation and make it explicit.
+- [ ] **Convention fit**: Does each component follow the documented conventions of the repo it lands in? Is every workaround or escape hatch named as a deviation, with the platform fix offered and the user's choice recorded?
 - [ ] **Specificity**: Does the spec name the actual files, functions, and interfaces — or does it speak in generalities? Replace vague references with concrete ones.
 - [ ] **Task checklist executability**: Is each task discrete, ordered, and clear enough for an executor to pick up without re-researching? Does every "blocked by" name a task that genuinely gates it?
 
