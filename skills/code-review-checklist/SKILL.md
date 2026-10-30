@@ -1,6 +1,6 @@
 ---
 name: code-review-checklist
-description: The review rubric and report format — spec fidelity as its own axis, the house rules for naming and error shape, the Fowler design-smell baseline, and severity calibration. Load when reviewing a diff, a pull request, or a file for quality.
+description: The review rubric and report format — spec fidelity and repo-convention fit as separate axes, the house rules for naming and error shape, the Fowler design-smell baseline, and severity calibration. Load when reviewing a diff, a pull request, or a file for quality.
 ---
 
 # Code Review Checklist
@@ -34,8 +34,9 @@ Severity:
 
 Calibration:
 
-- **Axes don't mask each other.** Spec fidelity and code quality are separate
-  axes; report findings on one even when the other is clean.
+- **Axes don't mask each other.** Spec fidelity, repo-convention fit, and code
+  quality are separate axes; report findings on one even when the others are
+  clean.
 - **Smells are judgement calls.** Design-smell findings land at INFO, or WARNING
   when the impact in this diff is concrete, never CRITICAL.
 
@@ -46,6 +47,14 @@ Review what's absent, not just what changed: anything the request or spec asked
 for that is missing or only partially implemented, assumptions that should have
 been surfaced, and a materially simpler approach that would have met the
 requirement.
+
+A spec can be wrong. Check the diff against the documented conventions of each
+repo it touches, independently of the spec. Flag at WARNING, even when the spec
+asked for it:
+
+- a documented escape hatch used for a pattern other code will also want;
+- a workaround for a platform limitation that the platform should fix;
+- a change past the repo's own guidance on size or placement.
 
 ## Correctness, Performance, Security
 
