@@ -804,7 +804,9 @@ def prepare_fixture(fixture: Path | None, scratch: Path, stage: bool) -> None:
     run_git("commit", "-q", "-m", "Initial commit")
     after = fixture / "after"
     if after.is_dir():
-        shutil.copytree(after, scratch, dirs_exist_ok=True)
+        # shutil.copy, not the default copy2: a kept mtime can match the
+        # committed file's, and git then misses a same-size edit.
+        shutil.copytree(after, scratch, dirs_exist_ok=True, copy_function=shutil.copy)
         if stage:
             run_git("add", "-A")
 

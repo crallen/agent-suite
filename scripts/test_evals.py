@@ -704,6 +704,15 @@ class FixtureTest(unittest.TestCase):
         run_evals.prepare_fixture(self.fixture, self.scratch, stage=True)
         self.assertEqual(self.status(), ["A  b.txt", "M  a.txt"])
 
+    def test_after_overlay_is_seen_when_fixture_mtimes_are_old(self):
+        # A checked-out fixture is older than the commit prepare_fixture makes;
+        # a same-size edit must still show up as modified.
+        old = time.time() - 60
+        for path in self.fixture.rglob("*.txt"):
+            os.utime(path, (old, old))
+        run_evals.prepare_fixture(self.fixture, self.scratch, stage=False)
+        self.assertIn(" M a.txt", self.status())
+
     def test_no_fixture_is_an_empty_repo_with_identity_and_no_commit(self):
         run_evals.prepare_fixture(None, self.scratch, stage=False)
         self.assertEqual(git_out(self.scratch, "config", "--local", "user.email").strip(),
