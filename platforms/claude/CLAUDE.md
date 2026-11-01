@@ -49,7 +49,7 @@ Every command sets `disable-model-invocation: true`, so I reach them and you do 
 | `/agent-builder` | Create or modify an agent, skill, or command | — (inline) |
 | `/agent-review` | Review agents, skills, and commands for correctness and consistency | agent-reviewer |
 | `/spec` | Research a goal and produce a design spec with task checklist | — (inline) |
-| `/implement-spec` | Implement an approved spec: parallel implementers across its task graph, one integration branch, reviewed against the spec | implementers + code-reviewer |
+| `/implement-spec` | Implement an approved spec: parallel implementers across its task graph, one integration branch, reviewed against the spec | implementers + code-reviewer (+ security-analyst) |
 | `/grill` | Stress-test a plan with relentless one-question-at-a-time interrogation, sharpening domain language and writing CONTEXT.md / ADRs as decisions crystallize | — (inline) |
 | `/ticket` | Turn a spec, requirements, or the conversation into paste-ready JIRA/Linear tickets | — (inline) |
 | `/prototype` | Build a throwaway prototype to explore a design question — logic branch for state/data-model questions, UI branch for visual layout questions | frontend-engineer, or inline |

@@ -17,16 +17,28 @@ You orchestrate; subagents implement. Brief them with **context pointers** (the 
 
 3. **Create the integration branch** from the default branch, named per `git-conventions`. Every task lands here and nowhere else. Done when the branch exists and the default branch is untouched.
 
-4. **Work the frontier.** Start one implementer subagent per frontier task, concurrently, each in its own worktree on its own branch cut from the integration branch tip. Each implementer:
+4. **Work the frontier.** Start one implementer subagent per frontier task, concurrently, each in its own worktree on its own branch cut from the integration branch tip. Name in each brief the domain skill for every area the task touches; a task that spans areas gets each one's skill.
+
+   | The task changes | Domain skill |
+   |---|---|
+   | UI components, pages, styling, client state | `frontend-patterns` |
+   | Handlers, services, validation, auth, integrations | `backend-patterns` |
+   | Schema, migrations, SQL, indexes, transactions | `database-patterns` |
+   | A Dockerfile or Compose file | `docker-best-practices` |
+   | A CI/CD pipeline | `ci-pipeline` |
+   | READMEs, API docs, changelogs | `doc-templates` |
+
+   Each implementer:
    - confirms its worktree is based on the integration branch tip, and resets onto it if not;
-   - loads `coding-guardrails`, `test-strategy`, and the domain skill for the task, and builds the task test-first;
+   - loads `coding-guardrails`, `test-strategy`, and its domain skills, and builds the task test-first where it has testable behavior; a docs or config task proves itself with its own check instead (build, lint, link check, the image starting);
+   - loads `debugging-methodology` when a check fails for a reason it cannot explain, before reporting the task stuck;
    - commits per `git-conventions`, then merges the current integration tip into its branch and re-runs the task's checks before reporting done.
 
    An implementer is done when its task's checks pass on a branch that contains the integration tip.
 
 5. **Merge and advance.** As each implementer reports, merge its branch into the integration branch, one merge at a time, and run the checks there. Tick the task in the spec. Recompute the frontier and start an implementer for every task this unblocked, without waiting for the rest of the previous frontier. Done when every task is ticked.
 
-6. **Review the whole.** Run the full test suite on the integration branch, then review its diff against the spec with `code-review-checklist`, through the harness's reviewer agent where it has one. Fix every CRITICAL and WARNING finding in a single pass and re-run the suite. Done when the suite is green and no CRITICAL or WARNING finding remains.
+6. **Review the whole.** Run the full test suite on the integration branch, then review its diff against the spec with `code-review-checklist`, through the harness's reviewer agent where it has one. When the spec touches auth, untrusted input, secrets, or a new dependency, run a security review with `security-analysis` alongside it, through the harness's security agent where it has one. Fix every CRITICAL and WARNING review finding and every CRITICAL and HIGH security finding in a single pass, then re-run the suite. Done when the suite is green and none of those findings remain.
 
 7. **Close out.** Remove the task worktrees with `git worktree remove` and delete the merged task branches. Report the integration branch, the tasks landed, the review result, and any safety claim left unproven. Open a pull request when the project lands work through them or the user asks; merging to the default branch is the user's call. Done when `git worktree list` shows no task worktree and the report is delivered.
 
