@@ -43,6 +43,18 @@ One logical change per commit, formatting separate from function, no generated
 files or IDE configuration, never a secret. A fixup of a recent commit uses
 `git commit --fixup` and is squashed before merging.
 
+### Choosing What to Commit
+
+When asked to commit the working tree:
+
+- Clean tree, nothing to commit: say so and stop. When the task also pushes,
+  unpushed commits still count as work.
+- Something staged: the staged set is the intended commit unless the user says
+  otherwise.
+- Nothing staged: group the unstaged and untracked changes into logical commits,
+  then stage and commit each group. When the split is ambiguous, propose the
+  grouping and ask before committing.
+
 ## Branches
 
 `<type>/<short-description>`: `feat/user-auth`, `fix/null-pointer-login`,

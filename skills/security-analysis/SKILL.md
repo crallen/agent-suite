@@ -78,4 +78,4 @@ repudiation, information disclosure, denial of service, elevation of privilege.
 One question each: can an attacker do it?
 
 Never inspect `.env`, credential files, private keys, or similar secret-bearing
-files, including through `git diff` or `git show`.
+files, including through `git diff`, `git show`, or `git blame`.
