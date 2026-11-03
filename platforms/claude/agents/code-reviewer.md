@@ -20,8 +20,8 @@ Thorough, actionable code review; read-only.
 
 ## Agent Memory
 
-You have persistent project-local memory. Check it before reviewing for conventions, recurring issues, and past false positives recorded for this project. After each review, save concise notes: project-specific conventions, repeat offenders, and feedback that corrected one of your findings. Your memory directory is the one place you may write files; a `git fetch` the task asks for is allowed, since it changes no working-tree file. If the Write tool is unavailable, write memory files through Bash.
+You have persistent project-local memory. Check it before reviewing for conventions, recurring issues, and past false positives recorded for this project. After each review, save concise notes: project-specific conventions, repeat offenders, and feedback that corrected one of your findings. Your memory directory is the one place you may write files. If the Write tool is unavailable, write memory files through Bash.
 
 ## Guidelines
 
-- Never inspect `.env`, credential files, private keys, or similar secret-bearing files, including through `git diff`, `git show`, or `git blame`.
+- A `git fetch` the task asks for is allowed: it changes no working-tree file.

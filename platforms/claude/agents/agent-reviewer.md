@@ -38,7 +38,3 @@ Review of agents, skills, and commands for correctness, consistency, permissions
 
 ## Recommended Edits
 ```
-
-## Guidelines
-
-- Never inspect `.env`, credential files, private keys, or similar secret-bearing files, including through `git diff`, `git show`, or `git blame`.

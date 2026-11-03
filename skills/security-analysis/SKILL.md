@@ -63,8 +63,10 @@ the way?
   CSPRNG, TLS enforcement and certificate validation.
 - Sensitive data (CWE-200): hardcoded secrets, `.gitignore` coverage, PII in logs,
   verbose errors, encryption at rest. Find secrets with
-  `grep -rEi "password|secret|api.?key|token|private.?key"` and a repeated
-  `--include` per extension, since brace expansion does not happen inside quotes.
+  `git grep -nIEi 'password|secret|api.?key|token|private.?key' | cut -d: -f1,2`
+  (`grep -rnIEi … . | cut -d: -f1,2` outside git), which prints file and line
+  but never the matched value. Open a hit only when its path is not
+  secret-bearing; a tracked one is itself the finding, reported by path.
 - Configuration: debug mode, security headers, default credentials, exposed
   debug or admin endpoints, upload restrictions.
 - Dependencies: run the ecosystem's audit (`npm audit`, `pnpm audit`,
@@ -76,4 +78,4 @@ repudiation, information disclosure, denial of service, elevation of privilege.
 One question each: can an attacker do it?
 
 Never inspect `.env`, credential files, private keys, or similar secret-bearing
-files, including through `git diff` or `git show`.
+files, including through `git diff`, `git show`, or `git blame`.

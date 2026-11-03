@@ -10,8 +10,9 @@ pin. Everything else is a skill you load and work you do yourself.
 
 - **Route to an agent** when you want what it enforces. `@code-reviewer`,
   `@security-analyst`, `@agent-reviewer`, and `@frontend-auditor` cannot write
-  files. `@frontend-engineer` carries Playwright. `@debugger` and `@code-reviewer`
-  keep project-local memory across sessions. `@documenter` runs on a cheaper model.
+  repository files. `@frontend-engineer` carries Playwright. `@debugger` and
+  `@code-reviewer` keep project-local memory across sessions. `@documenter` runs
+  on a cheaper model.
 - **Load a skill and do the work** for everything else, backend, database,
   testing, infrastructure, and agent-authoring included. These have no agent by
   design; the knowledge is the whole point and it lives in `skills/`.
