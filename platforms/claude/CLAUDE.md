@@ -34,6 +34,7 @@ Every command sets `disable-model-invocation: true`, so I reach them and you do 
 | `/code-review` | Review pending changes, changes since a base ref, or the full codebase when the working tree is clean | code-reviewer |
 | `/security` | Run a security assessment on code and dependencies | security-analyst |
 | `/full-review` | Run a code quality review and security audit in parallel | code-reviewer + security-analyst |
+| `/design-review` | Judge whether a PR, branch, or changes since a base ref fit the recorded design: ADRs, ownership, existing mechanisms, contract growth, spec scope | code-reviewer |
 | `/test` | Run tests and analyze results | — (fork) |
 | `/debugger` | Start a systematic debugging session | debugger |
 | `/docs` | Generate or update documentation | documenter |
@@ -76,6 +77,7 @@ Every command sets `disable-model-invocation: true`, so I reach them and you do 
 | Frontend implementation | `/frontend` → `/frontend-polish` if needed → `/test` → `/code-review` → `/commit` |
 | Frontend critique before coding | `/frontend-audit` or `/frontend-critique` → `/frontend` or `/frontend-polish` → `/test` → `/code-review` |
 | Bug investigation | `/debugger` → specialist follow-up if needed → `/test` → `/code-review` → `/commit` |
+| Reviewing a PR that adds contract surface (API fields, claims, schema, events) | `/design-review <n>` → `gh pr checkout <n>` → `/code-review <base>` |
 | Security-sensitive change | `/spec` or implementation command → `/full-review` → `/test` → `/commit` |
 | Documentation update | `/docs` → `/code-review` if the doc change affects technical accuracy significantly → `/commit` |
 | Agent/skill/command changes | `/agent-review` → `/agent-builder` → `/agent-review` → `/commit` |

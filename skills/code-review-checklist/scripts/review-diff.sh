@@ -7,6 +7,9 @@
 #                           untracked files; "(no pending changes)" when clean
 #   review-diff.sh <ref>    commits and three-dot diff since <ref>;
 #                           "(no changes since <ref>)" when empty
+#   review-diff.sh <ref> <head>
+#                           the same, for <head> in place of HEAD: a branch or
+#                           fetched pull request that is not checked out
 #
 # Either mode prints "REVIEW BLOCKED: ..." and the offending paths instead of a
 # diff when the screen matches. Exit status is 0 in every case the caller should
@@ -27,15 +30,18 @@ git rev-parse --git-dir >/dev/null 2>&1 || { printf '(not a git repository)\n'; 
 
 if [ $# -gt 0 ]; then
     ref=$1
-    git rev-parse --verify --quiet "$ref^{commit}" >/dev/null || {
-        printf '(%s does not resolve to a commit)\n' "$ref"; exit 0; }
-    paths=$(git diff --name-only "$ref...HEAD")
+    head=${2:-HEAD}
+    for r in "$ref" "$head"; do
+        git rev-parse --verify --quiet "$r^{commit}" >/dev/null || {
+            printf '(%s does not resolve to a commit)\n' "$r"; exit 0; }
+    done
+    paths=$(git diff --name-only "$ref...$head")
     [ -n "$paths" ] || { printf '(no changes since %s)\n' "$ref"; exit 0; }
     blocked "$paths" && exit 0
     printf 'Commits since %s:\n' "$ref"
-    git log --oneline "$ref..HEAD"
+    git log --oneline "$ref..$head"
     printf '\n'
-    git diff "$ref...HEAD"
+    git diff "$ref...$head"
     exit 0
 fi
 

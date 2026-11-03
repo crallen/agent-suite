@@ -122,6 +122,17 @@
             return value
   expect: debugging-methodology
 
+- prompt: |-
+    Our ADR-0003 says: "Feature flags live in the flag service. Services never
+    read flags from environment variables." A teammate's PR adds this to
+    export.rs:
+
+        let beta = std::env::var("ENABLE_BETA_EXPORT").is_ok();
+
+    Tell me whether this PR fits our design and what to ask them before it
+    merges.
+  expect: design-conformance
+
 # known gap: advice question, loads nothing today
 - prompt: >-
     What sections does a README for an internal Go library actually need? Keep

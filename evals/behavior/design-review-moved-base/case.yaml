@@ -1,0 +1,26 @@
+# Guards /design-review's target selection and its precedent check. branch/ adds
+# an approval_regions permission to the profile response on `feature`; main/
+# then moves main on, so main is no longer an ancestor of HEAD. The run must
+# still diff feature against main, not report "no changes", and must tie the
+# field to ADR-0001, which already decided that permissions are roles.
+# Red proof: restore the ancestor test for base refs in design-review.md; the
+# run then falls into branch mode against main and prints "(no changes since
+# main)".
+prompt: /design-review main
+allowed_tools:
+  - "Bash(git *)"
+  - "Bash(sh *)"
+  - "Bash(gh *)"
+  - "Bash(echo *)"
+  - Read
+  - Glob
+  - Grep
+timeout: 300
+assert:
+  - final_text:
+      match:
+        - '(?i)approval_regions'
+        - '(?i)0001|ADR-?0*1\b'
+        - '(?i)conflicts|needs a decision'
+      not_match:
+        - '(?i)no changes since'
