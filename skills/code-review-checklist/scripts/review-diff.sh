@@ -1,7 +1,8 @@
 #!/bin/sh
 # Print the diff a review command works from, refusing when a changed path looks
-# secret-bearing. The single home for that path screen: the review commands of
-# every harness call this instead of carrying their own copy.
+# secret-bearing. The single home for that path screen and for review-target
+# selection: the review commands of every harness call this instead of carrying
+# their own copy.
 #
 #   review-diff.sh          pending changes: staged if any, else unstaged, plus
 #                           untracked files; "(no pending changes)" when clean
@@ -10,8 +11,17 @@
 #   review-diff.sh <ref> <head>
 #                           the same, for <head> in place of HEAD: a branch or
 #                           fetched pull request that is not checked out
+#   review-diff.sh --select [arg...]
+#                           pick the target from a command's arguments: a first
+#                           argument that resolves to a commit is a base ref, any
+#                           rest narrowing the diff to those paths, and pending
+#                           changes are ignored; other arguments print
+#                           "(focus: ...)" for the caller to review directly;
+#                           none is pending-changes mode. "(no pending changes)"
+#                           or "(not a git repository)" there means review the
+#                           full codebase.
 #
-# Either mode prints "REVIEW BLOCKED: ..." and the offending paths instead of a
+# Every mode prints "REVIEW BLOCKED: ..." and the offending paths instead of a
 # diff when the screen matches. Exit status is 0 in every case the caller should
 # relay, so an injected call always yields its message.
 
@@ -26,24 +36,42 @@ blocked() {
     printf 'REVIEW BLOCKED: sensitive-looking files are present in the changes. Remove or redact them before running the review.\n\nBlocked paths:\n%s\n' "$hits"
 }
 
-git rev-parse --git-dir >/dev/null 2>&1 || { printf '(not a git repository)\n'; exit 0; }
+is_commit() { git rev-parse --verify --quiet "$1^{commit}" >/dev/null 2>&1; }
 
-if [ $# -gt 0 ]; then
-    ref=$1
-    head=${2:-HEAD}
+since() {  # since <ref> <head> [path...]
+    ref=$1 head=$2; shift 2
     for r in "$ref" "$head"; do
-        git rev-parse --verify --quiet "$r^{commit}" >/dev/null || {
-            printf '(%s does not resolve to a commit)\n' "$r"; exit 0; }
+        is_commit "$r" || { printf '(%s does not resolve to a commit)\n' "$r"; exit 0; }
     done
-    paths=$(git diff --name-only "$ref...$head")
+    paths=$(git diff --name-only "$ref...$head" -- "$@")
     [ -n "$paths" ] || { printf '(no changes since %s)\n' "$ref"; exit 0; }
     blocked "$paths" && exit 0
+    if [ -n "$(git status --porcelain)" ]; then
+        printf '(pending working-tree changes are outside this range and not shown)\n\n'
+    fi
     printf 'Commits since %s:\n' "$ref"
-    git log --oneline "$ref..$head"
+    git log --oneline "$ref..$head" -- "$@"
     printf '\n'
-    git diff "$ref...$head"
+    git diff "$ref...$head" -- "$@"
     exit 0
+}
+
+if [ "${1-}" = --select ]; then
+    shift
+    if [ $# -gt 0 ] && git rev-parse --git-dir >/dev/null 2>&1 && is_commit "$1"; then
+        ref=$1; shift
+        since "$ref" HEAD "$@"
+    fi
+    if [ $# -gt 0 ]; then
+        blocked "$(printf '%s\n' "$@")" && exit 0
+        printf '(focus: %s)\n' "$*"
+        exit 0
+    fi
 fi
+
+git rev-parse --git-dir >/dev/null 2>&1 || { printf '(not a git repository)\n'; exit 0; }
+
+[ $# -gt 0 ] && since "$1" "${2:-HEAD}"
 
 staged=$(git diff --staged --name-only)
 unstaged=$(git diff --name-only)
