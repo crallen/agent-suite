@@ -17,7 +17,7 @@
 
 # Mirrors the deny list in platforms/claude/settings.json.example. Placeholder
 # env files (.env.example and friends) hold no secrets and pass.
-SENSITIVE='(^|/)\.env(rc|\..*)?$|(^|/)\.npmrc$|(^|/)id_(rsa|ed25519|ecdsa|dsa)[^/]*$|credentials[^/]*\.json$|service-?account[^/]*\.json$|\.pem$|\.key$|\.p12$|\.pfx$|\.tfvars(\.json)?$|(^|/)secrets?(\.[^/]*)?\.(ya?ml|json)$|(^|/)secrets/'
+SENSITIVE='(^|/)\.env(rc|\..*)?$|(^|/)\.npmrc$|(^|/)id_(rsa|ed25519|ecdsa|dsa)[^/]*$|credentials[^/]*\.json$|service-?account[^/]*\.json$|\.pem$|\.key$|\.p12$|\.pfx$|\.tfvars(\.json)?$|(^|/)secrets?[^/]*\.(ya?ml|json)$|(^|/)secrets/'
 PLACEHOLDER='(^|/)\.env\.(example|sample|template|dist)$'
 
 blocked() {
