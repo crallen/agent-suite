@@ -11,7 +11,7 @@ Run a combined review: spawn `@code-reviewer` and `@security-analyst` as **paral
 
 Pick the target with `sh ~/.claude/skills/code-review-checklist/scripts/review-diff.sh --select <arguments>`, passing the arguments below verbatim, or none when there are none. Act on what it prints:
 
-- **A diff**: hand it to both agents. When it opens with a note that pending changes were left out, repeat that in the report.
+- **A diff**: hand it to both agents. Apply a leading `Focus:` line, and repeat a leading `Note:` line in the report.
 - **`(focus: …)`**: pass that focus to both agents.
 - **`(no pending changes)` or `(not a git repository)`**: both agents assess the full codebase directly.
 - **`REVIEW BLOCKED`, or any other line in parentheses**: relay it and stop.

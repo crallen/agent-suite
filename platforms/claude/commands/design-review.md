@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 Run a design review. Read `~/.claude/skills/design-conformance/SKILL.md` first and follow it.
 
-Find the default branch `D`: `git symbolic-ref --short refs/remotes/origin/HEAD`, else `gh repo view --json defaultBranchRef -q .defaultBranchRef.name`, else whichever of `main` or `master` exists. Then pick the target and get its diff from `sh ~/.claude/skills/code-review-checklist/scripts/review-diff.sh <base> [<head>]`. If that prints `REVIEW BLOCKED` or a line in parentheses, such as `(no changes …)` or `(… does not resolve to a commit)`, relay it and stop.
+Find the default branch `D`: `git symbolic-ref --short refs/remotes/origin/HEAD`, else `gh repo view --json defaultBranchRef -q .defaultBranchRef.name`, else whichever of `main` or `master` exists. Then pick the target and get its diff from `sh ~/.claude/skills/code-review-checklist/scripts/review-diff.sh <base> [<head>]`. If that prints `REVIEW BLOCKED` or a line in parentheses, such as `(no changes …)` or `(… does not resolve to a commit)`, relay it and stop; a leading `Note:` line is not a stop, so repeat it in the report.
 
 1. **PR**: a number, `#n`, or PR URL. Read `gh pr view <n> --json title,body,baseRefName,headRefOid,commits,comments,reviews`, run `git fetch -q origin <baseRefName> pull/<n>/head`, then diff `origin/<baseRefName>` against `<headRefOid>`. If the remote is not GitHub or `gh` fails, say so and stop, asking for a branch or base ref instead.
 2. **Branch**: a branch other than `D` and the current branch. Diff `D` against it, and look up its PR with `gh pr view <branch>` for the body.

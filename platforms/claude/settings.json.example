@@ -47,6 +47,9 @@
       "Read(**/secrets*.yaml)",
       "Read(**/secrets*.yml)",
       "Read(**/secrets*.json)",
+      "Read(**/secret.yaml)",
+      "Read(**/secret.yml)",
+      "Read(**/secret.json)",
       "Read(**/secrets/**)",
       "Read(~/.zsh_secrets)"
     ],

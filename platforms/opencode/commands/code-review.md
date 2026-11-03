@@ -8,7 +8,7 @@ Review code for quality, security, performance, and maintainability issues.
 
 Pick the target with `sh ~/.config/opencode/skills/code-review-checklist/scripts/review-diff.sh --select <arguments>`, passing the arguments below verbatim, or none when there are none. Act on what it prints:
 
-- **A diff**: review it. When it opens with a note that pending changes were left out, repeat that in the report.
+- **A diff**: review it. Apply a leading `Focus:` line, and repeat a leading `Note:` line in the report.
 - **`(focus: …)`**: review the named files or scope directly.
 - **`(no pending changes)` or `(not a git repository)`**: review the full codebase by exploring it directly.
 - **`REVIEW BLOCKED`, or any other line in parentheses**: relay it and stop.

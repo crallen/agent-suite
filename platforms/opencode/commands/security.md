@@ -8,7 +8,7 @@ Perform a security assessment.
 
 Pick the target with `sh ~/.config/opencode/skills/code-review-checklist/scripts/review-diff.sh --select <arguments>`, passing the arguments below verbatim, or none when there are none. Act on what it prints:
 
-- **A diff**: assess the changed code for vulnerabilities, then broaden to project-wide concerns (secrets in config, dependency manifests, attack surface) as relevant. When it opens with a note that pending changes were left out, repeat that in the report.
+- **A diff**: assess the changed code for vulnerabilities, then broaden to project-wide concerns (secrets in config, dependency manifests, attack surface) as relevant. Apply a leading `Focus:` line, and repeat a leading `Note:` line in the report.
 - **`(focus: …)`**: focus the analysis on the named files or directories.
 - **`(no pending changes)` or `(not a git repository)`**: assess the full codebase.
 - **`REVIEW BLOCKED`, or any other line in parentheses**: relay it and stop.

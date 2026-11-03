@@ -13,21 +13,22 @@
 #                           fetched pull request that is not checked out
 #   review-diff.sh --select [arg...]
 #                           pick the target from a command's arguments: a first
-#                           argument that resolves to a commit is a base ref, any
-#                           rest narrowing the diff to those paths, and pending
-#                           changes are ignored; other arguments print
-#                           "(focus: ...)" for the caller to review directly;
-#                           none is pending-changes mode. "(no pending changes)"
-#                           or "(not a git repository)" there means review the
-#                           full codebase.
+#                           argument that resolves to a commit is a base ref, and
+#                           pending changes are ignored; after it, arguments that
+#                           exist as paths narrow the diff and any other words
+#                           print as a "Focus: ..." line above it. Without a ref,
+#                           arguments print "(focus: ...)" for the caller to
+#                           review directly; none is pending-changes mode.
+#                           "(no pending changes)" or "(not a git repository)"
+#                           there means review the full codebase.
 #
-# Every mode prints "REVIEW BLOCKED: ..." and the offending paths instead of a
-# diff when the screen matches. Exit status is 0 in every case the caller should
-# relay, so an injected call always yields its message.
+# Every mode that would print a diff prints "REVIEW BLOCKED: ..." and the
+# offending paths instead when the screen matches. Exit status is 0 in every case
+# the caller should relay, so a caller always gets a message to act on.
 
 # Mirrors the deny list in platforms/claude/settings.json.example. Placeholder
 # env files (.env.example and friends) hold no secrets and pass.
-SENSITIVE='(^|/)\.env(rc|\..*)?$|(^|/)\.npmrc$|(^|/)id_(rsa|ed25519|ecdsa|dsa)[^/]*$|credentials[^/]*\.json$|service-?account[^/]*\.json$|\.pem$|\.key$|\.p12$|\.pfx$|\.tfvars(\.json)?$|(^|/)secrets?[^/]*\.(ya?ml|json)$|(^|/)secrets/'
+SENSITIVE='(^|/)\.env(rc|\..*)?$|(^|/)\.npmrc$|(^|/)id_(rsa|ed25519|ecdsa|dsa)[^/]*$|credentials[^/]*\.json$|service-?account[^/]*\.json$|\.pem$|\.key$|\.p12$|\.pfx$|\.tfvars(\.json)?$|(^|/)(secrets[^/]*|secret)\.(ya?ml|json)$|(^|/)secrets/'
 PLACEHOLDER='(^|/)\.env\.(example|sample|template|dist)$'
 
 blocked() {
@@ -38,7 +39,7 @@ blocked() {
 
 is_commit() { git rev-parse --verify --quiet "$1^{commit}" >/dev/null 2>&1; }
 
-since() {  # since <ref> <head> [path...]
+since() {  # since <ref> <head> [path...]; $focus, if set, prints above the diff
     ref=$1 head=$2; shift 2
     for r in "$ref" "$head"; do
         is_commit "$r" || { printf '(%s does not resolve to a commit)\n' "$r"; exit 0; }
@@ -46,9 +47,13 @@ since() {  # since <ref> <head> [path...]
     paths=$(git diff --name-only "$ref...$head" -- "$@")
     [ -n "$paths" ] || { printf '(no changes since %s)\n' "$ref"; exit 0; }
     blocked "$paths" && exit 0
-    if [ -n "$(git status --porcelain)" ]; then
-        printf '(pending working-tree changes are outside this range and not shown)\n\n'
+    lead=
+    if [ -n "${focus-}" ]; then printf 'Focus: %s\n' "$focus"; lead=1; fi
+    if [ "$head" = HEAD ] && [ -n "$(git status --porcelain)" ]; then
+        printf 'Note: pending working-tree changes are outside this range and not shown.\n'
+        lead=1
     fi
+    [ -z "$lead" ] || printf '\n'
     printf 'Commits since %s:\n' "$ref"
     git log --oneline "$ref..$head" -- "$@"
     printf '\n'
@@ -58,12 +63,19 @@ since() {  # since <ref> <head> [path...]
 
 if [ "${1-}" = --select ]; then
     shift
+    for a in "$@"; do  # drop empty arguments
+        shift; [ -n "$a" ] && set -- "$@" "$a"
+    done
     if [ $# -gt 0 ] && git rev-parse --git-dir >/dev/null 2>&1 && is_commit "$1"; then
         ref=$1; shift
+        focus=
+        for a in "$@"; do  # existing paths narrow the diff; other words are focus
+            shift
+            if [ -e "$a" ]; then set -- "$@" "$a"; else focus="${focus:+$focus }$a"; fi
+        done
         since "$ref" HEAD "$@"
     fi
-    if [ $# -gt 0 ]; then
-        blocked "$(printf '%s\n' "$@")" && exit 0
+    if [ $# -gt 0 ]; then  # nothing is diffed here, so there is nothing to screen
         printf '(focus: %s)\n' "$*"
         exit 0
     fi
