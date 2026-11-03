@@ -542,7 +542,7 @@ class CaseLoadingTest(unittest.TestCase):
         ids = [c.id for c in cases]
         self.assertEqual(len(ids), len(set(ids)))
         routing = {c.id: c for c in cases if isinstance(c, run_evals.RoutingCase)}
-        self.assertEqual(len(routing), 45)
+        self.assertEqual(len(routing), 46)
         self.assertEqual(routing["routing/why"].targets, frozenset({"why"}))
         self.assertEqual(routing["routing/code-reviewer"].targets, frozenset({"code-reviewer"}))
         self.assertEqual(routing["routing/none-6"].targets, frozenset())
@@ -558,7 +558,8 @@ class CaseLoadingTest(unittest.TestCase):
         behavior = {c.id: c for c in cases if isinstance(c, run_evals.BehaviorCase)}
         self.assertEqual(sorted(behavior), [
             "behavior/commit-conventions", "behavior/debugger-phase-0",
-            "behavior/reviewer-planted-bug", "behavior/spec-asks-first",
+            "behavior/design-review-moved-base", "behavior/reviewer-planted-bug",
+            "behavior/spec-asks-first",
         ])
         self.assertIsNone(behavior["behavior/spec-asks-first"].fixture)
         self.assertTrue(behavior["behavior/commit-conventions"].stage)
@@ -566,7 +567,7 @@ class CaseLoadingTest(unittest.TestCase):
 
     def test_only_filters_ids_by_glob(self):
         cases = run_evals.load_cases(ROOT)
-        self.assertEqual(len(run_evals.select(cases, "behavior/*")), 4)
+        self.assertEqual(len(run_evals.select(cases, "behavior/*")), 5)
         self.assertEqual(len(run_evals.select(cases, "routing/none-*")), 6)
         self.assertEqual([c.id for c in run_evals.select(cases, "routing/why")], ["routing/why"])
         self.assertEqual(len(run_evals.select(cases, None)), len(cases))
@@ -703,6 +704,18 @@ class FixtureTest(unittest.TestCase):
     def test_after_overlays_as_staged_changes_when_stage_is_set(self):
         run_evals.prepare_fixture(self.fixture, self.scratch, stage=True)
         self.assertEqual(self.status(), ["A  b.txt", "M  a.txt"])
+
+    def test_branch_and_main_leave_feature_checked_out_with_main_moved_on(self):
+        for path, body in {"branch/a.txt": "branch\n", "main/d.txt": "later\n"}.items():
+            (self.fixture / path).parent.mkdir(parents=True, exist_ok=True)
+            (self.fixture / path).write_text(body)
+        run_evals.prepare_fixture(self.fixture, self.scratch, stage=False)
+        self.assertEqual(git_out(self.scratch, "branch", "--show-current").strip(), "feature")
+        self.assertEqual(git_out(self.scratch, "show", "feature:a.txt"), "branch\n")
+        self.assertEqual(git_out(self.scratch, "show", "main:d.txt"), "later\n")
+        self.assertEqual(git_out(self.scratch, "rev-list", "--count", "main..feature").strip(), "1")
+        self.assertEqual(git_out(self.scratch, "rev-list", "--count", "feature..main").strip(), "1")
+        self.assertEqual(self.status(), [" M a.txt", "?? b.txt"])
 
     def test_after_overlay_is_seen_when_fixture_mtimes_are_old(self):
         # A checked-out fixture is older than the commit prepare_fixture makes;

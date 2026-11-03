@@ -664,7 +664,7 @@ def routing_fixture(evals: Path, value: object, where: str) -> Path:
 def reject_symlinks(fixture: Path, where: str) -> None:
     """Fixtures are copied into scratch with links followed, so a link could
     pull anything on this machine, a .env included, where the model can read it."""
-    for part in ("before", "after"):
+    for part in ("before", "branch", "main", "after"):
         top = fixture / part
         if top.is_symlink():
             raise SetupError(f"{where}: fixture {part}/ is a symlink")
@@ -784,7 +784,10 @@ def prepare_fixture(fixture: Path | None, scratch: Path, stage: bool) -> None:
     """Make `scratch` a git repo holding the case's fixture.
 
     The repo gets the fixed identity in its local config; before/ becomes
-    exactly one commit; after/ is then copied over as uncommitted changes,
+    exactly one commit on main. A branch/ directory becomes one commit on a
+    `feature` branch cut from it, and a main/ directory one commit on main
+    after the cut, so main has moved on; the repo is left on `feature` when
+    branch/ exists. after/ is then copied over as uncommitted changes,
     staged when `stage` is set. With no fixture the repo is left empty, with
     the identity and no commit.
     """
@@ -802,6 +805,13 @@ def prepare_fixture(fixture: Path | None, scratch: Path, stage: bool) -> None:
     shutil.copytree(fixture / "before", scratch, dirs_exist_ok=True)
     run_git("add", "-A")
     run_git("commit", "-q", "-m", "Initial commit")
+    branch, later = fixture / "branch", fixture / "main"
+    if branch.is_dir():
+        commit_overlay(run_git, branch, scratch, ("-b", "feature"), "Branch commit")
+    if later.is_dir():
+        commit_overlay(run_git, later, scratch, ("main",), "Main moves on")
+    if branch.is_dir() and later.is_dir():
+        run_git("checkout", "-q", "feature")
     after = fixture / "after"
     if after.is_dir():
         # shutil.copy, not the default copy2: a kept mtime can match the
@@ -809,6 +819,16 @@ def prepare_fixture(fixture: Path | None, scratch: Path, stage: bool) -> None:
         shutil.copytree(after, scratch, dirs_exist_ok=True, copy_function=shutil.copy)
         if stage:
             run_git("add", "-A")
+
+
+def commit_overlay(run_git, overlay: Path, scratch: Path,
+                   checkout: tuple[str, ...], message: str) -> None:
+    """Run `git checkout -q <checkout>`, copy `overlay` over the tree, and
+    commit it as `message`."""
+    run_git("checkout", "-q", *checkout)
+    shutil.copytree(overlay, scratch, dirs_exist_ok=True, copy_function=shutil.copy)
+    run_git("add", "-A")
+    run_git("commit", "-q", "-m", message)
 
 
 # --- Assertions -------------------------------------------------------------
