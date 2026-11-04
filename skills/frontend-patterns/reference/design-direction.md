@@ -1,6 +1,6 @@
 # Frontend Design Direction Reference
 
-Use this reference when the work needs design judgment: shaping a screen, improving hierarchy, or making a surface feel intentional without drifting into redesign. `reference/anti-patterns.md` holds the smells to check afterwards.
+Use this reference when the work needs design judgment: shaping a screen, improving hierarchy, or making a surface feel intentional without drifting into redesign. `reference/anti-patterns.md` holds the smells to check afterward.
 
 ## Start With Screen Intent
 

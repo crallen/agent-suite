@@ -5,14 +5,14 @@ description: Design principles for writing and reviewing skills well — predict
 
 # Skill Design
 
-A skill exists to wrangle determinism out of a stochastic system. **Predictability** — the agent taking the same *process* every run, not producing the same output — is the root virtue; every lever below serves it. A brainstorming skill should predictably diverge: its tokens vary, its behaviour doesn't.
+A skill exists to wrangle determinism out of a stochastic system. **Predictability** — the agent taking the same *process* every run, not producing the same output — is the root virtue; every lever below serves it. A brainstorming skill should predictably diverge: its tokens vary, its behavior doesn't.
 
 ## Invocation
 
 This suite has two skill kinds, and they map onto one design axis — whether the **agent** can reach the skill or only the **human** can:
 
 - A **reference skill** is knowledge the agent reaches for mid-task. Its **description** lets the agent fire it autonomously, lets other skills reach it, and lets an agent preload it via `skills:`. It pays a permanent **context load** — the description sits in the window every turn, and a preloaded body is injected whole at startup. This is the model-invoked kind.
-- A **workflow skill** is an action the human decides to take. It runs when the human names it, and preloading one makes no sense — it is a task prompt, not knowledge. It spends **cognitive load**: what the human must hold in their head, which skills exist and when to reach for each. That cost is the price of human agency, not something to minimise: spend it where human judgement matters, remove it where it does not. This is the user-invoked kind.
+- A **workflow skill** is an action the human decides to take. It runs when the human names it, and preloading one makes no sense — it is a task prompt, not knowledge. It spends **cognitive load**: what the human must hold in their head, which skills exist and when to reach for each. That cost is the price of human agency, not something to minimize: spend it where human judgment matters, remove it where it does not. This is the user-invoked kind.
 
 This suite keeps the two kinds in separate places. Reference skills live under `skills/`. Workflow skills are the `/`-commands, and each harness holds its own set as plain files outside the skill tree — they name that harness's agents and use its invocation syntax, so there is nothing to share. Where a harness offers a key that strips the description from the agent's reach, the commands set it: they cost zero **context load**, and human-only invocation becomes something the harness enforces rather than an index asking the model nicely.
 
@@ -40,7 +40,7 @@ Push too little down and the top bloats (**sprawl**); push too much and you hide
 
 **Progressive disclosure** is the move down the ladder — out of `SKILL.md` into a linked file — so the top stays legible. In this suite it is the reference-file pattern: a router `SKILL.md` plus `reference/*.md` loaded on demand. **Branching** is the cleanest disclosure test: inline what every branch needs, push behind a pointer what only some branches reach. A **context pointer**'s *wording*, not its target, decides when and how reliably the agent reaches the material — a must-have target behind a weak pointer is a variance bug, so sharpen the wording before inlining.
 
-Where the ladder decides *how far down* a piece sits, **co-location** decides *what sits beside it*: keep a concept's definition, rules, and caveats under one heading rather than scattered, so reading one part brings its neighbours. The test is that the skill reads like documentation written for the agent. Scattering is distinct from duplication: duplication repeats one meaning in two places, scattering fragments one meaning across many.
+Where the ladder decides *how far down* a piece sits, **co-location** decides *what sits beside it*: keep a concept's definition, rules, and caveats under one heading rather than scattered, so reading one part brings its neighbors. The test is that the skill reads like documentation written for the agent. Scattering is distinct from duplication: duplication repeats one meaning in two places, scattering fragments one meaning across many.
 
 Preloaded skills are injected whole, so keep a preloadable reference skill lean and disclose its depth into `reference/*.md` the agent Reads on demand.
 
@@ -53,15 +53,15 @@ Preloaded skills are injected whole, so keep a preloadable reference skill lean 
 
 ## Leading words
 
-A **leading word** is a compact concept already living in the model's pretraining that the agent thinks with while running the skill (e.g. *lesson*, *fog of war*, *tracer bullets*). Repeated as a token — never restated as a sentence — it accumulates a distributed definition and anchors a whole region of behaviour in the fewest tokens, by recruiting priors the model already holds.
+A **leading word** is a compact concept already living in the model's pretraining that the agent thinks with while running the skill (e.g. *lesson*, *fog of war*, *tracer bullets*). Repeated as a token — never restated as a sentence — it accumulates a distributed definition and anchors a whole region of behavior in the fewest tokens, by recruiting priors the model already holds.
 
-It serves predictability twice. In the body it anchors *execution*: the agent reaches for the same behaviour every time the word appears. In the description it anchors *invocation*: when the same word lives in your prompts, docs, and code, the agent links that shared language to the skill and fires it more reliably — so word a description with the leading words you already reach for.
+It serves predictability twice. In the body it anchors *execution*: the agent reaches for the same behavior every time the word appears. In the description it anchors *invocation*: when the same word lives in your prompts, docs, and code, the agent links that shared language to the skill and fires it more reliably — so word a description with the leading words you already reach for.
 
 Hunt for restatements a leading word retires: a triad spelled out at three sites, a description spending a sentence to gesture at one idea. "fast, deterministic, low-overhead" collapses to a *tight* loop; "a loop you believe in" becomes the loop going *red* on the bug — a fuzzy gate turned into a binary observable. Reach for an existing pretrained word first; a coined word recruits no priors and you pay its definition in tokens.
 
 ## Pruning
 
-Keep each meaning in a **single source of truth** — one authoritative place, so changing the behaviour is a one-place edit.
+Keep each meaning in a **single source of truth** — one authoritative place, so changing the behavior is a one-place edit.
 
 The **environment** is a source of truth too: build scripts, config files, the directory layout, `--help` output. A skill that restates it is a **cache** — a copy of a lookup, earning its load only when the lookup is expensive. Cache what the agent cannot find by looking: the unwritten convention, the reason behind a choice, the gotcha no config confesses. Leave the one-file, one-command lookups to the environment, where they cannot go stale.
 
@@ -75,5 +75,5 @@ Use these to diagnose a skill under review — each names a symptom and the leve
 - **Duplication** — the same meaning in more than one place. Costs maintenance and tokens, and inflates a meaning's rank on the ladder past its real weight.
 - **Sediment** — stale layers that settle because adding feels safe and removing feels risky. The default fate of any skill without a pruning discipline.
 - **Sprawl** — a skill simply too long, even when every line is live and unique. The cure is the ladder: disclose reference behind pointers, and split by branch or sequence so each path carries only what it needs.
-- **No-op** — a line the model already obeys by default, so you pay load to say nothing. The test: does it change behaviour versus the default? A weak leading word (*be thorough* when the agent already is) is a no-op; the fix is a stronger word (*relentless*), not a different technique.
-- **Negation** — steering by prohibition backfires: *don't think of an elephant* names the elephant and makes it more available. Prompt the **positive** — state the target behaviour so the banned one is never spoken; keep a prohibition only as a hard guardrail you can't phrase positively, and even then pair it with what to do instead.
+- **No-op** — a line the model already obeys by default, so you pay load to say nothing. The test: does it change behavior versus the default? A weak leading word (*be thorough* when the agent already is) is a no-op; the fix is a stronger word (*relentless*), not a different technique.
+- **Negation** — steering by prohibition backfires: *don't think of an elephant* names the elephant and makes it more available. Prompt the **positive** — state the target behavior so the banned one is never spoken; keep a prohibition only as a hard guardrail you can't phrase positively, and even then pair it with what to do instead.

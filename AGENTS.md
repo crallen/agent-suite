@@ -58,7 +58,7 @@ as a display name, Codex falls back to the directory name when it is absent.
 Two rules follow:
 
 - **Never edit a platform's copy.** It is a symlink; you are editing the canonical
-  file without realising which one you changed.
+  file without realizing which one you changed.
 - **Keep shared content harness-neutral.** No tool names, invocation syntax, or
   machinery specific to one harness. Anything that cannot be said neutrally belongs
   in a platform's index, not in a skill.

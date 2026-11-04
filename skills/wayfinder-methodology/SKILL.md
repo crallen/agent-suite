@@ -84,7 +84,7 @@ Every ticket is either **HITL** — worked *with* the user, who speaks for thems
 
 | Type | Mode | What it is |
 |---|---|---|
-| `research` | AFK | Surfacing a fact a decision waits on, from outside the working directory: third-party docs, an API's real behaviour, a local knowledge base. Dispatch a read-only subagent for in-repo facts, a web-capable one when the answer lives on the web. |
+| `research` | AFK | Surfacing a fact a decision waits on, from outside the working directory: third-party docs, an API's real behavior, a local knowledge base. Dispatch a read-only subagent for in-repo facts, a web-capable one when the answer lives on the web. |
 | `prototype` | HITL | Raise the fidelity of the discussion with a cheap, rough, concrete artifact to react to. Load `prototype-methodology`. Reach for it when *how should it look* or *how should it behave* is the open question. |
 | `grilling` | HITL | Conversation, and the default case. Load `grill-methodology` and `domain-modeling`. |
 | `task` | Either | Manual work that must happen before a decision can be made: signing up for a service so its API can be judged, provisioning access, moving data so its shape is visible. The one type that *does* rather than decides, and it earns its place by unblocking a decision. The agent drives it alone where it can; otherwise it hands the user a precise checklist. Its resolution records what was done plus any facts later tickets depend on. |

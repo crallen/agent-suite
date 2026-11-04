@@ -633,7 +633,7 @@ class CaseLoadingTest(unittest.TestCase):
             run_evals.load_cases(root)
 
     def test_unknown_routing_key_is_a_setup_error(self):
-        # A misspelt fixture would otherwise run in an empty dir and read as a gap.
+        # A misspelled fixture would otherwise run in an empty dir and read as a gap.
         root = self.write_suite("- prompt: hi\n  expect: why\n  fixutre: fixtures/repo\n")
         with self.assertRaisesRegex(run_evals.SetupError, "routing.yaml entry 1: unknown keys.*fixutre"):
             run_evals.load_cases(root)
@@ -1134,7 +1134,7 @@ class ConfirmationTest(unittest.TestCase):
             self.evaluate({"routing/regression": ("ppp" + "ppppp", "fff" + "fffff")},
                           on_run=stop_at_the_first_confirmation_run)
         self.assertTrue(run_evals._stopping.is_set())
-        # The queued confirmation runs were cancelled while the first slept.
+        # The queued confirmation runs were canceled while the first slept.
         self.assertEqual(self.calls, {("routing/regression", "base"): 4,
                                       ("routing/regression", "head"): 3})
 

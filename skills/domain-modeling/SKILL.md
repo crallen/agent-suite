@@ -21,7 +21,7 @@ Create these lazily, only when there is something to write.
 
 **Sharpen fuzzy language** — "manage", "handle", "process", and "sync" hide decisions: ask what specifically happens, who initiates it, and what the result is. Check any term the domain might own against the project's established language and propose the canonical one when it drifts.
 
-**Probe concept boundaries with scenarios** — when domain relationships are on the table, invent edge cases that force precision about where one concept ends and another begins. "Is a cancelled Order still an Order?" "What does a partial refund do to the Invoice?"
+**Probe concept boundaries with scenarios** — when domain relationships are on the table, invent edge cases that force precision about where one concept ends and another begins. "Is a canceled Order still an Order?" "What does a partial refund do to the Invoice?"
 
 **Cross-reference domain claims with code** — when someone states how the domain works, check whether the code agrees. Surface contradictions: "The code cancels entire Orders, but you just said partial cancellation is possible — which is right?"
 

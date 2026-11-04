@@ -36,11 +36,11 @@ Once you have *a* loop, ask: Can I make it faster? Can I make the signal sharper
 
 ### Non-deterministic bugs
 
-The goal is not a clean repro but a **higher reproduction rate**. Loop the trigger 100×, parallelise, add stress, narrow timing windows. A 50%-flake bug is debuggable; 1% is not — keep raising the rate.
+The goal is not a clean repro but a **higher reproduction rate**. Loop the trigger 100×, parallelize, add stress, narrow timing windows. A 50%-flake bug is debuggable; 1% is not — keep raising the rate.
 
 ### When you genuinely cannot build a loop
 
-Stop and say so explicitly. List what you tried. Ask for: (a) access to the environment that reproduces it, (b) a captured artifact (log dump, HAR file, core dump), or (c) permission to add temporary production instrumentation. Do **not** proceed to hypothesise without a loop.
+Stop and say so explicitly. List what you tried. Ask for: (a) access to the environment that reproduces it, (b) a captured artifact (log dump, HAR file, core dump), or (c) permission to add temporary production instrumentation. Do **not** proceed to hypothesize without a loop.
 
 ### Completion criterion
 
@@ -53,7 +53,7 @@ Phase 0 is done when you can name **one command** you have already run at least 
 
 Reading code to build a theory before this command exists is the failure this skill prevents. No red-capable command, no Phase 1.
 
-## Phase 1: Reproduce and Minimise
+## Phase 1: Reproduce and Minimize
 
 Run the loop. Watch the bug appear.
 
@@ -104,7 +104,7 @@ Write the regression test **before the fix** — but only if there is a **correc
 
 **If no correct seam exists, that itself is the finding.** Note it — the codebase architecture is preventing the bug from being locked down. This is a candidate for `architecture-review` work.
 
-With a seam: minimised repro becomes a failing test there, minimal root-cause fix, test passes, then re-run the Phase 0 loop against the original un-minimised scenario and search the codebase for variants of the same pattern.
+With a seam: minimized repro becomes a failing test there, minimal root-cause fix, test passes, then re-run the Phase 0 loop against the original un-minimized scenario and search the codebase for variants of the same pattern.
 
 ## Phase 6: Cleanup and Post-Mortem
 

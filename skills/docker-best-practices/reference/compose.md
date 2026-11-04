@@ -40,7 +40,7 @@ volumes:
 ## Notes on the development file
 
 - **The anonymous-volume trick** (`deps:/app/node_modules`) stops the bind mount at `/app` from hiding the dependencies installed inside the image. The same problem and fix applies to any ecosystem whose dependencies live under the project directory — `target/` for Rust, `.venv/` for Python. Languages that install dependencies outside the source tree, like Go's module cache, don't need it.
-- **`condition: service_healthy`** is what makes `depends_on` mean "ready", not merely "started". Without a healthcheck on the dependency, the app starts against a database still initialising.
+- **`condition: service_healthy`** is what makes `depends_on` mean "ready", not merely "started". Without a healthcheck on the dependency, the app starts against a database still initializing.
 - **Compiled languages get less from source mounting**, since a rebuild is required anyway. A bind mount plus a file watcher that reruns `cargo run` or `go run` works, but is often slower than rebuilding the image; measure before assuming it helps.
 
 ## Production
