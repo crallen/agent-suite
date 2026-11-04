@@ -38,6 +38,6 @@ CMD ["node", "dist/index.js"]
 - **The separate `deps` stage** is what keeps dev dependencies out. Reusing the build stage's `node_modules` ships every test framework and bundler to production; re-resolving with `--omit=dev` usually halves the image.
 - **`npm ci`, not `npm install`** — it installs from the lock file and fails when the lock and manifest disagree, which is the reproducibility a build wants.
 - **`USER node`** works here: the official images already define a `node` user. Set it after the last `COPY`, since a non-root user can't write to a root-owned `WORKDIR`.
-- **`ENV NODE_ENV=production`** changes framework behaviour at runtime and is easy to forget once the dependency pruning moved to its own stage.
+- **`ENV NODE_ENV=production`** changes framework behavior at runtime and is easy to forget once the dependency pruning moved to its own stage.
 - **Alpine** cuts roughly 100MB but ships musl instead of glibc. Native modules with prebuilt binaries (`sharp`, `better-sqlite3`, anything node-gyp) may fall back to compiling from source or fail outright. Prefer `slim` unless you've verified the dependency tree.
 - **Keep `node_modules` in `.dockerignore`.** Copying a host-built tree into the image ships binaries compiled for the wrong platform.

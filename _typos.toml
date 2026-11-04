@@ -1,0 +1,16 @@
+# Spelling check, run by CI's validate workflow: uvx typos@1.52.0
+[default]
+locale = "en-us"
+
+[default.extend-words]
+# Deliberate: test_evals.py checks that this misspelled key is rejected.
+fixutre = "fixutre"
+# British or non-US forms the en-us dictionary lets through.
+afterwards = "afterward"
+cancelled = "canceled"
+misspelt = "misspelled"
+parallelise = "parallelize"
+
+[files]
+# Captured CLI streams: split into fragments the checker misreads, and not ours to edit.
+extend-exclude = ["evals/recordings/", "_typos.toml"]

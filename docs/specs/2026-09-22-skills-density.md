@@ -12,7 +12,7 @@ references, and skill-design's glossary folds into its SKILL.md.
 ## Context
 
 - **The cutting rule is already in the repo.** skill-design defines the no-op test
-  ("does it change behaviour versus the default?") and names duplication,
+  ("does it change behavior versus the default?") and names duplication,
   sediment, sprawl, and negation as failure modes. Current-model prompt guidance
   says the same: delete a line if removing it changes neither what is permitted
   nor how success is judged; keep numbered steps only where order matters; prefer
@@ -152,7 +152,7 @@ skill.
   `reference/design-direction.md` §9 and its "watch for" lists merged into
   `anti-patterns.md`; the generic good-defaults prose trimmed to the opinionated
   lines; `accessibility-responsive.md` and `component-architecture.md` lose their
-  re-summarising sections. About 683 to 500.
+  re-summarizing sections. About 683 to 500.
 - All nine identity-style descriptions rewritten as triggers, with the matching
   OpenCode and Codex rows.
 

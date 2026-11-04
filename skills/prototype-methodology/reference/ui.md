@@ -43,7 +43,7 @@ Draft each variant. Hold each one to:
 - The project's component library / styling system (TailwindCSS, shadcn, MUI, plain CSS, whatever).
 - A clear exported component name: `VariantA`, `VariantB`, `VariantC`.
 
-Variants must be **structurally different** — different layout, different information hierarchy, different primary affordance, not just different colours. Three slightly-tweaked card grids isn't a UI prototype. If two drafts come out too similar, redo one with an explicit constraint ("do not use a card grid").
+Variants must be **structurally different** — different layout, different information hierarchy, different primary affordance, not just different colors. Three slightly-tweaked card grids isn't a UI prototype. If two drafts come out too similar, redo one with an explicit constraint ("do not use a card grid").
 
 ### 3. Wire Them Together
 
@@ -64,12 +64,12 @@ For sub-shape A: keep all existing data fetching above the switcher; only the re
 
 ### 4. Build the Floating Switcher
 
-A small fixed-position bar at the bottom-centre with three pieces:
+A small fixed-position bar at the bottom-center with three pieces:
 - **Left arrow** — cycles to the previous variant (wraps around).
 - **Variant label** — shows the current variant key and, if the variant exports a name, that name. e.g. `B — Sidebar layout`.
 - **Right arrow** — cycles forward (wraps around).
 
-Behaviour:
+Behavior:
 - Clicking an arrow updates the URL search param (use the framework's router — `router.replace` on Next, `navigate` on React Router, etc.) so the variant is shareable and reload-stable.
 - Keyboard: `←` and `→` arrow keys also cycle. Don't intercept arrow keys when an `<input>`, `<textarea>`, or `[contenteditable]` is focused.
 - Visually distinct from the page (high-contrast pill, subtle shadow) so it's obviously not part of the design being evaluated.
@@ -89,5 +89,5 @@ Once a variant has won, write down which one and why (commit message, ADR, issue
 
 ## Anti-Patterns
 
-- **Variants that differ only in colour or copy.** Real variants disagree about structure.
+- **Variants that differ only in color or copy.** Real variants disagree about structure.
 - **Sharing too much code between variants.** A shared `<Header>` is fine; a shared `<Layout>` defeats the point.

@@ -25,7 +25,7 @@ The output is a ranked list of proposals. Nothing is edited until the user picks
 |---|---|---|
 | **Navigation** | The session took long to find a file or fact, or tripped on a hidden dependency between files | A **navigation pointer**: one line in a steering file naming the doc or module and when to read it |
 | **Automated checks** | The agent made a mistake a machine could have caught, or the repo has no guardrail at all | A lint rule, type, test, pre-commit hook, or CI job |
-| **Review standards** | Review missed a mistake that takes judgement to see | A rule added to, clarified in, or removed from the standards the reviewer reads |
+| **Review standards** | Review missed a mistake that takes judgment to see | A rule added to, clarified in, or removed from the standards the reviewer reads |
 | **Steering-file weight** | An always-loaded file is large, or carries rules that belong in review or in a check | Move the rule down: to a check, to review standards, or behind a pointer |
 | **No-ops** | A steering instruction did not change what the agent did | Delete the sentence |
 | **Tool economy** | A tool call was expensive for what it returned | A narrower command, a script, or a cheaper tool for that lookup |
@@ -35,7 +35,7 @@ The output is a ranked list of proposals. Nothing is edited until the user picks
 
 **Read the repo's own checks first.** Look at its lint, typecheck, and test commands and its CI workflow before proposing a new check. A check that exists but is unwired or silently broken is the finding; a duplicate is not. A repo with no pre-commit hook and no CI job running those commands is a finding in itself.
 
-**Mechanical violations get a mechanism.** A fixed pattern, a banned API, an import shape, or a file-location rule becomes a deterministic check, in whichever of the repo's existing tools makes it cheapest. Written standards are for judgement calls no check could make: cross-file consistency, fit with the surrounding style.
+**Mechanical violations get a mechanism.** A fixed pattern, a banned API, an import shape, or a file-location rule becomes a deterministic check, in whichever of the repo's existing tools makes it cheapest. Written standards are for judgment calls no check could make: cross-file consistency, fit with the surrounding style.
 
 **Standards belong to review.** The implementing agent explores, writes, and debugs, so its context is the scarcest in the pipeline. The reviewer receives a diff and has room to spare. A rule the reviewer can enforce from the diff goes in the review standards (`CODING_STANDARDS.md` or the repo's equivalent), which `code-review-checklist` defers to, and stays out of the always-loaded steering files.
 

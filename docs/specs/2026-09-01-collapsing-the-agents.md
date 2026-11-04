@@ -11,7 +11,7 @@ OpenCode is out of scope and keeps all 15 of its agents.
 
 ## Context
 
-`agents/` sits at the repo root labelled canonical, but it has exactly one
+`agents/` sits at the repo root labeled canonical, but it has exactly one
 consumer: `claude/.claude/agents`, a single line in the dotfiles link manifest.
 OpenCode's roster is 15 independent real files under `platforms/opencode/agent/`,
 including a `tech-lead` that Claude does not have. Nothing is shared, so a change

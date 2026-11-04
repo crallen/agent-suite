@@ -30,7 +30,7 @@ has one parsing path instead of two.
   Python is 3.14 with no yaml module and no distro package installed.
 - **Dotfiles side:** `make check` runs `scripts/links.py` then the suite validator.
   `seed-settings` runs only from `make install`. Nothing verifies
-  `claude/.claude/settings.json` afterwards, which is why this machine has had no
+  `claude/.claude/settings.json` afterward, which is why this machine has had no
   deny list since 2026-09-09.
 - **Three identical inventory functions** in the validator and a docstring saying
   "two agent-suite configs".

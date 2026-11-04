@@ -89,7 +89,7 @@ That guard is there because Stow is silent about the gap — without it a fresh 
 stows cleanly and simply has no `~/.claude/settings.json`, secret-file deny list
 included.
 
-Nothing syncs the two afterwards. Update the example when a setting is worth carrying
+Nothing syncs the two afterward. Update the example when a setting is worth carrying
 to the next machine, and leave machine-local additions out of it.
 
 ## Conventions

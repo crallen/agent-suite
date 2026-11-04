@@ -131,7 +131,7 @@ uncommitted changes, or staged ones when `stage: true`. An empty fixture still g
 | `tool_not_called` | `[<tool>, ..]` | None of these tools was called |
 | `final_text` | `{match: [..], not_match: [..]}` | Regexes against the final assistant text |
 | `shell` | `{run, match, not_match}` | Command run in scratch after the session; fails on a nonzero exit, else regexes against its stdout. Needs at least one of `match` and `not_match` |
-| `no_paths` | `[<glob>, ..]` | No file matching these exists in scratch afterwards |
+| `no_paths` | `[<glob>, ..]` | No file matching these exists in scratch afterward |
 
 Agent cases run through their real commands, not `--agent`: an agent's `skills:`
 preload applies only when it runs as a subagent or fork. Tool calls from a subagent

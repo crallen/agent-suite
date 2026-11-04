@@ -34,8 +34,8 @@ Each frame has two parts:
 1. **Current state**, pretty-printed and diff-friendly (one field per line, or formatted JSON). Use **bold** for field names or section headers and **dim** for less important context (timestamps, IDs, derived values). Native ANSI escape codes are fine — `\x1b[1m` bold, `\x1b[2m` dim, `\x1b[0m` reset.
 2. **Keyboard shortcuts** listed at the bottom: `[a] add user  [d] delete user  [t] tick clock  [q] quit`.
 
-Behaviour:
-1. Initialise state — a single in-memory object/struct. Render the first frame on start.
+Behavior:
+1. Initialize state — a single in-memory object/struct. Render the first frame on start.
 2. Read one keystroke (or one line) at a time, dispatch to a handler that mutates state.
 3. Re-render the full frame after every action — don't append, replace.
 4. Loop until quit.

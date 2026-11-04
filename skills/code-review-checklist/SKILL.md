@@ -37,7 +37,7 @@ Calibration:
 - **Axes don't mask each other.** Spec fidelity, repo-convention fit, and code
   quality are separate axes; report findings on one even when the others are
   clean.
-- **Smells are judgement calls.** Design-smell findings land at INFO, or WARNING
+- **Smells are judgment calls.** Design-smell findings land at INFO, or WARNING
   when the impact in this diff is concrete, never CRITICAL.
 
 ## Scope and Spec Fidelity
@@ -111,7 +111,7 @@ never a hard violation. Each entry reads *what it is* → *how to fix*:
   Extract the shared shape and call it from both.
 - **Feature Envy** — a method that reaches into another object's data more than
   its own. → Move the method onto the data it envies.
-- **Data Clumps** — the same few fields or parameters keep travelling together. →
+- **Data Clumps** — the same few fields or parameters keep traveling together. →
   Bundle them into one type.
 - **Primitive Obsession** — a primitive standing in for a domain concept. → Give
   the concept its own small type.

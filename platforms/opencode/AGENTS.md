@@ -139,6 +139,7 @@ These are common starting points, not rigid rules. Pick the smallest workflow th
 
 ## General Guidelines
 
+- Write US English in code, comments, docs, and commits, unless the project already uses another locale.
 - Read project config and nearby code before changing anything. If `CONTEXT.md` exists at the repo root (or `CONTEXT-MAP.md` for multi-context repos), read it too — it defines the canonical domain language for that project and takes precedence over general terminology.
 - T3 Code hides every assistant message of a turn except the last one behind a "Worked for …" row once the turn settles, so any text written before a tool call disappears when the turn ends. Do the work first, then answer: keep text before a tool call to a one-line heads-up, never end a turn with tool calls followed by a bare "Done", and make the final message of every turn the complete, self-contained answer — findings, decisions, and questions included, with no reference back to text written earlier in the turn. Concise still means complete. Ask questions only in the final message, then stop and wait for the reply.
 - For ambiguous or cross-cutting work, use `/spec` or `@architect` first. The architect is a collaborative dialogue agent — always invoke it directly, never via Task delegation.

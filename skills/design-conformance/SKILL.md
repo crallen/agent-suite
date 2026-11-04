@@ -70,7 +70,7 @@ or "the record is silent".
 
 The author's need is the unknown; treat the change as a reasonable answer to a
 question you have not yet heard. Enumerate the two to four plausible uses, say
-which one the evidence favours and why, and give each a **conditional path**:
+which one the evidence favors and why, and give each a **conditional path**:
 what the author does under that answer, what changes in the PR, and whether a
 new ADR is needed.
 
@@ -91,13 +91,13 @@ record.
 | **needs a decision** | The record is silent and the change adds hard-to-reverse contract surface, or reasonable intents lead to different verdicts. The outcome is an ADR before the merge. |
 
 When the intent is unconfirmed and the paths diverge, give the verdict for the
-use the evidence favours and mark it provisional on the blocking question.
+use the evidence favors and mark it provisional on the blocking question.
 
 ## Citations
 
 Every claim about the record cites `path:line` or a line range, with the decisive
 phrase quoted briefly. A claim about an existing mechanism also cites the code or
-runbook that provides it. A claim you cannot cite is labelled inference, and a
+runbook that provides it. A claim you cannot cite is labeled inference, and a
 verdict never rests on inference alone.
 
 ## Boundaries

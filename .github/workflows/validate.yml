@@ -28,3 +28,5 @@ jobs:
       - run: uv run scripts/validate-config.py
       # The eval runner's own tests: recorded streams, no model calls.
       - run: uv run scripts/test_evals.py
+      # US English and common typos; _typos.toml holds the locale and exclusions.
+      - run: uvx typos@1.52.0

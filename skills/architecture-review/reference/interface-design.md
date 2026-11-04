@@ -22,9 +22,9 @@ Spawn 3+ sub-agents in parallel using your harness's subagent tool. Each must pr
 
 Prompt each sub-agent with a separate technical brief (file paths, coupling details, dependency category from `deepening.md`, what sits behind the seam). Give each agent a different design constraint:
 
-- Agent 1: "Minimize the interface — aim for 1–3 entry points max. Maximise leverage per entry point."
-- Agent 2: "Maximise flexibility — support many use cases and extension."
-- Agent 3: "Optimise for the most common caller — make the default case trivial."
+- Agent 1: "Minimize the interface — aim for 1–3 entry points max. Maximize leverage per entry point."
+- Agent 2: "Maximize flexibility — support many use cases and extension."
+- Agent 3: "Optimize for the most common caller — make the default case trivial."
 - Agent 4 (if applicable): "Design around ports & adapters for cross-seam dependencies."
 
 Include both `vocabulary.md` terms and CONTEXT.md vocabulary in each brief so sub-agents name things consistently across both frameworks.

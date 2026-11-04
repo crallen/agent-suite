@@ -23,8 +23,8 @@ plus the one domain skill that fits; adding more crowds out the actual task.
 | `ci-pipeline` | CI/CD stage order, architecture and coverage enforcement gates, auditing an inherited pipeline, per-stack reference workflows, and a discovery procedure for unfamiliar stacks | Building, auditing, or adding gates to a pipeline |
 | `code-review-checklist` | The review rubric and report format — spec fidelity as its own axis, the house rules for naming and error shape, the Fowler design-smell baseline, and severity calibration. Load when reviewing a diff, a pull request, or a file for quality. | Reviewing a diff and wanting a rubric |
 | `coding-guardrails` | Execution guardrails for implementation work: when to ask before coding, the simplicity test, diff scope, verification targets, structure and error defaults, naming over comments. Load for any feature, fix, refactor, config change, or diff review; its references cover type design, idempotency, building reusable levers, and encoding lessons in structure. | Any implementation work — the default companion skill |
-| `database-patterns` | House rules for database work — expand/migrate/contract migrations, the constraint-per-need table, transaction boundaries chosen by invariant, and evidence-based indexing. Load for schema design, migrations, indexes, query tuning, transaction boundaries, and ORM code where database behavior is the real concern. | Schema, migrations, indexes, or query behaviour |
-| `debugging-methodology` | The debugging discipline — build a pass/fail feedback loop before anything else, rank falsifiable hypotheses and show them, tag instrumentation for removal, fix at a correct test seam or record that none exists. Load when investigating a bug, a failing test, or unexplained behavior. | Chasing a bug, test failure, or unexplained behaviour |
+| `database-patterns` | House rules for database work — expand/migrate/contract migrations, the constraint-per-need table, transaction boundaries chosen by invariant, and evidence-based indexing. Load for schema design, migrations, indexes, query tuning, transaction boundaries, and ORM code where database behavior is the real concern. | Schema, migrations, indexes, or query behavior |
+| `debugging-methodology` | The debugging discipline — build a pass/fail feedback loop before anything else, rank falsifiable hypotheses and show them, tag instrumentation for removal, fix at a correct test seam or record that none exists. Load when investigating a bug, a failing test, or unexplained behavior. | Chasing a bug, test failure, or unexplained behavior |
 | `doc-templates` | Templates for READMEs, API docs, changelogs, code comments, plus Diátaxis document-type selection and global-audience prose rules, and register/naming rules — ADRs defer to `domain-modeling` | Writing a README, API doc, or changelog |
 | `docker-best-practices` | The static-binary vs runtime base-image decision, multi-stage builds, layer caching, hardening, and per-stack reference Dockerfiles | Writing or shrinking a Dockerfile or Compose file |
 | `domain-modeling` | Active domain-model maintenance: terminology sharpening, CONTEXT.md glossary upkeep, which terms earn a type, and minimal ADRs — both gated by a three-part test | Pinning down terminology, or recording a hard-to-reverse decision |
@@ -38,7 +38,7 @@ plus the one domain skill that fits; adding more crowds out the actual task.
 | `spec-writing` | Dialogue-to-spec workflow: scope gate, one-question-at-a-time clarification with lettered options, recommended approaches, staged design, self-review, and a dated spec file | Turning an ambiguous goal into a design spec |
 | `test-strategy` | House rules for proving correctness — test-first vertical slices, the mock limit, coverage targets by category, test naming, and reserved fixture placeholders. Load when deciding how a change will be verified, writing or reviewing tests, or setting a coverage gate. | Choosing test types, coverage targets, or mocking approach |
 | `ticket-writing` | Spec-to-ticket splitting, story/task and bug templates, testable acceptance-criteria rules, and JIRA/Linear platform notes | Splitting a spec into tracker tickets |
-| `unslop` | Cut AI tells from any writing (puffery, AI vocabulary, punctuation/list overuse, hedging, voiceless prose), then restore a human voice | Finalising prose a human will read |
+| `unslop` | Cut AI tells from any writing (puffery, AI vocabulary, punctuation/list overuse, hedging, voiceless prose), then restore a human voice | Finalizing prose a human will read |
 | `wayfinder-methodology` | Multi-session effort mapping: chart a destination plus decision tickets in-repo, work the frontier one decision per session, hold unsharpened work as fog of war | Planning an effort too big for one session |
 | `why` | Reconstruct why code is shaped as it is — recover rationale from git history, PRs, issues, comments, and ADRs, each claim cited with stated confidence and gaps named | The intent behind existing code is unclear |
 
@@ -63,6 +63,8 @@ plus the one domain skill that fits; adding more crowds out the actual task.
 
 ## General Guidelines
 
+- Write US English in code, comments, docs, and commits, unless the project already
+  uses another locale.
 - Read the project's config and nearby code before changing anything. If `CONTEXT.md`
   exists at the repo root (or `CONTEXT-MAP.md` for multi-context repos), read it — it
   defines that project's canonical domain language and outranks general terminology.

@@ -15,7 +15,7 @@ the order the author needs it, and nothing from the other review axes.
    claim, followed by the cited evidence in a sentence or two. Name the document
    and path, and quote the decisive phrase.
 4. **`### Where to go from here`**: one bold lettered path per plausible use, in
-   the form "**A. If … (my expectation):**", with the path the evidence favours
+   the form "**A. If … (my expectation):**", with the path the evidence favors
    first and marked. Under each path, the concrete reshaping steps, and an ADR
    where the path needs one.
 5. **Close**: offer a route for the author who would rather hand the design
