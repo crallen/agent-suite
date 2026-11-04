@@ -63,6 +63,8 @@ plus the one domain skill that fits; adding more crowds out the actual task.
 
 ## General Guidelines
 
+- Write US English in code, comments, docs, and commits, unless the project already
+  uses another locale.
 - Read the project's config and nearby code before changing anything. If `CONTEXT.md`
   exists at the repo root (or `CONTEXT-MAP.md` for multi-context repos), read it — it
   defines that project's canonical domain language and outranks general terminology.

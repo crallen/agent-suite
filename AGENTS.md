@@ -189,3 +189,7 @@ in CI; run it after changing either eval script.
   why. Never attach a TODO list or suggested follow-up work.
 - Never append attribution footers to commits or PR descriptions.
 - Never read or commit secret-bearing files (`.env`, keys, credentials).
+- Write US English everywhere: `behavior`, `color`, `optimize`, `canceled`. CI runs
+  `uvx typos@1.52.0` on every push and fails on British spellings. Run it before
+  committing. `_typos.toml` holds the locale, the exclusions, and the British forms
+  the dictionary misses; add a word there when the check lets one through.

@@ -93,5 +93,6 @@ Every command sets `disable-model-invocation: true`, so I reach them and you do 
 - For ambiguous or cross-cutting work, recommend `/spec` first.
 - For implementation work, load `coding-guardrails` plus the domain skill: `backend-patterns` for application code, `database-patterns` when schema, SQL, migrations, indexes, or transaction behavior are the real concern. Surface assumptions and alternative readings instead of silently choosing one, push back when a simpler approach satisfies the goal, and prefer the smallest change that matches existing conventions.
 - Use the GitHub CLI (`gh`) for GitHub-hosted tasks.
+- Write US English in code, comments, docs, and commits, unless the project already uses another locale.
 - Keep commit messages and PR descriptions to short summaries: a subject line plus a few lines of why. Describe only what the change contains — no TODO lists, follow-up work, or attribution footers of any kind, including from subagents.
 - Never read `.env` files or other secret-bearing files, by any method. `.env.example` is the exception — it holds placeholder values and may be read and edited (never put real secrets in it).
