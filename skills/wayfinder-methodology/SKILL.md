@@ -1,6 +1,6 @@
 ---
 name: wayfinder-methodology
-description: Chart an effort too big for one session as a map of decision tickets in the repo, then resolve one decision per session — destination, fog of war, frontier, and the four ticket types. Load when planning work that spans multiple sessions, or when working through an existing wayfinder map.
+description: Chart an effort too big for one session as a map of decision tickets in the repo, then resolve one decision per session — destination, fog of war, frontier, and the four ticket types. Load when planning work that spans multiple sessions, including advice on where to begin an effort whose key decisions are still open, or when working through an existing wayfinder map.
 ---
 
 # Wayfinder Methodology

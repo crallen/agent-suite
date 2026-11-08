@@ -1,6 +1,6 @@
 ---
 name: code-review-checklist
-description: The review rubric and report format — spec fidelity and repo-convention fit as separate axes, the house rules for naming and error shape, the Fowler design-smell baseline, and severity calibration. Load when reviewing a diff, a pull request, or a file for quality.
+description: The review rubric and report format — spec fidelity and repo-convention fit as separate axes, the house rules for naming and error shape, the Fowler design-smell baseline, and severity calibration. Load when reviewing a diff, a pull request, or a file for quality, when drafting feedback on someone else's change, or when judging how severe a finding is.
 ---
 
 # Code Review Checklist
