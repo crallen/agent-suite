@@ -4,3 +4,4 @@ skills/.trash/
 .env
 .env.*
 !.env.example
+evals/triage/
