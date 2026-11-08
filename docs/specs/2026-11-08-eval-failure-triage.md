@@ -179,7 +179,7 @@ failing report.
   `evidence: RunEvidence | None = None` to `Outcome`; `run_one` takes `n` and builds
   evidence from the `RunResult`; `run_all` passes `n`. Add the `run_one` evidence and
   `run_all` numbering tests to `scripts/test_evals.py`.
-- [ ] 2. `scripts/run-evals.py`: add `findings_of` with the shape above and the
+- [x] 2. `scripts/run-evals.py`: add `findings_of` with the shape above and the
   `--findings FILE` flag; `run()` writes it alongside the report. Add the
   `findings_of` and `run()` tests. (blocked by 1)
 - [x] 3. Create `platforms/claude/commands/eval-triage.md`: frontmatter as in
