@@ -13,6 +13,7 @@ once against this working tree, uncommitted edits included.
     scripts/run-evals.py --base REF               compare against another ref
     scripts/run-evals.py --only 'behavior/*'      only the cases whose id matches
     scripts/run-evals.py --runs 5 --out r.md      more runs; report to a file
+    scripts/run-evals.py --findings f.json        also each non-PASS case's runs, as JSON
 
 Cases always come from this working tree's evals/; the base ref supplies only
 the suite under test. Case ids, for --only (an fnmatch glob):
@@ -1126,6 +1127,56 @@ def render_report(
     return "\n".join(lines)
 
 
+def findings_of(
+    cases: Sequence[Case], rows: Sequence[Row], outcomes: Sequence[Outcome], *,
+    base_sha: str, base_ref: str, head_sha: str, dirty: bool, model: str, runs: int,
+    plugins: Sequence[str],
+) -> dict:
+    """The --findings data: each non-PASS case with every run on both sides,
+    base first then by run number, confirmation runs included."""
+    by_id = {c.id: c for c in cases}
+    found = []
+    for row in rows:
+        if row.status == "PASS":
+            continue
+        case = by_id[row.case_id]
+        routing = isinstance(case, RoutingCase)
+        case_runs = sorted((o for o in outcomes if o.case_id == case.id),
+                           key=lambda o: (o.side != "base", o.n))
+        found.append({
+            "id": case.id,
+            "tier": case.id.split("/", 1)[0],
+            "status": row.status,
+            "base": str(row.base),
+            "head": str(row.head),
+            "prompt": case.prompt,
+            "targets": sorted(case.targets) if routing else None,
+            "asserts": None if routing else list(case.asserts),
+            "case_file": "evals/routing.yaml" if routing
+                         else f"evals/behavior/{case.id.removeprefix('behavior/')}/case.yaml",
+            "runs": [_run_finding(o) for o in case_runs],
+        })
+    return {
+        "base": {"ref": base_ref, "sha": base_sha},
+        "head": {"sha": head_sha, "dirty": dirty},
+        "model": model, "runs": runs, "plugins": list(plugins),
+        "cases": found,
+    }
+
+
+def _run_finding(outcome: Outcome) -> dict:
+    evidence = outcome.evidence
+    return {
+        "side": outcome.side, "n": outcome.n, "passed": outcome.verdict.passed,
+        "counted": outcome.verdict.counted, "detail": outcome.verdict.detail,
+        "plugins": list(outcome.plugins),
+        "evidence": None if evidence is None else {
+            "routes": list(evidence.routes), "calls": list(evidence.calls),
+            "final_text": evidence.final_text,
+        },
+    }
+
+
 def _confirmation(row: Row) -> str:
     if not row.rechecked:
         return ""
@@ -1301,11 +1352,16 @@ def run(args: argparse.Namespace) -> int:
           f"base {args.base} ({setup.base_sha[:12]})", file=sys.stderr)
     with eval_sides(head, setup.base_sha) as sides:
         rows, outcomes = evaluate(cases, sides, setup.auth, args.model, args.runs, args.jobs)
-    report = render_report(
-        rows, base_sha=setup.base_sha, base_ref=args.base, head_sha=head_sha, dirty=dirty,
+    header = dict(
+        base_sha=setup.base_sha, base_ref=args.base, head_sha=head_sha, dirty=dirty,
         model=next((o.model for o in outcomes if o.model), args.model or "unknown"),
         runs=args.runs, plugins=sorted({p for o in outcomes for p in o.plugins}),
     )
+    report = render_report(rows, **header)
+    if args.findings:
+        findings = findings_of(cases, rows, outcomes, **header)
+        Path(args.findings).write_text(json.dumps(findings, indent=2))
+        print(f"run-evals: findings written to {args.findings}", file=sys.stderr)
     if args.out:
         Path(args.out).write_text(report)
         print(f"run-evals: report written to {args.out}", file=sys.stderr)
@@ -1335,6 +1391,8 @@ def main() -> int:
     parser.add_argument("--model", help="model for every run (default: the config's)")
     parser.add_argument("--only", metavar="GLOB", help="run only the case ids matching GLOB")
     parser.add_argument("--out", metavar="FILE", help="write the report here, not to stdout")
+    parser.add_argument("--findings", metavar="FILE",
+                        help="also write each non-PASS case's runs and evidence here, as JSON")
     parser.add_argument("--env-file", type=Path, metavar="FILE",
                         help="dotenv file holding the auth variable (default: <suite root>/.env)")
     args = parser.parse_args()

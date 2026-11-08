@@ -1211,6 +1211,138 @@ class ConfirmationTest(unittest.TestCase):
         self.assertTrue(report.rstrip().endswith("runs=3 -->"))
 
 
+class FindingsTest(unittest.TestCase):
+    """findings_of: the non-PASS cases and every run behind each, as JSON-ready data."""
+
+    BASE_SHA = "0123456789abcdef0123456789abcdef01234567"
+    HEAD_SHA = "fedcba9876543210fedcba9876543210fedcba98"
+
+    ROUTING = run_evals.RoutingCase(id="routing/doc-templates-1", prompt="write a readme",
+                                    targets=frozenset({"unslop", "doc-templates"}))
+    BEHAVIOR = run_evals.BehaviorCase(
+        id="behavior/spec-asks-first", prompt="spec it", allowed_tools=(), timeout=60,
+        stage=False, asserts=({"tool_not_called": ["Write"]},), fixture=None)
+    PASSING = run_evals.RoutingCase(id="routing/why", prompt="why is this here",
+                                    targets=frozenset({"why"}))
+
+    def outcome(self, case, side, n, passed, *, counted=True, plugins=()):
+        verdict = run_evals.Verdict(passed, counted, "ok" if passed else f"fail {side} {n}")
+        evidence = run_evals.RunEvidence(routes=("unslop",), calls=("Read: a.md",),
+                                         final_text=f"{side} {n}") if counted else None
+        return run_evals.Outcome(case.id, side, verdict, plugins, "claude-sonnet-5-5", n, evidence)
+
+    def findings(self, cases, outcomes):
+        return run_evals.findings_of(
+            cases, run_evals.rows_of(cases, outcomes), outcomes,
+            base_sha=self.BASE_SHA, base_ref="main", head_sha=self.HEAD_SHA, dirty=True,
+            model="claude-sonnet-5-5", runs=3, plugins=["cc-plugin-telemetry"])
+
+    def test_header_names_both_sides_the_model_and_the_plugins(self):
+        found = self.findings([self.PASSING], [self.outcome(self.PASSING, s, n, True)
+                                               for s in ("base", "head") for n in (1, 2, 3)])
+        self.assertEqual(found, {
+            "base": {"ref": "main", "sha": self.BASE_SHA},
+            "head": {"sha": self.HEAD_SHA, "dirty": True},
+            "model": "claude-sonnet-5-5", "runs": 3, "plugins": ["cc-plugin-telemetry"],
+            "cases": [],
+        })
+
+    def test_only_non_pass_cases_appear(self):
+        cases = [self.PASSING, self.ROUTING]
+        outcomes = [self.outcome(c, s, n, c is self.PASSING)
+                    for c in cases for s in ("base", "head") for n in (1, 2, 3)]
+        found = self.findings(cases, outcomes)
+        self.assertEqual([(c["id"], c["status"], c["base"], c["head"]) for c in found["cases"]],
+                         [("routing/doc-templates-1", "FAIL", "0/3", "0/3")])
+
+    def test_a_case_lists_every_run_on_both_sides_base_first_then_by_number(self):
+        # Shuffled the way the pool completes them; 5 is a confirmation run.
+        outcomes = [self.outcome(self.ROUTING, "head", 5, False),
+                    self.outcome(self.ROUTING, "base", 2, True),
+                    self.outcome(self.ROUTING, "head", 1, False),
+                    self.outcome(self.ROUTING, "base", 1, True, plugins=("cc-plugin-telemetry",)),
+                    self.outcome(self.ROUTING, "base", 5, True),
+                    self.outcome(self.ROUTING, "head", 2, False, counted=False)]
+        runs = self.findings([self.ROUTING], outcomes)["cases"][0]["runs"]
+        self.assertEqual([(r["side"], r["n"]) for r in runs],
+                         [("base", 1), ("base", 2), ("base", 5),
+                          ("head", 1), ("head", 2), ("head", 5)])
+        self.assertEqual(runs[0], {
+            "side": "base", "n": 1, "passed": True, "counted": True, "detail": "ok",
+            "plugins": ["cc-plugin-telemetry"],
+            "evidence": {"routes": ["unslop"], "calls": ["Read: a.md"], "final_text": "base 1"},
+        })
+        self.assertEqual(runs[4], {
+            "side": "head", "n": 2, "passed": False, "counted": False, "detail": "fail head 2",
+            "plugins": [], "evidence": None,
+        })
+
+    def test_routing_case_carries_sorted_targets_and_the_routing_file(self):
+        outcomes = [self.outcome(self.ROUTING, s, n, False)
+                    for s in ("base", "head") for n in (1, 2, 3)]
+        case = self.findings([self.ROUTING], outcomes)["cases"][0]
+        self.assertEqual({k: v for k, v in case.items() if k != "runs"}, {
+            "id": "routing/doc-templates-1", "tier": "routing", "status": "FAIL",
+            "base": "0/3", "head": "0/3", "prompt": "write a readme",
+            "targets": ["doc-templates", "unslop"], "asserts": None,
+            "case_file": "evals/routing.yaml",
+        })
+
+    def test_behavior_case_carries_its_asserts_and_its_case_file(self):
+        outcomes = [self.outcome(self.BEHAVIOR, s, n, s == "base")
+                    for s in ("base", "head") for n in (1, 2, 3)]
+        case = self.findings([self.BEHAVIOR], outcomes)["cases"][0]
+        self.assertEqual({k: v for k, v in case.items() if k != "runs"}, {
+            "id": "behavior/spec-asks-first", "tier": "behavior", "status": "REGRESSION",
+            "base": "3/3", "head": "0/3", "prompt": "spec it",
+            "targets": None, "asserts": [{"tool_not_called": ["Write"]}],
+            "case_file": "evals/behavior/spec-asks-first/case.yaml",
+        })
+
+
+class RunOutputsTest(unittest.TestCase):
+    """run() over the real cases, with preflight, the sides, and the model runs stubbed."""
+
+    def run_evals(self, tmp: Path, passed: bool, findings: Path | None) -> str:
+        def fake_evaluate(cases, sides, auth, model, runs, jobs):
+            verdict = run_evals.Verdict(passed, True, "stub")
+            outcomes = [run_evals.Outcome(c.id, s, verdict, (), "claude-sonnet-5-5", n,
+                                          run_evals.RunEvidence((), (), "reply"))
+                        for c in cases for s in ("base", "head") for n in range(1, runs + 1)]
+            return run_evals.rows_of(cases, outcomes), outcomes
+
+        out = tmp / f"report-{findings is not None}.md"
+        args = argparse.Namespace(only=None, base="main", env_file=None, runs=2, jobs=1,
+                                  model=None, out=str(out),
+                                  findings=str(findings) if findings else None)
+        setup = run_evals.Setup(auth={}, base_sha="0123456789abcdef0123456789abcdef01234567")
+        with patch.object(run_evals, "preflight", return_value=setup), \
+                patch.object(run_evals, "eval_sides", return_value=contextlib.nullcontext()), \
+                patch.object(run_evals, "evaluate", side_effect=fake_evaluate), \
+                contextlib.redirect_stderr(io.StringIO()) as self.stderr:
+            run_evals.run(args)
+        return out.read_text()
+
+    def test_findings_file_is_valid_json_and_the_report_is_unchanged(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            plain = self.run_evals(tmp, passed=False, findings=None)
+            with_findings = self.run_evals(tmp, passed=False, findings=tmp / "findings.json")
+            found = json.loads((tmp / "findings.json").read_text())
+        self.assertEqual(with_findings, plain)
+        self.assertIn(f"findings written to {tmp / 'findings.json'}", self.stderr.getvalue())
+        self.assertEqual(found["runs"], 2)
+        self.assertTrue(found["cases"])
+        self.assertTrue(all(c["status"] == "FAIL" for c in found["cases"]))
+        self.assertEqual(len(found["cases"][0]["runs"]), 4)
+
+    def test_findings_file_has_no_cases_when_every_case_passes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            self.run_evals(tmp, passed=True, findings=tmp / "findings.json")
+            found = json.loads((tmp / "findings.json").read_text())
+        self.assertEqual(found["cases"], [])
+
 
 class CheckEvalReportTest(unittest.TestCase):
     MARKER = "<!-- evals: base=0123456 head=89abcde model=claude-sonnet-5-5 runs=3 -->"
