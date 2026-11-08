@@ -321,11 +321,13 @@
     a phone-sized screen. Don't change any code.
   expect: frontend-auditor
 
-# known gap: work request, still loads nothing on main (task 15 re-run, 0/3)
+# Runs in a minimal Vite + React app: without one, every run stopped to ask
+# where "our React app" was.
 - prompt: >-
     Build a settings page in our React app with a form for display name and
     email plus a dark-mode toggle, and check it in a real browser at phone and
     desktop widths before you call it done.
+  fixture: fixtures/react-app
   expect: frontend-engineer
 
 - prompt: >-
