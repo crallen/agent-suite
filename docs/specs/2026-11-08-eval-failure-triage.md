@@ -64,14 +64,15 @@ Two decisions settled in dialogue:
        "prompt": "…", "targets": ["doc-templates"],
        "asserts": null, "case_file": "evals/routing.yaml",
        "runs": [{"side": "base", "n": 1, "passed": false, "counted": true,
-                 "detail": "route: none",
+                 "detail": "route: none", "plugins": [],
                  "evidence": {"routes": [], "calls": ["Read: …"], "final_text": "…"}}]
      }]
    }
    ```
 
    Only non-PASS cases appear, with every run on both sides, confirmation runs
-   included. Behavior cases carry `asserts` and `targets: null`; their `case_file`
+   included. Each run carries the plugins its init event listed, so triage can tell
+   which cases a plugin may have competed in. Behavior cases carry `asserts` and `targets: null`; their `case_file`
    is `evals/behavior/<dir>/case.yaml`. `run()` writes `json.dumps(…, indent=2)`
    alongside the report, which is unchanged.
 3. **`/eval-triage <findings>`** (`platforms/claude/commands/eval-triage.md`).
@@ -173,7 +174,7 @@ failing report.
 
 ## Task Checklist
 
-- [ ] 1. `scripts/run-evals.py`: add the frozen `RunEvidence` dataclass and the
+- [x] 1. `scripts/run-evals.py`: add the frozen `RunEvidence` dataclass and the
   `EVIDENCE_CALLS`, `SUBJECT_CHARS`, `TEXT_CHARS` caps; add `n: int = 0` and
   `evidence: RunEvidence | None = None` to `Outcome`; `run_one` takes `n` and builds
   evidence from the `RunResult`; `run_all` passes `n`. Add the `run_one` evidence and
@@ -181,12 +182,12 @@ failing report.
 - [ ] 2. `scripts/run-evals.py`: add `findings_of` with the shape above and the
   `--findings FILE` flag; `run()` writes it alongside the report. Add the
   `findings_of` and `run()` tests. (blocked by 1)
-- [ ] 3. Create `platforms/claude/commands/eval-triage.md`: frontmatter as in
+- [x] 3. Create `platforms/claude/commands/eval-triage.md`: frontmatter as in
   Component 3; a body that loads `skill-design` and `agent-authoring`, finds the
   suite root, reads findings case by case, applies the overfitting guard, follows the
   brief template and the error handling above, and writes
   `evals/triage/<YYYY-MM-DD>-brief.md`.
-- [ ] 4. `platforms/claude/CLAUDE.md`: add the `/eval-triage` command row and an
+- [x] 4. `platforms/claude/CLAUDE.md`: add the `/eval-triage` command row and an
   "Eval failures → fixes" workflow row. (blocked by 3)
 - [ ] 5. `.gitignore`: add `evals/triage/`. `AGENTS.md` Evals section: add a
   "Triage" paragraph covering `--findings`, `/eval-triage`, applying the brief
