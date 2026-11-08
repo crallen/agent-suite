@@ -941,11 +941,51 @@ class RunOneTest(unittest.TestCase):
                 id="behavior/x", prompt="p", allowed_tools=(), timeout=60, stage=False,
                 asserts=({"tool_not_called": ["Write"]},), fixture=fixture)
             side = run_evals.Side(name="head", config=Path(tmp) / "cfg", home=Path(tmp) / "home")
-            outcome = run_evals.run_one(case, side, {}, model=None)
+            outcome = run_evals.run_one(case, side, {}, model=None, n=1)
         self.assertEqual((outcome.case_id, outcome.side), ("behavior/x", "head"))
         self.assertFalse(outcome.verdict.counted)
         self.assertIn("CalledProcessError", outcome.verdict.detail)
         self.assertEqual(run_evals.Rate.of([outcome.verdict]).errors, 1)
+
+    def run_routing(self, result) -> object:
+        case = run_evals.RoutingCase(id="routing/why", prompt="p", targets=frozenset({"why"}))
+        side = run_evals.Side(name="base", config=Path("/cfg"), home=Path("/home-tmp"))
+        with patch.object(run_evals, "run_claude", return_value=result):
+            return run_evals.run_one(case, side, {}, model=None, n=4)
+
+    def test_outcome_carries_its_run_number_and_the_runs_evidence(self):
+        outcome = self.run_routing(run_result(
+            call("Skill", skill="why"),
+            call("Bash", command="git log"),
+            call("Read", parent="toolu_1", file_path="/sub/agent/read"),
+            final_text="done", routes=("why",)))
+        self.assertEqual(outcome.n, 4)
+        self.assertEqual(outcome.evidence, run_evals.RunEvidence(
+            routes=("why",), calls=('Skill: {"skill": "why"}', "Bash: git log"),
+            final_text="done"))
+
+    def test_evidence_caps_the_calls_their_subjects_and_the_text(self):
+        long_command = "x" * (run_evals.SUBJECT_CHARS + 50)
+        calls = [call("Bash", command=f"echo {i}") for i in range(run_evals.EVIDENCE_CALLS)]
+        outcome = self.run_routing(run_result(
+            call("Bash", command=long_command), *calls,
+            final_text="t" * (run_evals.TEXT_CHARS + 1)))
+        evidence = outcome.evidence
+        self.assertEqual(len(evidence.calls), run_evals.EVIDENCE_CALLS)
+        self.assertEqual(evidence.calls[0], "Bash: " + "x" * run_evals.SUBJECT_CHARS)
+        self.assertEqual(evidence.calls[-1], f"Bash: echo {run_evals.EVIDENCE_CALLS - 2}")
+        self.assertEqual(evidence.final_text, "t" * run_evals.TEXT_CHARS)
+
+    def test_an_error_run_carries_no_evidence(self):
+        outcome = self.run_routing(run_result(final_text="API Error", error_class="error"))
+        self.assertFalse(outcome.verdict.counted)
+        self.assertEqual(outcome.n, 4)
+        self.assertIsNone(outcome.evidence)
+
+    def test_a_timed_out_run_keeps_its_evidence(self):
+        outcome = self.run_routing(run_result(final_text="partial", error_class="timeout"))
+        self.assertTrue(outcome.verdict.counted)
+        self.assertEqual(outcome.evidence.final_text, "partial")
 
     def routing_scratch(self, fixture: Path | None) -> dict:
         """What a routing run's scratch dir holds when claude starts in it."""
@@ -963,7 +1003,7 @@ class RunOneTest(unittest.TestCase):
                                      targets=frozenset({"code-reviewer"}), fixture=fixture)
         side = run_evals.Side(name="head", config=Path("/cfg"), home=Path("/home-tmp"))
         with patch.object(run_evals, "run_claude", side_effect=fake_run_claude):
-            outcome = run_evals.run_one(case, side, {}, model=None)
+            outcome = run_evals.run_one(case, side, {}, model=None, n=1)
         self.assertTrue(outcome.verdict.passed, outcome.verdict.detail)
         return seen
 
@@ -1071,20 +1111,31 @@ class ConfirmationTest(unittest.TestCase):
         self.calls: dict[tuple[str, str], int] = {}
         lock = threading.Lock()
 
-        def fake_run_one(case, side, auth, model):
+        def fake_run_one(case, side, auth, model, n):
             with lock:
-                n = self.calls.get((case.id, side.name), 0) + 1
-                self.calls[(case.id, side.name)] = n
+                self.calls[(case.id, side.name)] = self.calls.get((case.id, side.name), 0) + 1
             if on_run:
                 on_run(case, side, n)
             script = scripts[case.id][side.name == "head"]
             verdict = run_evals.Verdict(script[n - 1] == "p", True, "stub")
-            return run_evals.Outcome(case.id, side.name, verdict, (), "claude-sonnet-5-5")
+            return run_evals.Outcome(case.id, side.name, verdict, (), "claude-sonnet-5-5", n)
 
         with patch.object(run_evals, "run_one", side_effect=fake_run_one), \
                 contextlib.redirect_stderr(io.StringIO()) as self.progress:
-            rows, _ = run_evals.evaluate(cases, self.SIDES, {}, None, runs=3, jobs=1)
+            rows, self.outcomes = run_evals.evaluate(cases, self.SIDES, {}, None, runs=3, jobs=1)
         return {r.case_id: r for r in rows}
+
+    def test_each_outcome_carries_its_run_number_confirmation_runs_numbered_on(self):
+        self.evaluate({"routing/pass": ("ppp", "ppp"),
+                       "routing/fixed": ("fff" + "fffff", "ppp" + "ppppp")})
+        numbers = {}
+        for o in self.outcomes:
+            numbers.setdefault((o.case_id, o.side), []).append(o.n)
+        self.assertEqual({k: sorted(v) for k, v in numbers.items()}, {
+            ("routing/pass", "base"): [1, 2, 3], ("routing/pass", "head"): [1, 2, 3],
+            ("routing/fixed", "base"): [1, 2, 3, 4, 5, 6, 7, 8],
+            ("routing/fixed", "head"): [1, 2, 3, 4, 5, 6, 7, 8],
+        })
 
     def test_only_flagged_cases_get_five_more_runs_per_side(self):
         rows = self.evaluate({
