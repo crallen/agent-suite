@@ -120,6 +120,7 @@
             if time.time() - stored_at > self.ttl:
                 return None
             return value
+  fixture: fixtures/ttl-cache
   expect: debugging-methodology
 
 - prompt: |-
