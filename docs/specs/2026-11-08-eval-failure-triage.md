@@ -3,7 +3,7 @@
 ## Goal
 
 Turn eval failures into fixes that can be applied. `scripts/run-evals.py` gains a
-`--findings FILE` option that writes each non-PASS case's per-run evidence as JSON.
+`--findings FILE` option that writes the per-run evidence of each case needing triage (neither PASS nor FIXED) as JSON.
 A new `/eval-triage <findings>` command reads that file and the suite files it
 points at. It writes one brief with a numbered section per suite target, each
 applied with `/agent-builder`, and a separate eval-case section applied by hand.
@@ -44,8 +44,10 @@ Two decisions settled in dialogue:
 ## Components
 
 1. **Evidence on each outcome** (`scripts/run-evals.py`). A frozen `RunEvidence`
-   dataclass holds `routes`, `calls` (main-thread tool calls as `name: subject`, via
-   the existing `_call_subject`), and `final_text`. Caps: `EVIDENCE_CALLS = 40`,
+   dataclass holds `routes`, `calls` (tool calls as `name: subject`, via the existing
+   `_call_subject`), and `final_text`. A routing run keeps main-thread calls only; a
+   behavior run keeps subagent and fork calls too, tagged `[sub]`, since its
+   assertions judge every call. Caps: `EVIDENCE_CALLS = 40`,
    `SUBJECT_CHARS = 200` (a Write's subject is its whole input), `TEXT_CHARS = 2000`.
    `Outcome` gains `n: int = 0` and `evidence: RunEvidence | None = None`; the
    defaults keep existing constructors valid. Error outcomes carry no evidence.
@@ -70,7 +72,7 @@ Two decisions settled in dialogue:
    }
    ```
 
-   Only non-PASS cases appear, with every run on both sides, confirmation runs
+   Only cases needing triage appear (neither PASS nor FIXED), with every run on both sides, confirmation runs
    included. Each run carries the plugins its init event listed, so triage can tell
    which cases a plugin may have competed in. Behavior cases carry `asserts` and `targets: null`; their `case_file`
    is `evals/behavior/<dir>/case.yaml`. `run()` writes `json.dumps(…, indent=2)`
@@ -121,7 +123,7 @@ Two decisions settled in dialogue:
 
 1. `run_one` → `Outcome(…, n, evidence)`, evidence built from the `RunResult`.
 2. `evaluate` → rows and every outcome, confirmation runs included.
-3. `findings_of` → JSON of non-PASS cases → `--findings FILE`.
+3. `findings_of` → JSON of cases needing triage → `--findings FILE`.
 4. `/eval-triage FILE` → reads findings and target files → writes the brief.
 5. `/agent-builder apply section N of <brief>` → edit → `run-evals.py --only …`.
 
@@ -129,7 +131,7 @@ Two decisions settled in dialogue:
 
 - Findings file missing or unreadable: `/eval-triage` stops and prints the
   `run-evals` command that produces one.
-- No non-PASS cases: the runner writes `"cases": []`; triage reports nothing to fix
+- No case needs triage: the runner writes `"cases": []`; triage reports nothing to fix
   and writes no brief.
 - A case's case file or target file no longer exists: the case goes to "Not
   actionable" (the suite changed since the run), not a guess.
@@ -153,7 +155,7 @@ All in `scripts/test_evals.py`, no model calls:
   with capped subjects, and the truncated text; an error outcome carries none.
 - `run_all` with a stubbed `run_one`: `n` is set, and confirmation runs number
   from `runs + 1`.
-- `findings_of`: non-PASS cases only, every run on both sides, `targets` for routing
+- `findings_of`: no PASS or FIXED cases, every run on both sides, `targets` for routing
   and `asserts` for behavior, the `case_file` path for each.
 - `run()` with `--findings`: writes valid JSON, leaves the report unchanged, and
   writes `"cases": []` when everything passes.

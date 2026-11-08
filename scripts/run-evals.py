@@ -13,7 +13,7 @@ once against this working tree, uncommitted edits included.
     scripts/run-evals.py --base REF               compare against another ref
     scripts/run-evals.py --only 'behavior/*'      only the cases whose id matches
     scripts/run-evals.py --runs 5 --out r.md      more runs; report to a file
-    scripts/run-evals.py --findings f.json        also each non-PASS case's runs, as JSON
+    scripts/run-evals.py --findings f.json        also the runs of cases needing triage, as JSON
 
 Cases always come from this working tree's evals/; the base ref supplies only
 the suite under test. Case ids, for --only (an fnmatch glob):
@@ -1132,12 +1132,13 @@ def findings_of(
     base_sha: str, base_ref: str, head_sha: str, dirty: bool, model: str, runs: int,
     plugins: Sequence[str],
 ) -> dict:
-    """The --findings data: each non-PASS case with every run on both sides,
-    base first then by run number, confirmation runs included."""
+    """The --findings data: each case that needs triage (neither PASS nor
+    FIXED) with every run on both sides, base first then by run number,
+    confirmation runs included."""
     by_id = {c.id: c for c in cases}
     found = []
     for row in rows:
-        if row.status == "PASS":
+        if row.status in ("PASS", "FIXED"):
             continue
         case = by_id[row.case_id]
         routing = isinstance(case, RoutingCase)
@@ -1196,18 +1197,20 @@ TEXT_CHARS = 2000
 @dataclass(frozen=True)
 class RunEvidence:
     """What a run did, capped for a findings file: the routes, the first
-    EVIDENCE_CALLS main-thread tool calls as `name: subject`, and the final
-    text."""
+    EVIDENCE_CALLS tool calls as `name: subject`, and the final text. A routing
+    run keeps main-thread calls only; a behavior run keeps subagent and fork
+    calls too, tagged `[sub]`, since its assertions judge every call."""
 
     routes: tuple[str, ...]
     calls: tuple[str, ...]
     final_text: str
 
     @classmethod
-    def of(cls, result: RunResult) -> RunEvidence:
-        main_thread = (c for c in result.tool_calls if c.parent_tool_use_id is None)
-        calls = tuple(f"{c.name}: {_call_subject(c)[:SUBJECT_CHARS]}"
-                      for c in islice(main_thread, EVIDENCE_CALLS))
+    def of(cls, result: RunResult, *, subagents: bool) -> RunEvidence:
+        kept = (c for c in result.tool_calls if subagents or c.parent_tool_use_id is None)
+        calls = tuple(f"{'[sub] ' if c.parent_tool_use_id else ''}{c.name}: "
+                      f"{_call_subject(c)[:SUBJECT_CHARS]}"
+                      for c in islice(kept, EVIDENCE_CALLS))
         return cls(result.routes, calls, result.final_text[:TEXT_CHARS])
 
 
@@ -1248,7 +1251,8 @@ def run_one(case: Case, side: Side, auth: Mapping[str, str], model: str | None,
             cmd = claude_command(case.prompt, model=model)
             result = run_claude(cmd, env, scratch, ROUTING_TIMEOUT, route_window=ROUTE_WINDOW)
         verdict = judge(case, result, scratch, assertion_env(side.config, side.home))
-        evidence = RunEvidence.of(result) if verdict.counted else None
+        evidence = (RunEvidence.of(result, subagents=isinstance(case, BehaviorCase))
+                    if verdict.counted else None)
         return Outcome(case.id, side.name, verdict, result.plugins, result.model, n, evidence)
     except Interrupted:
         raise
@@ -1339,6 +1343,13 @@ def install_stop_handlers() -> None:
         signal.signal(signum, raise_interrupt)
 
 
+def write_output(path: Path, text: str) -> None:
+    """Write a result file, creating its directory: evals/triage/ is gitignored,
+    so it is absent on a fresh clone, and the runs behind it are already spent."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text)
+
+
 def run(args: argparse.Namespace) -> int:
     head = suite_root()
     try:
@@ -1358,15 +1369,15 @@ def run(args: argparse.Namespace) -> int:
         runs=args.runs, plugins=sorted({p for o in outcomes for p in o.plugins}),
     )
     report = render_report(rows, **header)
-    if args.findings:
-        findings = findings_of(cases, rows, outcomes, **header)
-        Path(args.findings).write_text(json.dumps(findings, indent=2))
-        print(f"run-evals: findings written to {args.findings}", file=sys.stderr)
     if args.out:
-        Path(args.out).write_text(report)
+        write_output(Path(args.out), report)
         print(f"run-evals: report written to {args.out}", file=sys.stderr)
     else:
         sys.stdout.write(report)
+    if args.findings:
+        findings = findings_of(cases, rows, outcomes, **header)
+        write_output(Path(args.findings), json.dumps(findings, indent=2))
+        print(f"run-evals: findings written to {args.findings}", file=sys.stderr)
     return exit_code(r.status for r in rows)
 
 
@@ -1392,7 +1403,7 @@ def main() -> int:
     parser.add_argument("--only", metavar="GLOB", help="run only the case ids matching GLOB")
     parser.add_argument("--out", metavar="FILE", help="write the report here, not to stdout")
     parser.add_argument("--findings", metavar="FILE",
-                        help="also write each non-PASS case's runs and evidence here, as JSON")
+                        help="also write the runs and evidence of each case that is neither PASS nor FIXED here, as JSON (directory created if needed)")
     parser.add_argument("--env-file", type=Path, metavar="FILE",
                         help="dotenv file holding the auth variable (default: <suite root>/.env)")
     args = parser.parse_args()

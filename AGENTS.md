@@ -155,7 +155,8 @@ only: every case comes out INCONCLUSIVE. An isolation warning means a plugin
 loaded alongside the suite and may have competed for routes.
 
 To triage failures, add `--findings evals/triage/findings.json` to a run. The
-runner writes every non-PASS case's runs on both sides to that file. Run
+runner writes the runs of every case that is neither PASS nor FIXED, on both
+sides, to that file. It creates the directory if needed. Run
 `/eval-triage evals/triage/findings.json` yourself; it writes a brief to
 `evals/triage/<date>-brief.md`. The brief has one section per suite target to
 change, and a separate section of eval-case edits that you apply by hand. Apply a

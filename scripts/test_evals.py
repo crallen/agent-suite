@@ -946,6 +946,8 @@ class RunOneTest(unittest.TestCase):
         self.assertFalse(outcome.verdict.counted)
         self.assertIn("CalledProcessError", outcome.verdict.detail)
         self.assertEqual(run_evals.Rate.of([outcome.verdict]).errors, 1)
+        self.assertEqual(outcome.n, 1)
+        self.assertIsNone(outcome.evidence)
 
     def run_routing(self, result) -> object:
         case = run_evals.RoutingCase(id="routing/why", prompt="p", targets=frozenset({"why"}))
@@ -981,6 +983,22 @@ class RunOneTest(unittest.TestCase):
         self.assertFalse(outcome.verdict.counted)
         self.assertEqual(outcome.n, 4)
         self.assertIsNone(outcome.evidence)
+
+    def test_behavior_evidence_keeps_subagent_calls_tagged(self):
+        # Behavior asserts judge every call, so a forked or delegated run's
+        # calls are the evidence triage needs; routing keeps the main thread.
+        case = run_evals.BehaviorCase(
+            id="behavior/x", prompt="/code-review", allowed_tools=(), timeout=60,
+            stage=False, asserts=({"tool_not_called": ["Write"]},), fixture=None)
+        side = run_evals.Side(name="head", config=Path("/cfg"), home=Path("/home-tmp"))
+        result = run_result(call("Agent", subagent_type="code-reviewer"),
+                            call("Bash", parent="toolu_1", command="git diff"),
+                            final_text="review")
+        with patch.object(run_evals, "prepare_fixture"), \
+                patch.object(run_evals, "run_claude", return_value=result):
+            outcome = run_evals.run_one(case, side, {}, model=None, n=2)
+        self.assertEqual(outcome.evidence.calls,
+                         ('Agent: {"subagent_type": "code-reviewer"}', "[sub] Bash: git diff"))
 
     def test_a_timed_out_run_keeps_its_evidence(self):
         outcome = self.run_routing(run_result(final_text="partial", error_class="timeout"))
@@ -1255,6 +1273,11 @@ class FindingsTest(unittest.TestCase):
         self.assertEqual([(c["id"], c["status"], c["base"], c["head"]) for c in found["cases"]],
                          [("routing/doc-templates-1", "FAIL", "0/3", "0/3")])
 
+    def test_fixed_cases_are_left_out_since_head_already_passes(self):
+        outcomes = [self.outcome(self.ROUTING, s, n, s == "head")
+                    for s in ("base", "head") for n in (1, 2, 3)]
+        self.assertEqual(self.findings([self.ROUTING], outcomes)["cases"], [])
+
     def test_a_case_lists_every_run_on_both_sides_base_first_then_by_number(self):
         # Shuffled the way the pool completes them; 5 is a confirmation run.
         outcomes = [self.outcome(self.ROUTING, "head", 5, False),
@@ -1335,6 +1358,13 @@ class RunOutputsTest(unittest.TestCase):
         self.assertTrue(found["cases"])
         self.assertTrue(all(c["status"] == "FAIL" for c in found["cases"]))
         self.assertEqual(len(found["cases"][0]["runs"]), 4)
+
+    def test_findings_and_report_are_written_into_missing_directories(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            findings = tmp / "triage" / "findings.json"
+            self.run_evals(tmp, passed=False, findings=findings)
+            self.assertTrue(json.loads(findings.read_text())["cases"])
 
     def test_findings_file_has_no_cases_when_every_case_passes(self):
         with tempfile.TemporaryDirectory() as tmp:

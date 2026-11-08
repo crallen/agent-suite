@@ -14,9 +14,9 @@ Suite root, against which every path in the findings resolves:
 
 If the findings file is missing, unreadable, or not the runner's JSON, stop and print the command that produces one, run from the suite root: `scripts/run-evals.py --base main --findings evals/triage/findings.json`. If its `cases` is empty, report that there is nothing to fix and write no brief.
 
-Read the findings one case at a time, never the whole file at once (for example `jq '.cases | length'`, then `jq '.cases[N]'`). For each case, read its `case_file` and every target file it names: for routing cases each name in `targets`, at `skills/<name>/SKILL.md`, `platforms/claude/agents/<name>.md`, or `platforms/claude/commands/<name>.md`; for behavior cases the command its `prompt` invokes and the skills that command loads. A case whose case file or target file no longer exists went stale when the suite changed; it goes to Not actionable, never to a guess.
+Read the findings one case at a time, never the whole file at once (for example `jq '.cases | length'`, then `jq '.cases[N]'`). For each case, read its `case_file` and every target file it names: for routing cases each name in `targets` and each suite name in failing runs' `evidence.routes` (what loaded instead often holds the description to fix; an `expect: none` case has no targets, so what loaded is its target), at `skills/<name>/SKILL.md`, `platforms/claude/agents/<name>.md`, or `platforms/claude/commands/<name>.md`; for behavior cases the command its `prompt` invokes and the skills that command loads. For a REGRESSION, also read `git diff <base sha> -- <file>` for each of those files: the change that broke it is there. A case whose case file or target file no longer exists went stale when the suite changed; it goes to Not actionable, never to a guess.
 
-Diagnose from the quoted evidence: what loaded instead, which assertion failed, what the final text said. A case is Not actionable when it is INCONCLUSIVE, when most of its runs are errors, or when a failing run routed to a plugin's skill or agent (a `plugin:name` route) rather than to anything in the suite. A plugin merely listed in a run's `plugins` is not contamination on its own.
+Diagnose from the quoted evidence: what loaded instead, which assertion failed, what the final text said. A case is Not actionable when it is INCONCLUSIVE, when most of its runs are errors, or when a failing run routed to a plugin's skill or agent (a route containing a colon, such as `frontend-design:frontend-design`) rather than to anything in the suite. A plugin merely listed in a run's `plugins` is not contamination on its own.
 
 ## Overfitting guard
 
@@ -54,6 +54,6 @@ Write `<suite root>/evals/triage/<YYYY-MM-DD>-brief.md`, dated today. Each suite
 Section numbers in order, sections touching the same file grouped.
 ```
 
-Every non-PASS case lands in exactly one section. End by printing the brief's path and the count of entries in each section.
+Every case in the findings lands in exactly one section. End by printing the brief's path and the count of entries in each section.
 
 $ARGUMENTS
