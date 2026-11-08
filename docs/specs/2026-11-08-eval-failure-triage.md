@@ -189,7 +189,7 @@ failing report.
   `evals/triage/<YYYY-MM-DD>-brief.md`.
 - [x] 4. `platforms/claude/CLAUDE.md`: add the `/eval-triage` command row and an
   "Eval failures → fixes" workflow row. (blocked by 3)
-- [ ] 5. `.gitignore`: add `evals/triage/`. `AGENTS.md` Evals section: add a
+- [x] 5. `.gitignore`: add `evals/triage/`. `AGENTS.md` Evals section: add a
   "Triage" paragraph covering `--findings`, `/eval-triage`, applying the brief
   section by section with `/agent-builder`, and the `--only` check. (blocked by 2, 3)
 - [ ] 6. End to end: `scripts/run-evals.py --base main --findings
