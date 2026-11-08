@@ -154,6 +154,14 @@ call, re-run that case with `--only <id> --runs 5`. `--runs 1` is a smoke check
 only: every case comes out INCONCLUSIVE. An isolation warning means a plugin
 loaded alongside the suite and may have competed for routes.
 
+To triage failures, add `--findings evals/triage/findings.json` to a run. The
+runner writes every non-PASS case's runs on both sides to that file. Run
+`/eval-triage evals/triage/findings.json` yourself; it writes a brief to
+`evals/triage/<date>-brief.md`. The brief has one section per suite target to
+change, and a separate section of eval-case edits that you apply by hand. Apply a
+suite section with `/agent-builder apply section N of <brief>`, one at a time, then
+prove it with the `--only` command the section names. `evals/triage/` is gitignored.
+
 To add a routing case, add an entry to `evals/routing.yaml`: `expect: <name>`,
 `any_of: [..]` when several targets are honestly correct, or `expect: none` for a
 prompt that should load nothing. A routing run starts in an empty directory;
