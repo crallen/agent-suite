@@ -18,8 +18,9 @@ pin. Everything else is a skill you load and work you do yourself.
   design; the knowledge is the whole point and it lives in `skills/`.
 - **Fork for isolation** when a task will read far more than the answer is worth
   keeping. The commands that need this already set `context: fork`.
-- **Keep the work yourself** when it is simple enough to handle directly, spans
-  several domains, or the user asked you to do it.
+- **Keep the work yourself** rather than delegating when it is simple enough to
+  handle directly, spans several domains, or the user asked you to do it. A skill
+  whose area the work touches still loads, even for a one-line question.
 
 When the goal is ambitious, scope down the mechanism, not the goal: simplify how a
 thing gets built, never quietly shrink what is being built.
