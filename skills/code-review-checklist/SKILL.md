@@ -66,10 +66,8 @@ taxonomy and report exploitable issues at CRITICAL.
 
 ## Maintainability
 
-- Could a clearer name remove the need for the comment? Where a comment earns its
-  place, does it name the mechanism rather than a metaphor for it?
-- Are identifiers named for the scenario they represent, not for a failure or a
-  vaguer alias? (`raise_access_denied`, not `_boom`)
+- Could a clearer name remove the need for the comment? Do names and comments
+  meet the register and naming rules in `doc-templates`?
 - Is in-code prose lean: no step narration, no banner comments inside literals, no
   documenting trivial items to satisfy a lint?
 - Do docs and comments the change touches stay true to the code, without
@@ -80,18 +78,13 @@ taxonomy and report exploitable issues at CRITICAL.
 
 The smell baseline below covers duplication and structure, and flags a name that
 reveals nothing. The items above catch the different failure: a name or comment
-that reads as precise but is not. `doc-templates` holds the full register and
-naming rules.
+that reads as precise but is not.
 
 ## Error Handling
 
-- Errors carry context and cause across boundaries, and are never swallowed.
-- No error types or variants nothing branches on; model the distinctions callers
-  act on, not more.
-- Recoverable errors propagate rather than panicking; abort is for startup
-  invariants and tests.
-- Cleanup runs on error paths, and retries with backoff exist only for transient
-  failures.
+Hold errors to the defaults in `coding-guardrails` (Structure, Errors, and
+Safety). Beyond those, check that cleanup runs on error paths, and that retries
+with backoff exist only for transient failures.
 
 ## Testing
 

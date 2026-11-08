@@ -93,11 +93,8 @@ Defaults for how code is shaped — starting points, not straitjackets. Match th
 
 Both get read far more often than they get written, so a vague one charges every
 later reader. Prefer a name that makes the code self-explanatory over a comment
-that explains it. Where a comment earns its place, name the mechanism rather than
-a metaphor for it — "raises `SettingsError`", not "blows up".
-
-`doc-templates` holds the full register and naming rules. Load it when writing
-comments, docstrings, or identifiers a human will read.
+that explains it. `doc-templates` holds the register and naming rules; load it
+when writing comments, docstrings, or identifiers a human will read.
 
 ## Principle Deep-Dives
 

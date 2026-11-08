@@ -21,7 +21,7 @@ For every repo a component lands in, read its documented conventions too: README
 
 One question per message. Prefer multiple choice; open-ended is fine when the problem is truly exploratory.
 
-Letter the options inline (`A`, `B`, `C`) as a markdown list, one option per line with a blank line before the list, recommended option first and tagged "(Recommended)", in the same message as the reasoning. Do not use the harness's structured question tool: it shows the options without the surrounding context. The user answers by letter or in their own words.
+Put the reasoning in prose, then letter the options inline (`A`, `B`, `C`) as a markdown list, one option per line, recommended option first and tagged "(Recommended)" after its label: `- **A.** Keep sessions in Postgres (Recommended)`. `grill-methodology` holds the full format.
 
 Focus on purpose, constraints, and success criteria. Once those three are clear, stop asking.
 
