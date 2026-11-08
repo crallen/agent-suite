@@ -542,7 +542,7 @@ class CaseLoadingTest(unittest.TestCase):
         ids = [c.id for c in cases]
         self.assertEqual(len(ids), len(set(ids)))
         routing = {c.id: c for c in cases if isinstance(c, run_evals.RoutingCase)}
-        self.assertEqual(len(routing), 46)
+        self.assertEqual(len(routing), 52)
         self.assertEqual(routing["routing/why"].targets, frozenset({"why"}))
         self.assertEqual(routing["routing/code-reviewer"].targets, frozenset({"code-reviewer"}))
         self.assertEqual(routing["routing/none-6"].targets, frozenset())
@@ -568,7 +568,7 @@ class CaseLoadingTest(unittest.TestCase):
     def test_only_filters_ids_by_glob(self):
         cases = run_evals.load_cases(ROOT)
         self.assertEqual(len(run_evals.select(cases, "behavior/*")), 5)
-        self.assertEqual(len(run_evals.select(cases, "routing/none-*")), 6)
+        self.assertEqual(len(run_evals.select(cases, "routing/none-*")), 12)
         self.assertEqual([c.id for c in run_evals.select(cases, "routing/why")], ["routing/why"])
         self.assertEqual(len(run_evals.select(cases, None)), len(cases))
 

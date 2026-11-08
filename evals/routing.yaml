@@ -354,3 +354,31 @@
 
 - prompt: What's the actual difference between let, const, and var in JavaScript?
   expect: none
+
+# Near misses: definitional questions in a skill's own vocabulary that need no
+# skill. They guard against a description widened past what its skill is for;
+# each names the skill it borders.
+
+# borders code-review-checklist
+- prompt: What does LGTM mean in a code review comment?
+  expect: none
+
+# borders debugging-methodology
+- prompt: What's the difference between a breakpoint and a watchpoint in gdb?
+  expect: none
+
+# borders doc-templates
+- prompt: What's the difference between Markdown and reStructuredText?
+  expect: none
+
+# borders frontend-patterns
+- prompt: What's the difference between useEffect and useLayoutEffect in React?
+  expect: none
+
+# borders security-analysis
+- prompt: What does the attack vector metric in a CVSS score measure?
+  expect: none
+
+# borders wayfinder-methodology
+- prompt: What's the difference between a product roadmap and a backlog?
+  expect: none
