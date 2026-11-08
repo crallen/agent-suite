@@ -5,7 +5,7 @@ description: Throwaway prototype workflow — routes between a terminal app for 
 
 # Prototype Methodology
 
-A prototype is **throwaway code that answers a question**. The question decides the shape. Load this skill when the user wants to prototype, sanity-check a data model or state machine, mock up a UI, explore design options, or says "prototype this", "let me play with it", "try a few designs".
+A prototype is **throwaway code that answers a question**. The question decides the shape.
 
 ## Pick a Branch
 

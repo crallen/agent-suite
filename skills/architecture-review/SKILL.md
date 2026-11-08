@@ -1,6 +1,6 @@
 ---
 name: architecture-review
-description: Architecture deepening workflow — finds shallow modules, proposes refactors that increase depth (leverage + locality), presents candidates as a markdown report, then grills on the chosen one. Integrates with CONTEXT.md and ADRs. Load when the user wants to improve architecture, find refactoring opportunities, or make a codebase more testable.
+description: Architecture deepening workflow — finds shallow modules, proposes refactors that increase depth (leverage + locality), then grills on the chosen one. Load when the user wants to improve architecture, find refactoring opportunities, or make a codebase more testable.
 ---
 
 # Architecture Review
