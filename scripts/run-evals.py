@@ -55,6 +55,7 @@ from collections.abc import Iterable, Iterator, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
 from dataclasses import dataclass, replace
+from itertools import islice
 from pathlib import Path
 
 import yaml
@@ -1136,16 +1137,45 @@ def _confirmation(row: Row) -> str:
 # --- Running the cases ------------------------------------------------------
 
 
+EVIDENCE_CALLS = 40
+SUBJECT_CHARS = 200  # a Write's subject is its whole input
+TEXT_CHARS = 2000
+
+
+@dataclass(frozen=True)
+class RunEvidence:
+    """What a run did, capped for a findings file: the routes, the first
+    EVIDENCE_CALLS main-thread tool calls as `name: subject`, and the final
+    text."""
+
+    routes: tuple[str, ...]
+    calls: tuple[str, ...]
+    final_text: str
+
+    @classmethod
+    def of(cls, result: RunResult) -> RunEvidence:
+        main_thread = (c for c in result.tool_calls if c.parent_tool_use_id is None)
+        calls = tuple(f"{c.name}: {_call_subject(c)[:SUBJECT_CHARS]}"
+                      for c in islice(main_thread, EVIDENCE_CALLS))
+        return cls(result.routes, calls, result.final_text[:TEXT_CHARS])
+
+
 @dataclass(frozen=True)
 class Outcome:
+    """One run's verdict. `n` numbers the run within its case and side;
+    `evidence` is None for an error run."""
+
     case_id: str
     side: str
     verdict: Verdict
     plugins: tuple[str, ...]
     model: str
+    n: int = 0
+    evidence: RunEvidence | None = None
 
 
-def run_one(case: Case, side: Side, auth: Mapping[str, str], model: str | None) -> Outcome:
+def run_one(case: Case, side: Side, auth: Mapping[str, str], model: str | None,
+            n: int) -> Outcome:
     """One run of `case` against `side` in a fresh scratch dir, judged and
     cleaned up. A routing run starts in its fixture's repo when it has one,
     else in an empty directory.
@@ -1167,12 +1197,13 @@ def run_one(case: Case, side: Side, auth: Mapping[str, str], model: str | None) 
             cmd = claude_command(case.prompt, model=model)
             result = run_claude(cmd, env, scratch, ROUTING_TIMEOUT, route_window=ROUTE_WINDOW)
         verdict = judge(case, result, scratch, assertion_env(side.config, side.home))
-        return Outcome(case.id, side.name, verdict, result.plugins, result.model)
+        evidence = RunEvidence.of(result) if verdict.counted else None
+        return Outcome(case.id, side.name, verdict, result.plugins, result.model, n, evidence)
     except Interrupted:
         raise
     except Exception as err:
         verdict = Verdict(False, False, f"error: {type(err).__name__}: {str(err)[:200]}")
-        return Outcome(case.id, side.name, verdict, (), "")
+        return Outcome(case.id, side.name, verdict, (), "", n)
     finally:
         remove_tree(scratch)
 
@@ -1187,7 +1218,7 @@ def run_all(cases: Sequence[Case], sides: Sides, auth: Mapping[str, str], model:
     outcomes = []
     pool = ThreadPoolExecutor(max_workers=jobs)
     try:
-        futures = {pool.submit(run_one, case, side, auth, model): (case, side, n)
+        futures = {pool.submit(run_one, case, side, auth, model, n): (case, side, n)
                    for case, side, n in work}
         for done, future in enumerate(as_completed(futures), 1):
             case, side, n = futures[future]
