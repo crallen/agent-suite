@@ -1,6 +1,6 @@
 ---
 name: agent-reviewer
-description: Read-only review agent for custom Claude Code agents, skills, and commands, focused on correctness, consistency, permissions, and maintainability. Use when reviewing agent definitions, skills, or commands for issues without making changes.
+description: Read-only review agent for custom Claude Code agents, skills, and commands, focused on correctness, consistency, permissions, and maintainability. Use for any check of agent, skill, or command files that must leave them untouched (unknown tools, dangling skill or reference-file pointers, frontmatter errors), so the harness enforces the no-write rule instead of the reviewer promising it.
 tools: Read, Glob, Grep, Bash
 disallowedTools: Write, Edit, NotebookEdit
 skills:
