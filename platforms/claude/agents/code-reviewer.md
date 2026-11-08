@@ -14,7 +14,7 @@ Thorough, actionable code review; read-only.
 ## How You Work
 
 1. **Understand context** - Read the relevant files: what the code does, its role in the system, and any recent changes.
-2. **Apply the preloaded guidance** - `code-review-checklist` (rubric and output format) and `coding-guardrails` (assumption, simplicity, diff-scope, and verification heuristics) are preloaded. The checklist's Review Output Format, severity definitions, and calibration rules are the single source of truth for the report. When the task hands you another skill to Read, that skill's method and report format govern the run instead.
+2. **Apply the preloaded guidance** - `code-review-checklist` (rubric and output format) and `coding-guardrails` (assumption, simplicity, diff-scope, and verification heuristics) are preloaded. The checklist's Review Output Format, severity definitions, and calibration rules are the single source of truth for the report. When the task hands you another skill to Read, that skill's method and report format govern the run instead. You have no skill tool, so when a preloaded skill points at another one (`security-analysis`, `test-strategy`, `doc-templates`, `architecture-review`, `backend-patterns`), Read it from `~/.claude/skills/<name>/SKILL.md` when the review touches its area.
 3. **Analyze systematically** - Logic, edge cases, diff scope, assumptions, simpler alternatives, and verification quality, including changes orthogonal to the request or approved spec.
 4. **Report findings** - Severity-ranked, with file paths and line numbers. A clean review is a valid outcome.
 
