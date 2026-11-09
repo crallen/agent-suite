@@ -7,20 +7,11 @@ description: "Execution guardrails for implementation work: when to ask before c
 
 Behavioral guardrails that keep implementation work grounded, simple, scoped, and verifiable.
 
-These guardrails bias toward caution over speed. Apply them proportionally — a one-line typo fix does not need a ceremony-heavy process.
-
-## The Guardrails
-
-| Guardrail | Prevents | Core question |
-|---|---|---|
-| Think before coding | Silent assumptions, hidden confusion, wrong tradeoffs | What am I assuming, and do I need to ask first? |
-| Simplicity first | Overengineering, speculative abstractions, bloated APIs | What is the smallest thing that solves today's problem? |
-| Surgical changes | Drive-by refactors, style churn, unrelated cleanup | Does every changed line trace back to the request? |
-| Goal-driven execution | Vague progress, weak validation, unproven fixes | How will I prove this worked? |
+Apply them proportionally — a one-line typo fix does not need a ceremony-heavy process.
 
 ## 1. Think Before Coding
 
-State assumptions; when several readings lead to different implementations, or scope, data shape, UX, security, performance, or policy is unclear, ask instead of guessing. If a simpler path satisfies the goal, say so.
+Ask when readings lead to materially different code and the repo cannot settle it; otherwise state the assumption and proceed. If a simpler path satisfies the goal, say so.
 
 ## 2. Simplicity First
 
@@ -30,7 +21,6 @@ Understand the real constraint, then fight for the smallest model that makes the
 - Add an abstraction layer when something real varies across it — a second implementation, or a seam a test genuinely needs.
 - Pull in builders, generics, dependencies, and feature flags when a present caller needs them, not ahead of need.
 - Handle the failures there is evidence for; skip elaborate handling for hypothetical ones.
-- If 200 lines could be 50 without losing clarity, simplify.
 
 Simplicity governs *ceremony*, not *architecture*. Build the system properly — reach for the seam, port, or layer when it earns its keep; abstraction with a payoff is not speculative. Strip only the indirection that buys nothing. When a seam's payoff is unclear, `architecture-review` holds the test: one adapter is a hypothetical seam, two is a real one.
 
@@ -51,31 +41,10 @@ These bound your **reach** — which code you may touch — not the **shape** of
 
 ## 4. Goal-Driven Execution
 
-Translate work into explicit proof, not vague motion.
-
-- Define success criteria before making non-trivial changes.
+- Decide what will prove the change before making it.
 - Prefer failing tests or repeatable reproductions before bug fixes.
-- For new features, decide what checks will prove success before coding.
 - For refactors, establish behavior baselines and confirm they still hold afterward.
 - Loop until verified; do not stop at "the code looks right."
-
-### Plan Template
-
-```markdown
-1. [Change]
-   verify: [test, command, manual check, or observable signal]
-
-2. [Change]
-   verify: [test, command, manual check, or observable signal]
-```
-
-## Operating Loops
-
-| Work type | Loop |
-|---|---|
-| Bug fix | Reproduce → minimal fix → regression check |
-| New feature | Clarify → smallest useful slice → verify |
-| Refactor | Capture behavior → change in steps → confirm behavior holds |
 
 ## Structure, Errors, and Safety
 
@@ -84,15 +53,11 @@ Defaults for how code is shaped — starting points, not straitjackets. Match th
 - **Thin composition root.** `main`/entry wires dependencies and delegates to a `run()`-style function. Business logic does not live in the entrypoint.
 - **Modules as facades.** Expose a curated public surface; keep the parts a caller doesn't need private. The public API is the seam, not the internals.
 - **Errors carry context and cause.** Wrap as they cross a boundary ("failed to X"), chained to the source; don't swallow. Model the distinctions callers act on — retriable vs fatal, the status you'll return — and no error types nothing inspects.
-- **Guard clauses.** Handle the failing case and return early; keep the happy path flat and unindented.
 - **No panics on recoverable paths.** Propagate errors instead. Reserve `panic`/`unwrap`/`expect`-style aborts for provable startup invariants (with a message) or tests.
 
 ## Naming and Comments
 
-Both get read far more often than they get written, so a vague one charges every
-later reader. Prefer a name that makes the code self-explanatory over a comment
-that explains it. `doc-templates` holds the register and naming rules; load it
-when writing comments, docstrings, or identifiers a human will read.
+Prefer a name that makes the code self-explanatory over a comment that explains it; `doc-templates` holds the naming rules.
 
 ## Principle Deep-Dives
 
