@@ -186,7 +186,7 @@ with a `customer_email` column, and `test_*.py` green under `python3 -m unittest
 |---|---|---|---|---|
 | `impl-test-first` | own `fixture/`: `ttl-cache` plus a ttl=0 expiry bug in `after/` and a `spec.md` | "Entries with ttl=0 never expire; fix it" | `order` `Edit:test_cache` before `Edit:/cache\.py` (and the Write pair); `shell` unittest `OK` | Test-first in `test-strategy`, the bug-fix line in `coding-guardrails` §4, and "builds the task test-first" in the brief |
 | `impl-fixture-placeholders` | `fixtures/order-service` plus `spec.md` | "Add tests for `is_allowed_ip`: one blocked, one allowed address" | `shell` test file matches `192\.0\.2\.\|198\.51\.100\.\|203\.0\.113\.`, not `192\.168\.\|\b10\.\d` | Fixture Data in `test-strategy` |
-| `impl-integration-timeout` | `fixtures/order-service` plus `spec.md` | "When an order is cancelled, refund it through `PaymentsClient`" | `shell` diff contains `timeout=`; `service.py` imports neither `handlers` nor `http` (`grep … \|\| true`) | Integrations and Dependency Direction in `backend-patterns` |
+| `impl-integration-timeout` | `fixtures/order-service` plus `spec.md` | "When an order is canceled, refund it through `PaymentsClient`" | `shell` diff contains `timeout=`; `service.py` imports neither `handlers` nor `http` (`grep … \|\| true`) | Integrations and Dependency Direction in `backend-patterns` |
 | `impl-expand-contract` | `fixtures/order-service` plus `spec.md` | "Rename `customer_email` on orders to `email`" | `shell` new migration matches `(?i)ADD COLUMN`, not `(?i)DROP COLUMN\|RENAME COLUMN` | Migrations in `database-patterns` |
 | `impl-frontend-tokens` | `fixtures/react-app` plus `spec.md` | "Add a status badge to Home: 'Synced' in the accent color, with an error variant" | `shell` added lines use `var\(--`, no hex color on `^\+` lines | "Reuse the existing visual system" in `frontend-patterns` |
 
@@ -311,12 +311,12 @@ One commit per skill or agent file, then a full `run-evals.py --base main
 
 **Branch 1: `feat/impl-evals-and-roster`**
 
-- [ ] 1. `scripts/run-evals.py`: `order.before` accepts `<tool[:regex]>`
+- [x] 1. `scripts/run-evals.py`: `order.before` accepts `<tool[:regex]>`
       (`_order_problem`, `_check_order`); behavior `case.yaml` gains optional
       `fixture: <path under evals/>` (`CASE_KEYS`, case loading; not combined with
       a `fixture/` directory). Tests in `scripts/test_evals.py`; one line each in
       the `AGENTS.md` Evals section.
-- [ ] 2. `evals/fixtures/order-service/before/`: `handlers.py`, `service.py`,
+- [x] 2. `evals/fixtures/order-service/before/`: `handlers.py`, `service.py`,
       `repo.py`, `payments.py` (`PaymentsClient.refund(order_id, amount, timeout=None)`),
       `allowlist.py` (`is_allowed_ip`), `migrations/0001_init.sql`
       (`orders.customer_email`), `test_*.py`; green under `python3 -m unittest`.
@@ -334,25 +334,25 @@ One commit per skill or agent file, then a full `run-evals.py --base main
       loaded skills, `platforms/claude/CLAUDE.md`, and the brief text; run
       `--runs 5 --model claude-opus-5-5`; restore; record green-of-5 and the
       verdict. (blocked by 3)
-- [ ] 7. `docs/adr/0002-agents-earn-their-slot-by-use.md`; "see 0002" line in
+- [x] 7. `docs/adr/0002-agents-earn-their-slot-by-use.md`; "see 0002" line in
       `docs/adr/0001-agents-earn-their-slot-by-capability.md`.
-- [ ] 8. Remove `debugger`: delete `platforms/claude/agents/debugger.md`;
+- [x] 8. Remove `debugger`: delete `platforms/claude/agents/debugger.md`;
       `platforms/claude/commands/debugger.md` to a fork loading
       `debugging-methodology` and `coding-guardrails`; rewrite the preload comment
       in `evals/behavior/debugger-phase-0/case.yaml`; `evals/routing.yaml:309` to
       `expect: debugging-methodology`.
-- [ ] 9. Remove `documenter`: delete `platforms/claude/agents/documenter.md`;
+- [x] 9. Remove `documenter`: delete `platforms/claude/agents/documenter.md`;
       `platforms/claude/commands/docs.md` drops `agent: documenter` and loads
       `doc-templates`; `evals/routing.yaml:319` to `expect: doc-templates`;
       `platforms/claude/commands/implement-spec.md` line 8 sends docs-only tasks to
       a general-purpose subagent briefed with `doc-templates`.
-- [ ] 10. Remove `frontend-auditor`: delete `platforms/claude/agents/frontend-auditor.md`;
+- [x] 10. Remove `frontend-auditor`: delete `platforms/claude/agents/frontend-auditor.md`;
       `commands/frontend-audit.md` and `commands/frontend-critique.md` to
       `agent: frontend-engineer` with a report-only opening line, and drop the
       `design-direction.md` and `verification.md` pointers; add the report-only
       line to `platforms/claude/agents/frontend-engineer.md`;
       `evals/routing.yaml:324` to `expect: frontend-engineer`.
-- [ ] 11. `platforms/claude/CLAUDE.md` lines 11–14, 41–42, 49–50, 81–82 for the
+- [x] 11. `platforms/claude/CLAUDE.md` lines 11–14, 41–42, 49–50, 81–82 for the
       three removals. (blocked by 8, 9, 10)
 - [ ] 12. Validator; full `scripts/run-evals.py --base main --model claude-opus-5-5`;
       PR with the report; merge; add this spec and a "migrate Claude commands to
