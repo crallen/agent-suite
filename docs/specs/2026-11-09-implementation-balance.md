@@ -320,11 +320,11 @@ One commit per skill or agent file, then a full `run-evals.py --base main
       `repo.py`, `payments.py` (`PaymentsClient.refund(order_id, amount, timeout=None)`),
       `allowlist.py` (`is_allowed_ip`), `migrations/0001_init.sql`
       (`orders.customer_email`), `test_*.py`; green under `python3 -m unittest`.
-- [ ] 3. Style cases `evals/behavior/impl-{test-first,fixture-placeholders,integration-timeout,expand-contract,frontend-tokens}/case.yaml`
+- [x] 3. Style cases `evals/behavior/impl-{test-first,fixture-placeholders,integration-timeout,expand-contract,frontend-tokens}/case.yaml`
       per the Part 2 table, with implementer-brief prompts and a one-task
       `spec.md` each; `impl-test-first` carries its own `fixture/`, the rest use
       `fixture:`. (blocked by 1, 2)
-- [ ] 4. Freedom cases `evals/behavior/impl-{trivial-no-ceremony,clear-feature-finishes,ambiguous-asks}/case.yaml`
+- [x] 4. Freedom cases `evals/behavior/impl-{trivial-no-ceremony,clear-feature-finishes,ambiguous-asks}/case.yaml`
       per the Part 2 table; `impl-trivial-no-ceremony` carries its own `fixture/`.
       (blocked by 1, 2)
 - [ ] 5. Red proof for each of the 8 cases with
