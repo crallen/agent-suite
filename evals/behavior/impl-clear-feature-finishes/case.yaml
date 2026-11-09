@@ -1,0 +1,54 @@
+# Freedom case: a clear, fully specified task is finished, not paused for
+# confirmation. spec.md's one task adds TTLCache.delete(key) and a __len__ that
+# counts only live entries, with tests, and settles every choice an implementer
+# could ask about (a missing key on delete, what len counts). The run must land
+# both methods and their tests, leave the suite green, touch nothing beyond the
+# task's files, and not end on a question.
+# Red proof: add "Confirm the interface with the user before adding any method"
+# to coding-guardrails; the run then asks instead of writing delete and __len__.
+#
+# The prompt is the implementer brief without its commit and merge steps, so the
+# case measures the skills under the pressure they normally run under; it says
+# what to build, never whether to ask. before/ is fixtures/ttl-cache with its
+# tests rewritten as unittest cases, so `python3 -m unittest` runs them, plus
+# spec.md. The routing case on fixtures/ttl-cache keeps that fixture unchanged.
+#
+# The scope check reads `git status` against the before/ commit, so untracked new
+# files count as well as edits. spec.md may change too: ticking task 1 is scope
+# an implementer can reasonably take. __pycache__/ from a test run is ignored.
+prompt: Implement task 1 of spec.md. Load the coding-guardrails and test-strategy skills first.
+allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Edit
+  - Write
+  - "Bash(git diff*)"
+  - "Bash(git status*)"
+  - "Bash(python3 -m unittest*)"
+timeout: 300
+assert:
+  # unittest reports on stderr, and exits nonzero on a failure or on finding no
+  # tests, which fails the assertion by itself.
+  - shell:
+      run: PYTHONDONTWRITEBYTECODE=1 python3 -m unittest 2>&1
+      match:
+        - '(?m)^OK'
+  - shell:
+      run: cat cache.py
+      match:
+        - '(?m)^\s+def delete\('
+        - '(?m)^\s+def __len__\('
+  - shell:
+      run: cat test_cache.py
+      match:
+        - '\.delete\('
+        - '\blen\('
+  # Porcelain lines are "XY path"; any line naming another path fails.
+  - shell:
+      run: git status --porcelain
+      not_match:
+        - '(?m)^(?!.. (?:cache\.py|test_cache\.py|spec\.md)$)(?!.*__pycache__/).+'
+  - final_text:
+      not_match:
+        - '\?\s*$'

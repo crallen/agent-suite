@@ -1,0 +1,39 @@
+# Freedom case: a trivial fix is just made, with no ceremony. after/ misspells
+# "seconds" as "secnods" in TTLCache's docstring, left uncommitted as if the user
+# had just typed it. The run must fix that one word and stop: no plan with verify
+# lines, no closing question, no subagent, no other edit.
+# Red proof: add "Present a numbered plan with verify lines and confirm before
+# any edit" to coding-guardrails; the run then ends on a plan and a question.
+#
+# The prompt names what to fix, not how much process to wrap around it, so plan
+# or no plan comes from the loaded skills. before/ is fixtures/ttl-cache with its
+# tests rewritten as unittest cases, so the allowed `python3 -m unittest` finds
+# them if the run checks its work.
+#
+# The diff check reads `git status` against the before/ commit, which holds the
+# correct spelling: the right fix puts cache.py back to that commit, so a clean
+# status proves the typo is fixed and nothing else changed. A numstat of the
+# working tree would count after/'s own typo line as well; staging after/ and
+# reading the unstaged diff would isolate the run's edit, but hands the request a
+# staged typo, an odd state for it. __pycache__/ from a test run is ignored.
+prompt: Fix the typo in TTLCache's docstring
+allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Edit
+  - Write
+  - "Bash(git diff*)"
+  - "Bash(git status*)"
+  - "Bash(python3 -m unittest*)"
+timeout: 300
+assert:
+  - shell:
+      run: git status --porcelain
+      not_match:
+        - '(?m)^(?!.*__pycache__/).+'
+  - final_text:
+      not_match:
+        - '(?im)^\W*verify:'
+        - '\?\s*$'
+  - tool_not_called: [Agent]
