@@ -320,7 +320,7 @@
 - prompt: >-
     Open the checkout page on localhost:3000 and tell me what's off with it on
     a phone-sized screen. Don't change any code.
-  expect: frontend-auditor
+  expect: frontend-engineer
 
 # Runs in a minimal Vite + React app: without one, every run stopped to ask
 # where "our React app" was.
