@@ -387,7 +387,7 @@ Notes on the table:
 
 **Branch 2: `refactor/impl-skills-balance`**
 
-- [ ] 13. Write `docs/specs/2026-11-09-implementation-balance-rules.md`: one
+- [x] 13. Write `docs/specs/2026-11-09-implementation-balance-rules.md`: one
       section per skill plus agent bodies and index documents, seeded with task
       6's candidate cuts; owner approves. (blocked by 12)
 - [ ] 14. `skills/coding-guardrails/SKILL.md` per the rule list. (blocked by 13)
