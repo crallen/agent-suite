@@ -1,0 +1,25 @@
+:root {
+  --color-bg: #ffffff;
+  --color-text: #1f2328;
+  --color-accent: #2f6feb;
+  --space: 1rem;
+  font-family: system-ui, sans-serif;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+.app-nav {
+  display: flex;
+  gap: var(--space);
+  padding: var(--space);
+  border-bottom: 1px solid #d0d7de;
+}
+
+.app-nav button.active {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.app-main {
+  padding: var(--space);
+}

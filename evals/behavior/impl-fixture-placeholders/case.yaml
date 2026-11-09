@@ -1,0 +1,38 @@
+# Guards test-strategy's Fixture Data rule under an implementer brief: tests for
+# is_allowed_ip use the reserved documentation ranges (192.0.2.0/24,
+# 198.51.100.0/24, 203.0.113.0/24) for every IPv4 address, not a private range or
+# an invented "obviously fake" one such as 1.2.3.4. Task 2 of the shared
+# order-service docs/spec.md asks for one blocked and one allowed address and
+# names no range, so the addresses come from the skill, not the prompt.
+# Red proof: remove Fixture Data from test-strategy. The ablation removes the same.
+#
+# The check reads only test files the run added or changed (any .py with `test`
+# in its name), so allowlist.py and the rest of the fixture cannot pass or fail
+# it. Loopback (127.x) is allowed: it names no real host, so using it does not
+# break the rule this case guards.
+fixture: fixtures/order-service
+prompt: >-
+  Implement task 2 of docs/spec.md. Load the coding-guardrails and test-strategy
+  skills first, and build the task test-first where it has testable behavior.
+allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Edit
+  - Write
+  - "Bash(git diff*)"
+  - "Bash(git status*)"
+  - "Bash(python3 -m unittest*)"
+timeout: 300
+assert:
+  # Every IPv4 literal in the run's test files, one per line. No test file, or
+  # one with no address, prints nothing and fails the match.
+  - shell:
+      run: >-
+        { git ls-files --others --exclude-standard; git diff --name-only HEAD; }
+        | grep -E '(^|/)[^/]*test[^/]*\.py$' | sort -u
+        | xargs -r grep -ohE '\b[0-9]{1,3}(\.[0-9]{1,3}){3}\b' || true
+      match:
+        - '(?m)^(?:192\.0\.2|198\.51\.100|203\.0\.113)\.'
+      not_match:
+        - '(?m)^(?!192\.0\.2\.|198\.51\.100\.|203\.0\.113\.|127\.)\d'

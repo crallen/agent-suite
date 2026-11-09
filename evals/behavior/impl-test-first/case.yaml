@@ -1,0 +1,56 @@
+# Guards test-first under an implementer brief: the run adds a failing test for
+# the bug before it edits cache.py, and leaves the suite green with the bug fixed.
+# after/ is a teammate's uncommitted change that taught TTLCache `ttl=None`
+# (never expire) through a falsy guard, `if self.ttl and ...`, so `ttl=0` now
+# never expires either. docs/spec.md states the symptom only; the guard, and that
+# a test should come first, are left for the run to find.
+# Red proof: remove Test-First from test-strategy, the bug-fix line ("failing
+# tests or repeatable reproductions before bug fixes") from coding-guardrails §4,
+# and "build the task test-first" from this prompt, together. The ablation removes
+# the same three.
+#
+# `order` matches a tool by exact name, so no one assertion can accept a test
+# arriving by either Edit or Write, and its `first` call must occur. The fixture
+# therefore keeps the bug's natural home: test_cache.py exists with a TestCase the
+# new test belongs in, and Claude Code adds to an existing file with Edit. Both
+# assertions share that `first`, one per tool that could touch cache.py first. A
+# run that puts its test in a new file through Write fails here even when it went
+# test-first; watch red-proof and head runs for that. The regexes run on the
+# call's input JSON and anchor on `file_path`, and `cache.py` needs a `/` or the
+# start of the path before it, so test_cache.py never counts as the fix.
+prompt: >-
+  Implement task 1 of docs/spec.md. Load the coding-guardrails and test-strategy
+  skills first, and build the task test-first where it has testable behavior.
+allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Edit
+  - Write
+  - "Bash(git diff*)"
+  - "Bash(git status*)"
+  - "Bash(python3 -m unittest*)"
+timeout: 300
+assert:
+  - order:
+      first: 'Edit:"file_path": "(?:[^"]*/)?test_[^"/]*\.py"'
+      before: 'Edit:"file_path": "(?:[^"]*/)?cache\.py"'
+  - order:
+      first: 'Edit:"file_path": "(?:[^"]*/)?test_[^"/]*\.py"'
+      before: 'Write:"file_path": "(?:[^"]*/)?cache\.py"'
+  # unittest reports on stderr; a failing suite also exits nonzero, which fails
+  # the assertion on its own.
+  - shell:
+      run: python3 -m unittest 2>&1
+      match:
+        - '(?m)^OK'
+  # The run's own tests could pass without the bug fixed, so check the fix
+  # directly: a ttl=0 entry misses after a short wait, and ttl=None still keeps
+  # its entry.
+  - shell:
+      run: >-
+        python3 -c 'import time; from cache import TTLCache;
+        c = TTLCache(ttl=0); c.set("k", 1); time.sleep(0.01); print(c.get("k"));
+        n = TTLCache(ttl=None); n.set("k", 2); time.sleep(0.01); print(n.get("k"))'
+      match:
+        - '^None\n2\n$'

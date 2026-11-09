@@ -1,0 +1,36 @@
+# Guards database-patterns' expand/migrate/contract under an implementer brief:
+# renaming orders.customer_email to email lands as an expand migration that adds
+# the new column and leaves the old one, not a RENAME COLUMN, a DROP COLUMN, or a
+# table rebuild. Task 3 of the shared order-service docs/spec.md asks for the
+# rename in plain terms and says nothing about deploys or old readers. SQLite
+# supports RENAME COLUMN, so the one-step rename is the easy path.
+# Red proof: remove Migrations: Expand, Migrate, Contract from database-patterns.
+# The ablation removes the same.
+#
+# Only new files under migrations/ are read, so 0001_init.sql cannot pass the
+# check, and a run that edits it in place instead of adding a migration fails the
+# match. SQL line comments are stripped first: a note such as "-- a later
+# migration will DROP COLUMN customer_email" describes the contract step and
+# must not fail the run. A table rebuild has no ADD COLUMN and fails the match.
+fixture: fixtures/order-service
+prompt: >-
+  Implement task 3 of docs/spec.md. Load the coding-guardrails, test-strategy,
+  and database-patterns skills first, and build the task test-first where it has
+  testable behavior.
+allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Edit
+  - Write
+  - "Bash(git diff*)"
+  - "Bash(git status*)"
+  - "Bash(python3 -m unittest*)"
+timeout: 300
+assert:
+  - shell:
+      run: git ls-files --others --exclude-standard -- migrations | xargs -r cat | sed 's/--.*//'
+      match:
+        - '(?i)\bADD\s+COLUMN\b'
+      not_match:
+        - '(?i)\bDROP\s+COLUMN\b|\bRENAME\s+COLUMN\b'

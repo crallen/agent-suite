@@ -560,16 +560,20 @@ class CaseLoadingTest(unittest.TestCase):
         behavior = {c.id: c for c in cases if isinstance(c, run_evals.BehaviorCase)}
         self.assertEqual(sorted(behavior), [
             "behavior/commit-conventions", "behavior/debugger-phase-0",
-            "behavior/design-review-moved-base", "behavior/reviewer-planted-bug",
-            "behavior/spec-asks-first",
+            "behavior/design-review-moved-base", "behavior/impl-expand-contract",
+            "behavior/impl-fixture-placeholders", "behavior/impl-frontend-tokens",
+            "behavior/impl-integration-timeout", "behavior/impl-test-first",
+            "behavior/reviewer-planted-bug", "behavior/spec-asks-first",
         ])
         self.assertIsNone(behavior["behavior/spec-asks-first"].fixture)
+        self.assertEqual(behavior["behavior/impl-expand-contract"].fixture,
+                         (ROOT / "evals/fixtures/order-service").resolve())
         self.assertTrue(behavior["behavior/commit-conventions"].stage)
         self.assertEqual(behavior["behavior/commit-conventions"].timeout, 180)
 
     def test_only_filters_ids_by_glob(self):
         cases = run_evals.load_cases(ROOT)
-        self.assertEqual(len(run_evals.select(cases, "behavior/*")), 5)
+        self.assertEqual(len(run_evals.select(cases, "behavior/*")), 10)
         self.assertEqual(len(run_evals.select(cases, "routing/none-*")), 12)
         self.assertEqual([c.id for c in run_evals.select(cases, "routing/why")], ["routing/why"])
         self.assertEqual(len(run_evals.select(cases, None)), len(cases))
