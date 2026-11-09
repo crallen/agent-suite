@@ -554,22 +554,30 @@ class CaseLoadingTest(unittest.TestCase):
              for i, c in routing.items() if c.fixture},
             {"routing/agent-reviewer": "fixtures/mini-suite",
              "routing/code-reviewer": "behavior/reviewer-planted-bug/fixture",
-             "routing/debugger": "behavior/debugger-phase-0/fixture",
              "routing/debugging-methodology-2": "fixtures/ttl-cache",
-             "routing/frontend-engineer": "fixtures/react-app"})
+             "routing/fork": "behavior/debugger-phase-0/fixture",
+             "routing/frontend-engineer-2": "fixtures/react-app"})
         behavior = {c.id: c for c in cases if isinstance(c, run_evals.BehaviorCase)}
         self.assertEqual(sorted(behavior), [
             "behavior/commit-conventions", "behavior/debugger-phase-0",
-            "behavior/design-review-moved-base", "behavior/reviewer-planted-bug",
-            "behavior/spec-asks-first",
+            "behavior/design-review-moved-base", "behavior/impl-ambiguous-asks",
+            "behavior/impl-clear-feature-finishes", "behavior/impl-expand-contract",
+            "behavior/impl-fixture-placeholders", "behavior/impl-frontend-tokens",
+            "behavior/impl-integration-timeout", "behavior/impl-test-first",
+            "behavior/impl-trivial-no-ceremony",
+            "behavior/reviewer-planted-bug", "behavior/spec-asks-first",
         ])
         self.assertIsNone(behavior["behavior/spec-asks-first"].fixture)
+        self.assertEqual(behavior["behavior/impl-ambiguous-asks"].fixture,
+                         (ROOT / "evals/fixtures/order-service").resolve())
+        self.assertEqual(behavior["behavior/impl-expand-contract"].fixture,
+                         (ROOT / "evals/fixtures/order-service").resolve())
         self.assertTrue(behavior["behavior/commit-conventions"].stage)
         self.assertEqual(behavior["behavior/commit-conventions"].timeout, 180)
 
     def test_only_filters_ids_by_glob(self):
         cases = run_evals.load_cases(ROOT)
-        self.assertEqual(len(run_evals.select(cases, "behavior/*")), 5)
+        self.assertEqual(len(run_evals.select(cases, "behavior/*")), 13)
         self.assertEqual(len(run_evals.select(cases, "routing/none-*")), 12)
         self.assertEqual([c.id for c in run_evals.select(cases, "routing/why")], ["routing/why"])
         self.assertEqual(len(run_evals.select(cases, None)), len(cases))
@@ -671,6 +679,34 @@ class CaseLoadingTest(unittest.TestCase):
     def test_invalid_regex_is_a_setup_error(self):
         root = self.write_suite("[]\n", "prompt: hi\nassert:\n  - final_text: {match: ['(']}\n")
         with self.assertRaisesRegex(run_evals.SetupError, "behavior/c"):
+            run_evals.load_cases(root)
+
+    def test_invalid_order_before_regex_is_a_setup_error(self):
+        root = self.write_suite(
+            "[]\n", "prompt: hi\nassert:\n  - order: {first: Read, before: 'Edit:('}\n")
+        with self.assertRaisesRegex(run_evals.SetupError, "behavior/c: bad regex"):
+            run_evals.load_cases(root)
+
+    def test_behavior_fixture_key_names_a_fixture_under_evals(self):
+        root = self.write_suite(
+            "[]\n", "prompt: hi\nfixture: fixtures/repo\nassert:\n  - tool_not_called: [Write]\n")
+        self.write_fixture(root, "fixtures/repo")
+        [case] = run_evals.load_cases(root)
+        self.assertEqual(case.fixture, (root / "evals" / "fixtures" / "repo").resolve())
+
+    def test_behavior_fixture_key_outside_evals_is_a_setup_error(self):
+        root = self.write_suite(
+            "[]\n", "prompt: hi\nfixture: ../outside\nassert:\n  - tool_not_called: [Write]\n")
+        (root / "outside" / "before").mkdir(parents=True)
+        with self.assertRaisesRegex(run_evals.SetupError, "behavior/c: fixture .* under evals/"):
+            run_evals.load_cases(root)
+
+    def test_behavior_fixture_key_beside_a_fixture_directory_is_a_setup_error(self):
+        root = self.write_suite(
+            "[]\n", "prompt: hi\nfixture: fixtures/repo\nassert:\n  - tool_not_called: [Write]\n")
+        self.write_fixture(root, "fixtures/repo")
+        self.write_fixture(root, "behavior/c/fixture")
+        with self.assertRaisesRegex(run_evals.SetupError, "behavior/c: .*fixture/ directory"):
             run_evals.load_cases(root)
 
 
@@ -790,6 +826,21 @@ class AssertionTest(unittest.TestCase):
     def test_order_without_a_regex_matches_the_tool_name(self):
         result = run_result(call("Read", file_path="a.py"), call("Edit", file_path="a.py"))
         self.assertIsNone(self.check({"order": {"first": "Read", "before": "Edit"}}, result))
+
+    def test_order_before_with_a_regex_ignores_calls_it_does_not_match(self):
+        # A bare `before: Edit` would fail on the notes.md edit; the path narrows it.
+        result = run_result(call("Edit", file_path="/repo/notes.md"),
+                            call("Edit", file_path="/repo/test_cache.py"),
+                            call("Edit", file_path="/repo/cache.py"))
+        self.assertIsNone(self.check(
+            {"order": {"first": "Edit:test_cache", "before": r"Edit:/cache\.py"}}, result))
+
+    def test_order_before_with_a_regex_fails_when_its_match_comes_first(self):
+        result = run_result(call("Edit", file_path="/repo/cache.py"),
+                            call("Edit", file_path="/repo/test_cache.py"))
+        failure = self.check(
+            {"order": {"first": "Edit:test_cache", "before": r"Edit:/cache\.py"}}, result)
+        self.assertIn(r"Edit:/cache\.py (call 1) came before Edit:test_cache (call 2)", failure)
 
     def test_debugger_case_counts_only_a_unittest_run_as_the_reproduction(self):
         case = next(c for c in run_evals.load_cases(ROOT) if c.id == "behavior/debugger-phase-0")

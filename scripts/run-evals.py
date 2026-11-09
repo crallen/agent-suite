@@ -593,7 +593,7 @@ ROUTE_WINDOW = 3
 ROUTING_TIMEOUT = 180
 DEFAULT_BEHAVIOR_TIMEOUT = 300
 SHELL_ASSERT_TIMEOUT = 60
-CASE_KEYS = {"prompt", "allowed_tools", "timeout", "stage", "assert"}
+CASE_KEYS = {"prompt", "allowed_tools", "timeout", "stage", "assert", "fixture"}
 ROUTING_KEYS = {"prompt", "expect", "any_of", "fixture"}
 
 
@@ -613,7 +613,8 @@ class RoutingCase:
 @dataclass(frozen=True)
 class BehaviorCase:
     """An evals/behavior/<dir>/case.yaml. `fixture` is the case's fixture/
-    directory, or None when it has none (an empty fixture)."""
+    directory or the one its `fixture` key names under evals/, or None when
+    it has neither (an empty fixture)."""
 
     id: str
     prompt: str
@@ -649,9 +650,9 @@ def routing_ids(keys: Sequence[str]) -> list[str]:
     return ids
 
 
-def routing_fixture(evals: Path, value: object, where: str) -> Path:
-    """The fixture directory a routing entry's `fixture` key names: a path
-    relative to evals/, inside it, holding before/."""
+def named_fixture(evals: Path, value: object, where: str) -> Path:
+    """The fixture directory a routing entry's or behavior case's `fixture`
+    key names: a path relative to evals/, inside it, holding before/."""
     if not isinstance(value, str) or not value:
         raise SetupError(f"{where}: fixture is a path under evals/")
     fixture = (evals / value).resolve()
@@ -703,7 +704,7 @@ def load_routing(path: Path) -> list[RoutingCase]:
             ):
                 raise SetupError(f"{where}: any_of is a non-empty list of names")
             parsed.append((members[0], frozenset(members)))
-        fixtures.append(routing_fixture(path.parent, entry["fixture"], where)
+        fixtures.append(named_fixture(path.parent, entry["fixture"], where)
                         if "fixture" in entry else None)
     ids = routing_ids([key for key, _ in parsed])
     return [
@@ -729,9 +730,13 @@ def load_behavior(case_dir: Path) -> BehaviorCase:
     if not isinstance(tools, list) or not all(isinstance(t, str) for t in tools):
         raise SetupError(f"{case_id}: allowed_tools is a list of tool rules")
     fixture = case_dir / "fixture"
-    if fixture.is_dir() and not (fixture / "before").is_dir():
+    if "fixture" in data:
+        if fixture.exists():
+            raise SetupError(f"{case_id}: takes a fixture: key or a fixture/ directory, not both")
+        fixture = named_fixture(case_dir.parent.parent, data["fixture"], case_id)
+    elif fixture.is_dir() and not (fixture / "before").is_dir():
         raise SetupError(f"{case_id}: fixture/ needs a before/ directory")
-    if fixture.is_dir():
+    elif fixture.is_dir():
         reject_symlinks(fixture, case_id)
     return BehaviorCase(
         id=case_id,
@@ -853,9 +858,10 @@ def _patterns_problem(spec: dict, keys: Sequence[str]) -> str | None:
 
 
 def _order_problem(spec: object) -> str | None:
-    if not isinstance(spec, dict) or not all(isinstance(spec.get(k), str) for k in ("first", "before")):
-        return "order needs first: <tool[:regex]> and before: <tool>"
-    return _patterns_problem({"first": [spec["first"].partition(":")[2]]}, ["first"])
+    keys = ("first", "before")
+    if not isinstance(spec, dict) or not all(isinstance(spec.get(k), str) for k in keys):
+        return "order needs first: <tool[:regex]> and before: <tool[:regex]>"
+    return _patterns_problem({k: [spec[k].partition(":")[2]] for k in keys}, keys)
 
 
 def _names_problem(kind: str) -> object:
@@ -933,7 +939,8 @@ def _check_order(spec: dict, result: RunResult, scratch: Path, env: Mapping[str,
     first = _first_index(result.tool_calls, tool, pattern)
     if first is None:
         return f"order: no {spec['first']} call"
-    before = _first_index(result.tool_calls, spec["before"])
+    before_tool, _, before_pattern = spec["before"].partition(":")
+    before = _first_index(result.tool_calls, before_tool, before_pattern)
     if before is not None and before < first:
         return f"order: {spec['before']} (call {before + 1}) came before {spec['first']} (call {first + 1})"
     return None

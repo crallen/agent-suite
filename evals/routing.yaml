@@ -20,10 +20,9 @@
 # prompt must be self-contained, so paste the snippet it acts on.
 #
 # Agent entries use expect: <agent> and ask for what the agent enforces (read-
-# only review, an isolated investigation, a cheaper model, a browser). An any_of
-# pairing an agent with its own skill passes on the skill load alone, so it
-# tests nothing about agent routing. Use any_of only where every listed target
-# is honestly correct, not to make a case easier.
+# only review, a browser). An any_of pairing an agent with its own skill passes
+# on the skill load alone, so it tests nothing about agent routing. Use any_of
+# only where every listed target is honestly correct, not to make a case easier.
 #
 # Known gaps: an entry marked `# known gap` is a prompt users do type that loads
 # nothing today. It FAILs on both sides by design; that FAIL is the backlog for
@@ -300,28 +299,10 @@
   expect: code-reviewer
   fixture: behavior/reviewer-planted-bug/fixture
 
-# The fixture's pricing.py skips the discount at exactly 10 units.
-- prompt: >-
-    A customer ordered exactly 10 widgets at $2.50 each and was charged $25.00;
-    orders of 10 or more are supposed to get 10% off. Investigate it on the side
-    so it doesn't clutter this conversation, and bring me back the root cause
-    and a fix.
-  expect: debugger
-  fixture: behavior/debugger-phase-0/fixture
-
-- prompt: |-
-    This is grunt work, so don't spend the expensive model on it. Write
-    docs/api.md for these endpoints:
-
-        GET    /invoices        list invoices, ?status=open|paid, paginated by ?cursor
-        POST   /invoices        body {customer_id, amount_cents, due_date}; 201 or 422
-        DELETE /invoices/:id    only while status is draft; 204, 404, or 409
-  expect: documenter
-
 - prompt: >-
     Open the checkout page on localhost:3000 and tell me what's off with it on
     a phone-sized screen. Don't change any code.
-  expect: frontend-auditor
+  expect: frontend-engineer
 
 # Runs in a minimal Vite + React app: without one, every run stopped to ask
 # where "our React app" was.
@@ -336,6 +317,27 @@
     We're about to open-source this repo. Do a security pass over the code,
     config, and dependencies first. Report only, don't fix anything.
   expect: security-analyst
+
+# Isolation without a dedicated agent: "on the side" is what a fork is for. The
+# fixture's pricing.py skips the discount at exactly 10 units.
+- prompt: >-
+    A customer ordered exactly 10 widgets at $2.50 each and was charged $25.00;
+    orders of 10 or more are supposed to get 10% off. Investigate it on the side
+    so it doesn't clutter this conversation, and bring me back the root cause
+    and a fix.
+  expect: fork
+  fixture: behavior/debugger-phase-0/fixture
+
+# A cheaper model without a pinned agent: the Agent call's model override does
+# it. The route is general-purpose; the model it picks is not asserted.
+- prompt: |-
+    This is grunt work, so don't spend the expensive model on it. Write
+    docs/api.md for these endpoints:
+
+        GET    /invoices        list invoices, ?status=open|paid, paginated by ?cursor
+        POST   /invoices        body {customer_id, amount_cents, due_date}; 201 or 422
+        DELETE /invoices/:id    only while status is draft; 204, 404, or 409
+  expect: general-purpose
 
 # --- negatives ---
 

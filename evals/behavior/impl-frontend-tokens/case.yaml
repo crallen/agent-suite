@@ -1,0 +1,43 @@
+# Guards frontend-patterns' "reuse the existing visual system" under an
+# implementer brief: the status badge takes its colors from the tokens in
+# src/index.css through var(--...), and adds no raw color outside a token
+# definition. The fixture is the react-app fixture plus docs/spec.md; it carries
+# its own copy because fixtures/react-app also serves a routing case, which must
+# not see the spec. The task names "the accent color" in words and needs an error
+# color the tokens lack, so the run either adds a token or hardcodes one; nothing
+# in the prompt or spec mentions tokens or variables.
+# Red proof: remove "Reuse the existing visual system" from frontend-patterns. The
+# ablation removes the same.
+#
+# The check reads added lines of tracked files under src/ plus every new file
+# there, so the base stylesheet's own raw border color never counts. A line
+# defining a custom property (`--color-danger: #cf222e;`) may hold a raw color:
+# that is extending the token set, not bypassing it. rgb() and hsl() literals
+# count as raw colors alongside hex. No unittest rule: nothing here runs, and the
+# assertions are greps.
+#
+# The fixture has no node_modules and the run may not install any, so spec.md
+# puts a test setup out of scope. Without that line the brief's "test-first"
+# clause sent 8 of 16 runs to stop and ask for an npm install, on both sides.
+prompt: >-
+  Implement task 1 of docs/spec.md. Load the coding-guardrails, test-strategy,
+  and frontend-patterns skills first, and build the task test-first where it has
+  testable behavior.
+allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Edit
+  - Write
+  - "Bash(git diff*)"
+  - "Bash(git status*)"
+timeout: 300
+assert:
+  - shell:
+      run: >-
+        { git diff HEAD -- src | grep '^+' | grep -v '^+++ ';
+        git ls-files --others --exclude-standard -- src | xargs -r sed 's/^/+/'; } || true
+      match:
+        - 'var\(--'
+      not_match:
+        - '(?m)^\+(?![ \t]*--[\w-]+[ \t]*:).*(?:#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\()'

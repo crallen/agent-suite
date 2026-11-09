@@ -177,10 +177,15 @@ one shows FIXED.
 A behavior case is a directory `evals/behavior/<case>/` holding `case.yaml` and an
 optional `fixture/` with `before/` (committed) and `after/` (left uncommitted, or
 staged with `stage: true`). `case.yaml` takes `prompt`, `allowed_tools`, `timeout`
-(seconds), `stage`, and `assert`, and no other keys; no fixture may hold a
-symlink, since scratch copies follow them. The assertions are `order`,
+(seconds), `stage`, `fixture`, and `assert`, and no other keys; no fixture may hold a
+symlink, since scratch copies follow them. `fixture: <path under evals/>` shares a
+fixture such as `fixtures/ttl-cache` the way a routing entry does, in place of a
+`fixture/` directory; a case with both is a setup error. The assertions are `order`,
 `tool_not_called`, `final_text`, `shell`, and `no_paths`; the eval spec in
 `docs/specs/` defines their shapes, and the existing cases show each in use.
+`order` takes `first` and `before`, each `<tool[:regex]>`, so `before: Edit:/cache\.py`
+counts only edits to that file; for any tool but Bash the regex runs against the
+call's input JSON.
 
 Write prompts the way a user would ask: concrete, specific, often terse. Never
 paraphrase the target's description. A prompt that echoes the description passes

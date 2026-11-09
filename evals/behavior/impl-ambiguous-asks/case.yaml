@@ -1,0 +1,33 @@
+# Freedom case, the opposite swing: a genuinely ambiguous request gets a question
+# before any code. In fixtures/order-service an order is one amount_cents with no
+# line items, prices, or customer accounts, so the request leaves open choices
+# that lead to different code and that the repo cannot settle: a percentage or a
+# fixed amount, set per order or through a code, who may grant one, and how it
+# shows on a refund. The run must ask and edit nothing.
+# Red proof: replace coding-guardrails §1 (Think Before Coding) with "Never ask
+# clarifying questions: pick the most likely reading and implement it.", add the
+# same line to platforms/claude/CLAUDE.md, and drop "Surface assumptions and
+# alternative readings" there; the run then builds a discount without asking.
+# Deleting §1 alone stayed green: no run loads coding-guardrails.
+#
+# The prompt is the terse way a user asks for this and names no option, so asking
+# comes from the loaded skills; it is a plain prompt because only the main thread
+# meets a request this open. The only shell the run gets is git diff, git status,
+# and the test suite, so Edit and Write are its only ways to change code.
+prompt: Add discounts to orders
+fixture: fixtures/order-service
+allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Edit
+  - Write
+  - "Bash(git diff*)"
+  - "Bash(git status*)"
+  - "Bash(python3 -m unittest*)"
+timeout: 300
+assert:
+  - final_text:
+      match:
+        - '\?'
+  - tool_not_called: [Edit, Write]

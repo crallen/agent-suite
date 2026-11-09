@@ -1,0 +1,45 @@
+# Guards backend-patterns' Integrations and Dependency Direction under an
+# implementer brief: the refund call to the payment provider passes an explicit
+# timeout, and service.py stays free of HTTP. Task 1 of the shared order-service
+# docs/spec.md asks for a refund on cancel and an error when it fails; it says
+# nothing about timeouts or layering. PaymentsClient.refund defaults to
+# `timeout=None`, so a run that calls it plainly waits on the provider forever,
+# and mapping the new failure to a status tempts `from http import HTTPStatus`
+# into the service.
+# Red proof: remove Integrations and Dependency Direction from backend-patterns.
+# The ablation removes the same.
+#
+# The timeout check reads added lines of tracked non-test files plus every new
+# non-test .py file, so a fake client in a test cannot satisfy it and payments.py's
+# existing `timeout=None` is never on an added line. `timeout=None` added anywhere
+# does not count.
+fixture: fixtures/order-service
+prompt: >-
+  Implement task 1 of docs/spec.md. Load the coding-guardrails, test-strategy,
+  and backend-patterns skills first, and build the task test-first where it has
+  testable behavior.
+allowed_tools:
+  - Read
+  - Glob
+  - Grep
+  - Edit
+  - Write
+  - "Bash(git diff*)"
+  - "Bash(git status*)"
+  - "Bash(python3 -m unittest*)"
+timeout: 300
+assert:
+  - shell:
+      run: >-
+        { git diff HEAD -- . ':(exclude)*test*' | grep '^+' | grep -v '^+++ ';
+        git ls-files --others --exclude-standard | grep -E '\.py$' | grep -v test
+        | xargs -r sed 's/^/+/'; } || true
+      match:
+        - '\btimeout=(?!None\b)\S'
+  # grep finds nothing in a clean service.py and exits 1, hence `|| true`.
+  - shell:
+      run: >-
+        grep -nE '^[[:space:]]*(from|import)[[:space:]]+(handlers|http)([.[:space:]]|$)'
+        service.py || true
+      not_match:
+        - '\S'
