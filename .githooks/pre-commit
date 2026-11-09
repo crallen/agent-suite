@@ -1,4 +1,11 @@
 #!/bin/sh
+# core.hooksPath points here, so git skips the clone's own .git/hooks/pre-commit;
+# run it first when one is installed.
+local_hook="$(git rev-parse --absolute-git-dir)/hooks/pre-commit"
+if [ -x "$local_hook" ]; then
+  "$local_hook" "$@" || exit
+fi
+
 # Validate the suite when a commit touches skills, platforms, or scripts.
 if git diff --cached --name-only | grep -qE '^(skills|platforms|scripts)/'; then
   exec scripts/validate-config.py -q
