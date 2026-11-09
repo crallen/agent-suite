@@ -20,10 +20,9 @@
 # prompt must be self-contained, so paste the snippet it acts on.
 #
 # Agent entries use expect: <agent> and ask for what the agent enforces (read-
-# only review, a cheaper model, a browser). An any_of pairing an agent with its
-# own skill passes on the skill load alone, so it tests nothing about agent
-# routing. Use any_of only where every listed target is honestly correct, not to
-# make a case easier.
+# only review, a browser). An any_of pairing an agent with its own skill passes
+# on the skill load alone, so it tests nothing about agent routing. Use any_of
+# only where every listed target is honestly correct, not to make a case easier.
 #
 # Known gaps: an entry marked `# known gap` is a prompt users do type that loads
 # nothing today. It FAILs on both sides by design; that FAIL is the backlog for
@@ -155,6 +154,15 @@
     and paste it here; I'll commit it myself. It exposes New(rate, burst),
     Allow(key) bool, and Wait(ctx, key) error, keeps one token bucket per key in
     memory, and needs Go 1.22.
+  expect: doc-templates
+
+- prompt: |-
+    This is grunt work, so don't spend the expensive model on it. Write
+    docs/api.md for these endpoints:
+
+        GET    /invoices        list invoices, ?status=open|paid, paginated by ?cursor
+        POST   /invoices        body {customer_id, amount_cents, due_date}; 201 or 422
+        DELETE /invoices/:id    only while status is draft; 204, 404, or 409
   expect: doc-templates
 
 - prompt: >-
@@ -308,15 +316,6 @@
     who reads them cold and tells me what's wrong, without editing anything.
   expect: code-reviewer
   fixture: behavior/reviewer-planted-bug/fixture
-
-- prompt: |-
-    This is grunt work, so don't spend the expensive model on it. Write
-    docs/api.md for these endpoints:
-
-        GET    /invoices        list invoices, ?status=open|paid, paginated by ?cursor
-        POST   /invoices        body {customer_id, amount_cents, due_date}; 201 or 422
-        DELETE /invoices/:id    only while status is draft; 204, 404, or 409
-  expect: documenter
 
 - prompt: >-
     Open the checkout page on localhost:3000 and tell me what's off with it on
