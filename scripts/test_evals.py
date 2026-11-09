@@ -554,8 +554,8 @@ class CaseLoadingTest(unittest.TestCase):
              for i, c in routing.items() if c.fixture},
             {"routing/agent-reviewer": "fixtures/mini-suite",
              "routing/code-reviewer": "behavior/reviewer-planted-bug/fixture",
-             "routing/debugger": "behavior/debugger-phase-0/fixture",
              "routing/debugging-methodology-2": "fixtures/ttl-cache",
+             "routing/debugging-methodology-3": "behavior/debugger-phase-0/fixture",
              "routing/frontend-engineer": "fixtures/react-app"})
         behavior = {c.id: c for c in cases if isinstance(c, run_evals.BehaviorCase)}
         self.assertEqual(sorted(behavior), [

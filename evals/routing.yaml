@@ -20,10 +20,10 @@
 # prompt must be self-contained, so paste the snippet it acts on.
 #
 # Agent entries use expect: <agent> and ask for what the agent enforces (read-
-# only review, an isolated investigation, a cheaper model, a browser). An any_of
-# pairing an agent with its own skill passes on the skill load alone, so it
-# tests nothing about agent routing. Use any_of only where every listed target
-# is honestly correct, not to make a case easier.
+# only review, a cheaper model, a browser). An any_of pairing an agent with its
+# own skill passes on the skill load alone, so it tests nothing about agent
+# routing. Use any_of only where every listed target is honestly correct, not to
+# make a case easier.
 #
 # Known gaps: an entry marked `# known gap` is a prompt users do type that loads
 # nothing today. It FAILs on both sides by design; that FAIL is the backlog for
@@ -123,6 +123,15 @@
             return value
   fixture: fixtures/ttl-cache
   expect: debugging-methodology
+
+# The fixture's pricing.py skips the discount at exactly 10 units.
+- prompt: >-
+    A customer ordered exactly 10 widgets at $2.50 each and was charged $25.00;
+    orders of 10 or more are supposed to get 10% off. Investigate it on the side
+    so it doesn't clutter this conversation, and bring me back the root cause
+    and a fix.
+  expect: debugging-methodology
+  fixture: behavior/debugger-phase-0/fixture
 
 - prompt: |-
     Our ADR-0003 says: "Feature flags live in the flag service. Services never
@@ -299,15 +308,6 @@
     who reads them cold and tells me what's wrong, without editing anything.
   expect: code-reviewer
   fixture: behavior/reviewer-planted-bug/fixture
-
-# The fixture's pricing.py skips the discount at exactly 10 units.
-- prompt: >-
-    A customer ordered exactly 10 widgets at $2.50 each and was charged $25.00;
-    orders of 10 or more are supposed to get 10% off. Investigate it on the side
-    so it doesn't clutter this conversation, and bring me back the root cause
-    and a fix.
-  expect: debugger
-  fixture: behavior/debugger-phase-0/fixture
 
 - prompt: |-
     This is grunt work, so don't spend the expensive model on it. Write
