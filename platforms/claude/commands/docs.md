@@ -1,12 +1,11 @@
 ---
 description: Generate or update project documentation
 argument-hint: [doc type or target (optional)]
-agent: documenter
 context: fork
 disable-model-invocation: true
 ---
 
-Generate or update documentation for this project. Read the source code and existing documentation to ensure accuracy.
+Load the `doc-templates` skill, then generate or update documentation for this project. Read the source code and existing documentation to ensure accuracy.
 
 If no specific documentation type is requested, assess what documentation exists and what's missing, then suggest or create the most impactful additions.
 

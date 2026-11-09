@@ -23,3 +23,7 @@ OpenCode keeps all 15 of its agents. Its roster is a separate set of real files
 that has never shared anything with Claude's, and it routes every command
 structurally with `agent:` plus `subtask: true` — which makes a per-topic agent
 the unit routing acts on rather than dead weight. The rule is Claude's alone.
+
+See [0002](0002-agents-earn-their-slot-by-use.md), which narrows this rule to
+capabilities that are exercised and removes `debugger`, `documenter`, and
+`frontend-auditor`.
