@@ -1,18 +1,31 @@
 ---
 name: frontend-patterns
-description: Frontend router — the non-negotiables for UI work, when to infer from precedent versus ask versus escalate, and which reference to load for design direction, anti-patterns, component architecture, accessibility and responsiveness, or verification. Load first for any UI component, page, form, layout, styling, or state-management task, including a single component pasted into the conversation, and for questions about where UI state belongs or how a component should be split.
+description: Frontend house rules and router — the non-negotiables and house taste for UI work, when to infer from precedent versus ask versus escalate, and which reference to load for anti-patterns, component architecture, or accessibility and responsiveness. Load first for any UI component, page, form, layout, styling, or state-management task, including a single component pasted into the conversation, and for questions about where UI state belongs or how a component should be split.
 ---
 
 # Frontend Patterns
 
-A router: gather the right context, decide whether to clarify or escalate, then consult only the `frontend-patterns/reference/*` file the task needs.
+Gather the right context, decide whether to clarify or escalate, then consult only the `frontend-patterns/reference/*` file the task needs.
 
 ## Non-Negotiables
 
-- Reuse the existing visual system before inventing a new one. Generic polished UI that ignores the product's workflow and tone is the failure to avoid.
+- Generic polished UI that ignores the product's workflow and tone is the failure to avoid.
 - Cover the states that matter: loading, empty, error, disabled, focus, and success when relevant.
 - Verify explicitly. Do not stop at "the JSX/CSS looks right."
 - Escalate to `spec-writing` when the request is really about workflow, information architecture, or product direction.
+
+## House Taste
+
+- Pick one dominant move per screen: clearer, quieter, bolder, tighter, or more breathable.
+- Hierarchy comes from typography before decoration: a small set of text styles, heavier weights only for true emphasis.
+- Color reinforces meaning (success, danger, selection); neutral surfaces and spacing do the structural work. New tokens prefer `oklch` or `color-mix` over ad hoc HSL.
+- Tighten inside groups and loosen between them, with `gap` and layout primitives rather than margin hacks.
+- One primary action per region.
+- No reflex gradients, glows, or cards inside cards; add a container only where containment helps.
+- Loading and busy states keep the layout of the loaded state.
+- Motion explains a state change: brief, opacity and transform, `prefers-reduced-motion` respected.
+- Feedback sits at the interaction point: inline validation, a busy button, in-place confirmation rather than a toast.
+- Buttons name the action, empty states teach the next step, and errors say what failed and what to do.
 
 ## Context First
 
@@ -29,12 +42,10 @@ Read the target route or component, the shared primitives, tokens, and styling c
 
 | If the task is mainly about... | Consult |
 |---|---|
-| Visual direction, hierarchy, typography, color, spacing, motion, interaction tone | `frontend-patterns/reference/design-direction.md` |
-| AI-slop smells and overused polish patterns to check before refining a surface | `frontend-patterns/reference/anti-patterns.md` |
+| Auditing or refining a surface: the full catalog of AI-slop smells and overused polish patterns | `frontend-patterns/reference/anti-patterns.md` |
 | Component boundaries, state placement, forms, tables, lists, page shells | `frontend-patterns/reference/component-architecture.md` |
 | Keyboard, semantics, focus, overlays, narrow screens, overflow, touch | `frontend-patterns/reference/accessibility-responsive.md` |
-| Proof, state coverage, handoff notes | `frontend-patterns/reference/verification.md` |
 
 ## Report
 
-Name the precedent, primitives, or tokens that informed the change, and state what was verified directly versus what still needs browser or human confirmation.
+Name the precedent, primitives, or tokens that informed the change. Name the states checked and the commands run, rather than "verified UI" or "tests passed", and state what still needs browser or human confirmation.

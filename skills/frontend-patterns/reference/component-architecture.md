@@ -2,6 +2,15 @@
 
 Use this reference when the work is mainly about how UI code should be structured: component boundaries, state placement, shared primitives, extraction, or shaping forms, tables, lists, and route-level screens.
 
+## Contents
+
+1. Component Roles
+2. State Placement
+3. Composition Before Configuration
+4. Common Screen Patterns: forms, lists and tables, page shells, design system extension
+5. Extraction Heuristics
+6. Mutation and Feedback Patterns
+
 ## 1. Component Roles
 
 | Type | Purpose | Typical contents |

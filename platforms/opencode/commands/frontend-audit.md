@@ -6,6 +6,6 @@ subtask: true
 
 Audit the requested frontend surface without editing files. Focus on screen intent, hierarchy, states, accessibility, responsiveness, and anti-patterns. If implementation is needed afterward, recommend `/frontend` or `@frontend-engineer`.
 
-Use `frontend-patterns` as a router. For this workflow, prefer `frontend-patterns/reference/anti-patterns.md`, `frontend-patterns/reference/design-direction.md`, and `frontend-patterns/reference/verification.md`. Report concrete findings, better directions, and what still needs browser/manual validation.
+Use `frontend-patterns` as a router. For this workflow, apply its House Taste and Report sections and prefer `frontend-patterns/reference/anti-patterns.md`. Report concrete findings, better directions, and what still needs browser/manual validation.
 
 $ARGUMENTS
