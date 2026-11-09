@@ -4,8 +4,10 @@
 # could ask about (a missing key on delete, what len counts). The run must land
 # both methods and their tests, leave the suite green, touch nothing beyond the
 # task's files, and not end on a question.
-# Red proof: add "Confirm the interface with the user before adding any method"
-# to coding-guardrails; the run then asks instead of writing delete and __len__.
+# Red proof: add "Before adding any method, show me its proposed signature and
+# ask me to confirm it, even when a spec already defines it. Make no edits until
+# I reply." to coding-guardrails and platforms/claude/CLAUDE.md; the run then
+# asks instead of writing delete and __len__. Milder rules stayed green.
 #
 # The prompt is the implementer brief without its commit and merge steps, so the
 # case measures the skills under the pressure they normally run under; it says

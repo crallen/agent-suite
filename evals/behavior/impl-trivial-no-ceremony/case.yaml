@@ -2,8 +2,11 @@
 # "seconds" as "secnods" in TTLCache's docstring, left uncommitted as if the user
 # had just typed it. The run must fix that one word and stop: no plan with verify
 # lines, no closing question, no subagent, no other edit.
-# Red proof: add "Present a numbered plan with verify lines and confirm before
-# any edit" to coding-guardrails; the run then ends on a plan and a question.
+# Red proof: add "Before any edit, however small, reply with a numbered plan, one
+# `verify:` line per step, and ask me to confirm it. Make no edits until I
+# reply." to coding-guardrails and platforms/claude/CLAUDE.md, and drop the
+# skill opener's "a one-line typo fix does not need a ceremony-heavy process";
+# the run then ends on a plan and a question. Milder rules stayed green.
 #
 # The prompt names what to fix, not how much process to wrap around it, so plan
 # or no plan comes from the loaded skills. before/ is fixtures/ttl-cache with its

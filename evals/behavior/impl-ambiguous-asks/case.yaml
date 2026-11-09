@@ -4,9 +4,11 @@
 # that lead to different code and that the repo cannot settle: a percentage or a
 # fixed amount, set per order or through a code, who may grant one, and how it
 # shows on a refund. The run must ask and edit nothing.
-# Red proof: delete coding-guardrails §1 (Think Before Coding). If that alone
-# stays green, also drop "Surface assumptions and alternative readings" from the
-# implementation line of platforms/claude/CLAUDE.md, the other copy the run loads.
+# Red proof: replace coding-guardrails §1 (Think Before Coding) with "Never ask
+# clarifying questions: pick the most likely reading and implement it.", add the
+# same line to platforms/claude/CLAUDE.md, and drop "Surface assumptions and
+# alternative readings" there; the run then builds a discount without asking.
+# Deleting §1 alone stayed green: no run loads coding-guardrails.
 #
 # The prompt is the terse way a user asks for this and names no option, so asking
 # comes from the loaded skills; it is a plain prompt because only the main thread

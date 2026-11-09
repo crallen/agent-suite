@@ -187,7 +187,7 @@ with a `customer_email` column, and `test_*.py` green under `python3 -m unittest
 | `impl-test-first` | own `fixture/`: `ttl-cache` plus a ttl=0 expiry bug in `after/` and a `spec.md` | "Entries with ttl=0 never expire; fix it" | `order` `Edit:test_cache` before `Edit:/cache\.py` (and the Write pair); `shell` unittest `OK` | Test-first in `test-strategy`, the bug-fix line in `coding-guardrails` §4, and "builds the task test-first" in the brief |
 | `impl-fixture-placeholders` | `fixtures/order-service` plus `spec.md` | "Add tests for `is_allowed_ip`: one blocked, one allowed address" | `shell` test file matches `192\.0\.2\.\|198\.51\.100\.\|203\.0\.113\.`, not `192\.168\.\|\b10\.\d` | Fixture Data in `test-strategy` |
 | `impl-integration-timeout` | `fixtures/order-service` plus `spec.md` | "When an order is canceled, refund it through `PaymentsClient`" | `shell` diff contains `timeout=`; `service.py` imports neither `handlers` nor `http` (`grep … \|\| true`) | Integrations and Dependency Direction in `backend-patterns` |
-| `impl-expand-contract` | `fixtures/order-service` plus `spec.md` | "Rename `customer_email` on orders to `email`" | `shell` new migration matches `(?i)ADD COLUMN`, not `(?i)DROP COLUMN\|RENAME COLUMN` | Migrations in `database-patterns` |
+| `impl-expand-contract` | `fixtures/order-service` plus `spec.md` and its Deployment section (three instances, rolling deploys) | "Rename `customer_email` on orders to `email`" | `shell` new migration matches `(?i)ADD COLUMN`, not `(?i)DROP COLUMN\|RENAME COLUMN` | Migrations in `database-patterns`; the ablation also drops "expand/migrate/contract migrations" from its description |
 | `impl-frontend-tokens` | `fixtures/react-app` plus `spec.md` | "Add a status badge to Home: 'Synced' in the accent color, with an error variant" | `shell` added lines use `var\(--`, no hex color on `^\+` lines | "Reuse the existing visual system" in `frontend-patterns` |
 
 **Freedom cases** guard against over-constraint; the red proof adds a constraining
@@ -196,9 +196,9 @@ opposite swing.
 
 | Case | Fixture | Prompt (gist) | Asserts | Red proof |
 |---|---|---|---|---|
-| `impl-trivial-no-ceremony` | own `fixture/`: `ttl-cache` plus a docstring typo in `after/` | Plain: "Fix the typo in TTLCache's docstring" | `shell` diff touches only `cache.py`, one line; `final_text` has no `(?m)^\s*verify:` and does not end in `\?\s*$`; `tool_not_called: [Agent]` | Add "Present a numbered plan with verify lines and confirm before any edit" to `coding-guardrails` |
-| `impl-clear-feature-finishes` | `fixtures/ttl-cache` plus `spec.md` | Brief: "Add `delete(key)` and make `len(cache)` count only live entries, with tests" | `shell` unittest `OK`; `def delete` and `def __len__` present; diff limited to `cache.py` and `test_cache.py`; `final_text` does not end in a question | Add "Confirm the interface with the user before adding any method" to `coding-guardrails` |
-| `impl-ambiguous-asks` | `fixtures/order-service` | Plain: "Add discounts to orders" | `final_text` matches `\?`; `tool_not_called: [Edit, Write]` | Delete `coding-guardrails` §1 |
+| `impl-trivial-no-ceremony` | own `fixture/`: `ttl-cache` plus a docstring typo in `after/` | Plain: "Fix the typo in TTLCache's docstring" | `shell` diff touches only `cache.py`, one line; `final_text` has no `(?m)^\s*verify:` and does not end in `\?\s*$`; `tool_not_called: [Agent]` | Add "Before any edit, however small, reply with a numbered plan, one `verify:` line per step, and ask me to confirm it. Make no edits until I reply." to `coding-guardrails` and `CLAUDE.md`, and drop the opener's "a one-line typo fix does not need a ceremony-heavy process" |
+| `impl-clear-feature-finishes` | `fixtures/ttl-cache` plus `spec.md` | Brief: "Add `delete(key)` and make `len(cache)` count only live entries, with tests" | `shell` unittest `OK`; `def delete` and `def __len__` present; diff limited to `cache.py` and `test_cache.py`; `final_text` does not end in a question | Add "Before adding any method, show me its proposed signature and ask me to confirm it, even when a spec already defines it. Make no edits until I reply." to `coding-guardrails` and `CLAUDE.md` |
+| `impl-ambiguous-asks` | `fixtures/order-service` | Plain: "Add discounts to orders" | `final_text` matches `\?`; `tool_not_called: [Edit, Write]` | Replace `coding-guardrails` §1 with "Never ask clarifying questions: pick the most likely reading and implement it.", add it to `CLAUDE.md`, and drop "Surface assumptions and alternative readings" there |
 
 Common settings: `allowed_tools` of `Read`, `Glob`, `Grep`, `Edit`, `Write`,
 `Bash(git diff*)`, `Bash(git status*)`, and `Bash(python3 -m unittest*)` (the
@@ -282,11 +282,11 @@ One commit per skill or agent file, then a full `run-evals.py --base main
 | `impl-test-first` | Test-First from `test-strategy`, the bug-fix line from `coding-guardrails` §4, "build the task test-first" from the prompt | base 3/3, head 3/3, PASS: stays green | 0/5 (2/10 with confirmation; base 10/10) | guarded |
 | `impl-fixture-placeholders` | Fixture Data from `test-strategy` | base 3/3, head 3/3, PASS: stays green | 0/5 (0/10 with confirmation; base 10/10) | guarded |
 | `impl-integration-timeout` | Integrations and Dependency Direction from `backend-patterns` | base 3/3, head 3/3, PASS: stays green | 5/5 (base 5/5) | textbook, candidate cut |
-| `impl-expand-contract` | Migrations from `database-patterns` | base 0/3, head 0/3, FAIL | not run: base fails | base fails: rule not followed |
+| `impl-expand-contract` | Migrations from `database-patterns` | with the Deployment section: base 3/3, head 3/3, PASS: stays green (without it: base 0/3, head 0/3, FAIL) | 5/5 (base 5/5), the description phrase dropped too | textbook, candidate cut |
 | `impl-frontend-tokens` | "Reuse the existing visual system" from `frontend-patterns` | base 3/3, head 3/3, PASS: stays green | 5/5 (base 5/5) | textbook, candidate cut |
-| `impl-trivial-no-ceremony` | Add "Present a numbered plan with verify lines and confirm before any edit" to `coding-guardrails` | base 3/3, head 3/3, PASS: stays green (repeated: 3/3, 3/3) | n/a | red proof stays green |
-| `impl-clear-feature-finishes` | Add "Confirm the interface with the user before adding any method" to `coding-guardrails` | base 3/3, head 3/3, PASS: stays green | n/a | red proof stays green |
-| `impl-ambiguous-asks` | Delete `coding-guardrails` §1, then also "Surface assumptions and alternative readings" in `CLAUDE.md` | base 3/3, head 3/3, PASS, both steps: stays green | n/a | red proof stays green |
+| `impl-trivial-no-ceremony` | Add "Before any edit, however small, reply with a numbered plan, one `verify:` line per step, and ask me to confirm it. Make no edits until I reply." to `coding-guardrails` and `CLAUDE.md`, and drop the opener's "a one-line typo fix does not need a ceremony-heavy process" | base 8/8, head 0/8, REGRESSION: goes red | n/a | case can fail |
+| `impl-clear-feature-finishes` | Add "Before adding any method, show me its proposed signature and ask me to confirm it, even when a spec already defines it. Make no edits until I reply." to `coding-guardrails` and `CLAUDE.md` | base 8/8, head 0/8, REGRESSION: goes red | n/a | case can fail |
+| `impl-ambiguous-asks` | Replace `coding-guardrails` §1 with "Never ask clarifying questions: pick the most likely reading and implement it.", add it to `CLAUDE.md`, and drop "Surface assumptions and alternative readings" there | base 8/8, head 0/8, REGRESSION: goes red | n/a | case can fail |
 
 Notes on the table:
 
@@ -296,18 +296,23 @@ Notes on the table:
   slices") and, for `impl-test-first`, the bug-fix row of Operating Loops.
 - `impl-test-first` reads one `case.yaml` on both sides, so dropping the
   prompt clause dropped it on base too. Base passed 10/10 without it.
-- `impl-expand-contract`: every base run named the staged rename and chose
-  a one-step `RENAME COLUMN` instead, reasoning that the fixture is one
-  process that migrates its SQLite file at startup.
+- `impl-expand-contract`: without the Deployment section every base run
+  named the staged rename and chose a one-step `RENAME COLUMN` instead,
+  reasoning that the fixture is one process that migrates its SQLite file at
+  startup. With it, the model stages the rename unprompted, so the rule list
+  scopes the rule to "when old and new code serve against one schema".
 - `impl-frontend-tokens` was rerun after `fix(evals)` put a test setup out
   of scope. Before that, base 5/8 and head 3/8: runs stopped to ask for an
   `npm install`.
-- In the repeated `impl-trivial-no-ceremony` red proof, 2 of 3 head runs
-  loaded `coding-guardrails` with the added plan rule and still made the
-  one-line fix. The skill opens with "a one-line typo fix does not need a
-  ceremony-heavy process", which likely outweighs the added rule. No
-  `impl-ambiguous-asks` run loaded `coding-guardrails`, so deleting §1 could
-  not reach it.
+- The freedom-case red proofs went red only at their third strength. Rules
+  in `coding-guardrails` alone stayed green: no `impl-ambiguous-asks` run
+  loaded the skill, and in `impl-trivial-no-ceremony` its opener ("a one-line
+  typo fix does not need a ceremony-heavy process") outweighed the added
+  rule. The same rules added to `CLAUDE.md` still stayed green (3/3 each):
+  the model fixed the typo outright and read the spec as the confirmation.
+  Only rules that forbid edits until the user replies, with the
+  proportionality line gone, turned them red. Opus 5.5 resists mild
+  over-constraint on these tasks; the cases catch the blunt kind.
 
 ## Risks & Open Questions
 

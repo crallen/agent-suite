@@ -9,7 +9,8 @@
 # run chose RENAME COLUMN, reasoning that one process migrating at startup has
 # no old readers.
 # Red proof: remove Migrations: Expand, Migrate, Contract from database-patterns.
-# The ablation removes the same.
+# The ablation also drops "expand/migrate/contract migrations" from its
+# description.
 #
 # Only new files under migrations/ are read, so 0001_init.sql cannot pass the
 # check, and a run that edits it in place instead of adding a migration fails the
