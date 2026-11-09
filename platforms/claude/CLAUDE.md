@@ -9,10 +9,9 @@ restrictions the harness enforces, an MCP server, persistent memory, or a model
 pin. Everything else is a skill you load and work you do yourself.
 
 - **Route to an agent** when you want what it enforces. `@code-reviewer`,
-  `@security-analyst`, `@agent-reviewer`, and `@frontend-auditor` cannot write
-  repository files. `@frontend-engineer` carries Playwright. `@debugger` and
-  `@code-reviewer` keep project-local memory across sessions. `@documenter` runs
-  on a cheaper model.
+  `@security-analyst`, and `@agent-reviewer` cannot write repository files.
+  `@frontend-engineer` carries Playwright. `@code-reviewer` keeps project-local
+  memory across sessions.
 - **Load a skill and do the work** for everything else, backend, database,
   testing, infrastructure, and agent-authoring included. These have no agent by
   design; the knowledge is the whole point and it lives in `skills/`.
@@ -38,16 +37,16 @@ Every command sets `disable-model-invocation: true`, so I reach them and you do 
 | `/full-review` | Run a code quality review and security audit in parallel | code-reviewer + security-analyst |
 | `/design-review` | Judge whether a PR, branch, or changes since a base ref fit the recorded design: ADRs, ownership, existing mechanisms, contract growth, spec scope | code-reviewer |
 | `/test` | Run tests and analyze results | — (fork) |
-| `/debugger` | Start a systematic debugging session | debugger |
-| `/docs` | Generate or update documentation | documenter |
+| `/debugger` | Start a systematic debugging session | — (fork) |
+| `/docs` | Generate or update documentation | — (fork) |
 | `/commit` | Stage logical changes when needed and create Conventional Commits | — (inline) |
 | `/ship` | Commit and push in one step — same logic as `/commit`, then pushes to the remote | — (inline) |
 | `/release` | Prepare release notes, changelog, and version bump | — (inline) |
 | `/backend-engineer` | Implement or modify backend application code | — (fork) |
 | `/database-specialist` | Design or modify database schemas, migrations, queries, and indexes | — (fork) |
 | `/frontend` | Build, update, or fix frontend UI components and pages | frontend-engineer |
-| `/frontend-audit` | Audit frontend quality, states, responsiveness, and anti-patterns without editing files | frontend-auditor |
-| `/frontend-critique` | Critique frontend UX and visual direction, then suggest targeted improvements | frontend-auditor |
+| `/frontend-audit` | Audit frontend quality, states, responsiveness, and anti-patterns without editing files | frontend-engineer |
+| `/frontend-critique` | Critique frontend UX and visual direction, then suggest targeted improvements | frontend-engineer |
 | `/frontend-polish` | Apply focused frontend polish before handoff with verification and restraint | frontend-engineer |
 | `/agent-builder` | Create or modify an agent, skill, or command | — (inline) |
 | `/agent-review` | Review agents, skills, and commands for correctness and consistency | agent-reviewer |
