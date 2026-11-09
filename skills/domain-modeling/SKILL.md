@@ -5,7 +5,7 @@ description: Active domain-model maintenance — sharpen terminology, keep CONTE
 
 # Domain Modeling
 
-Actively build and sharpen the project's domain model: challenge terms, probe concept boundaries with concrete scenarios, and write glossary entries and decisions down the moment they crystallize. This is the *changing* discipline — merely reading `CONTEXT.md` for vocabulary is a one-line habit any task can do without this skill.
+Actively build and sharpen the project's domain model: challenge terms, probe concept boundaries with concrete scenarios, and write glossary entries and decisions down the moment they crystallize.
 
 ## Domain Files
 

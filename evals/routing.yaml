@@ -61,14 +61,14 @@
     binary on every PR.
   expect: ci-pipeline
 
-# known gap: advice question, loads nothing today
+# advice question; a known gap until 2026-11, when it began loading
 - prompt: >-
     A teammate's PR has a function named processData2 and a bare
     `except: pass` around the network call. I'm writing my review comments —
     which of those is a blocker and which is just a nit?
   expect: code-review-checklist
 
-# known gap: work request, still loads nothing on main (task 15 re-run, 0/3)
+# work request; a known gap until 2026-11, when it began loading
 - prompt: |-
     Write my review comments for this change from a teammate's PR, one per
     problem, each marked blocker or nit, ready to paste into GitHub:
@@ -96,13 +96,14 @@
     Write the migrations.
   expect: database-patterns
 
-# known gap: advice question, loads nothing today
+# advice question; a known gap until 2026-11, when it began loading
 - prompt: >-
     I'm chasing this one myself — a test that fails maybe 1 run in 20 and never
     when I add print statements. How should I go about narrowing it down?
   expect: debugging-methodology
 
-# known gap: work request, still loads nothing on main (task 15 re-run, 0/3)
+# known gap: work request; loads in about 2 runs of 3 since 2026-11 (0/10 before),
+# short of the pass rate. Failing runs edit cache.py before reproducing.
 - prompt: |-
     This test fails about 1 run in 20 on CI and has never failed on my laptop.
     Find out why and fix it.
@@ -120,6 +121,7 @@
             if time.time() - stored_at > self.ttl:
                 return None
             return value
+  fixture: fixtures/ttl-cache
   expect: debugging-methodology
 
 - prompt: |-
@@ -133,7 +135,7 @@
     merges.
   expect: design-conformance
 
-# known gap: advice question, loads nothing today
+# advice question; a known gap until 2026-11, when it began loading
 - prompt: >-
     What sections does a README for an internal Go library actually need? Keep
     it short, I'll write it myself.
@@ -158,13 +160,13 @@
     it down where the team will find it.
   expect: domain-modeling
 
-# known gap: advice question, loads nothing today
+# advice question; a known gap until 2026-11, when it began loading
 - prompt: >-
     Should the open/closed state of the settings modal live in the zustand
     store or in local useState? Only the header ever opens it.
   expect: frontend-patterns
 
-# known gap: work request, still loads nothing on main (task 15 re-run, 0/3)
+# work request; a known gap until 2026-11, when it began loading
 - prompt: |-
     Add a settings modal to this header: the gear button opens it, Escape or a
     click on the backdrop closes it. Nothing else in the app opens it. Give me
@@ -208,7 +210,7 @@
     next session doesn't repeat it.
   expect: retro-methodology
 
-# known gap: advice question, loads nothing today
+# advice question; a known gap until 2026-11, when it began loading
 - prompt: >-
     Is `subprocess.run(f"convert {name} out.png", shell=True)` actually
     exploitable if name comes straight from the upload form? How bad would you
@@ -260,7 +262,7 @@
     an exciting new journey — a testament to the power of growth."
   expect: unslop
 
-# known gap: advice question, loads nothing today
+# advice question; a known gap until 2026-11, when it began loading
 - prompt: >-
     We're turning the monolith into multi-tenant SaaS: auth, billing, data
     isolation, all of it. It's weeks of work and half of it is still
@@ -283,7 +285,7 @@
 
 # fixtures/mini-suite: one agent with a tool and a preloaded skill that don't
 # exist, one skill pointing at a reference file that isn't there.
-# known gap: work request, still loads nothing on main (task 15 re-run, 0/3)
+# work request; a known gap until 2026-11, when it began loading
 - prompt: >-
     I'm about to share these agents and skills with my team. Go through them and
     flag anything broken: tool lists, skills or files they point at that aren't
@@ -321,11 +323,13 @@
     a phone-sized screen. Don't change any code.
   expect: frontend-auditor
 
-# known gap: work request, still loads nothing on main (task 15 re-run, 0/3)
+# Runs in a minimal Vite + React app: without one, every run stopped to ask
+# where "our React app" was.
 - prompt: >-
     Build a settings page in our React app with a form for display name and
     email plus a dark-mode toggle, and check it in a real browser at phone and
     desktop widths before you call it done.
+  fixture: fixtures/react-app
   expect: frontend-engineer
 
 - prompt: >-
@@ -353,4 +357,32 @@
   expect: none
 
 - prompt: What's the actual difference between let, const, and var in JavaScript?
+  expect: none
+
+# Near misses: definitional questions in a skill's own vocabulary that need no
+# skill. They guard against a description widened past what its skill is for;
+# each names the skill it borders.
+
+# borders code-review-checklist
+- prompt: What does LGTM mean in a code review comment?
+  expect: none
+
+# borders debugging-methodology
+- prompt: What's the difference between a breakpoint and a watchpoint in gdb?
+  expect: none
+
+# borders doc-templates
+- prompt: What's the difference between Markdown and reStructuredText?
+  expect: none
+
+# borders frontend-patterns
+- prompt: What's the difference between useEffect and useLayoutEffect in React?
+  expect: none
+
+# borders security-analysis
+- prompt: What does the attack vector metric in a CVSS score measure?
+  expect: none
+
+# borders wayfinder-methodology
+- prompt: What's the difference between a product roadmap and a backlog?
   expect: none

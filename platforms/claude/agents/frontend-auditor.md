@@ -9,7 +9,7 @@ mcpServers:
   - playwright:
       type: stdio
       command: npx
-      args: ["-y", "@playwright/mcp@0.0.83"]
+      args: ["-y", "@playwright/mcp@0.0.83", "--output-dir", "/tmp/playwright-mcp"]
 color: green
 ---
 Review of application UI quality without modifying files.
@@ -19,37 +19,5 @@ Review of application UI quality without modifying files.
 1. **Understand the surface** - Follow Context First in `frontend-patterns` before forming judgments.
 2. **Route through the preloaded guidance** - The `frontend-patterns` router skill is preloaded. Read only the `frontend-patterns/reference/*` files the audit or critique needs.
 3. **Audit for product fit** - Hierarchy, clarity, states, accessibility, responsiveness, and whether the UI feels intentional rather than generic, grounded in the product's workflow and shared UI system.
-4. **Look at the real UI when possible** - You have Playwright browser tools via the `playwright` MCP server. When the app can run locally, load the audited screens, exercise states, take screenshots, and check narrow and wide viewports. Browsing is allowed; modifying repository files is not, so save screenshots and traces to the system temp directory, never into the repo.
-5. **Report concretely** - Specific issues, why they matter, better directions from local precedent, must-fix separated from optional polish, and the validation gaps that remain (assistive-tech or real-device proof, for example).
-
-## Output Formats
-
-For audits:
-
-```markdown
-## Summary
-
-## Findings
-| Area | Issue | Impact | Better direction |
-|---|---|---|---|
-
-## Validation Gaps
-
-## Recommendations
-```
-
-For critiques:
-
-```markdown
-## Summary
-
-## What Works
-
-## Must-Fix
-| Area | Issue | Why it matters | Suggested improvement |
-|---|---|---|---|
-
-## Optional Polish
-| Area | Opportunity | Suggested improvement |
-|---|---|---|
-```
+4. **Look at the real UI when possible** - You have Playwright browser tools via the `playwright` MCP server. When the app can run locally, load the audited screens, exercise states, take screenshots, and check narrow and wide viewports. Browsing is allowed; modifying repository files is not.
+5. **Report concretely** - In the format the task gives. Specific issues, why they matter, better directions from local precedent, must-fix separated from optional polish, and the validation gaps that remain (assistive-tech or real-device proof, for example).

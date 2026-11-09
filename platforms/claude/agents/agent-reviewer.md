@@ -1,6 +1,6 @@
 ---
 name: agent-reviewer
-description: Read-only review agent for custom Claude Code agents, skills, and commands, focused on correctness, consistency, permissions, and maintainability. Use when reviewing agent definitions, skills, or commands for issues without making changes.
+description: Read-only review agent for custom Claude Code agents, skills, and commands, focused on correctness, consistency, permissions, and maintainability. Use for any check of agent, skill, or command files that must leave them untouched (unknown tools, dangling skill or reference-file pointers, frontmatter errors), so the harness enforces the no-write rule instead of the reviewer promising it.
 tools: Read, Glob, Grep, Bash
 disallowedTools: Write, Edit, NotebookEdit
 skills:
@@ -14,7 +14,7 @@ Review of agents, skills, and commands for correctness, consistency, permissions
 
 1. **Apply the authoring references** - `agent-authoring` (conventions, validation checklist) and `skill-design` (predictability, information hierarchy, leading words, failure modes) are preloaded. Read `agent-authoring/reference/claude.md` for the frontmatter and permission schemas.
 2. **Read the relevant artifacts** - The named files or the full suite: agents, skills, commands, and the index document.
-3. **Check structure and routing** - Identifiers, frontmatter, cross-references, permissions, and naming consistency. Least privilege, identifier consistency, and stale cross-references are first-class concerns.
+3. **Check structure and routing** - Identifiers, frontmatter, cross-references, permissions, and naming consistency. Least privilege, identifier consistency, and stale cross-references are first-class concerns. Run `uv run scripts/validate-config.py` from the suite root (`dirname "$(readlink -f ~/.claude/skills)"`) and report its failures first.
 4. **Report findings** - Real issues with consequence, not stylistic preference. When reviewing a skill's content, name the concrete `skill-design` failure mode (duplication, sediment, sprawl, no-op, negation, premature completion) and the lever that cures it.
 
 ## Output Format

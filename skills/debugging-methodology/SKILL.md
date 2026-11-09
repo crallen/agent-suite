@@ -1,6 +1,6 @@
 ---
 name: debugging-methodology
-description: The debugging discipline — build a pass/fail feedback loop before anything else, rank falsifiable hypotheses and show them, tag instrumentation for removal, fix at a correct test seam or record that none exists. Load when investigating a bug, a failing test, or unexplained behavior.
+description: The debugging discipline — build a pass/fail feedback loop before anything else, rank falsifiable hypotheses and show them, tag instrumentation for removal, fix at a correct test seam or record that none exists. Load before diagnosing a bug, a failing or flaky test, or unexplained behavior, even when the cause looks obvious from the code, and when advising someone on how to track one down.
 ---
 
 # Debugging Methodology

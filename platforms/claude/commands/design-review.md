@@ -18,6 +18,6 @@ Find the default branch `D`: `git symbolic-ref --short refs/remotes/origin/HEAD`
 Current branch's PR:
 !`gh pr view --json number,title -q '"#\(.number) \(.title)"' 2>/dev/null || echo "(none)"`
 
-Open the report with the target mode and the diff range you used. Run no `gh` command that writes. For cross-repo ownership, when the workspace instructions name a repo-map skill, Glob `~/.claude/plugins/cache/**/skills/<name>/SKILL.md` and Read it, since this agent has no skill tool; if nothing matches, say so in the report. You cannot ask the user anything, so blocking questions go in the report.
+Open the report with the target mode and the diff range you used. Run no `gh` command that writes. For cross-repo ownership, when the workspace instructions name a repo-map skill, find it with Bash (`find ~/.claude/plugins/cache -path '*/skills/<name>/SKILL.md'`) and Read it, since this agent has no skill tool; if nothing matches, say so in the report. You cannot ask the user anything, so blocking questions go in the report.
 
 $ARGUMENTS

@@ -18,8 +18,9 @@ pin. Everything else is a skill you load and work you do yourself.
   design; the knowledge is the whole point and it lives in `skills/`.
 - **Fork for isolation** when a task will read far more than the answer is worth
   keeping. The commands that need this already set `context: fork`.
-- **Keep the work yourself** when it is simple enough to handle directly, spans
-  several domains, or the user asked you to do it.
+- **Keep the work yourself** rather than delegating when it is simple enough to
+  handle directly, spans several domains, or the user asked you to do it. A skill
+  whose area the work touches still loads, even for a one-line question.
 
 When the goal is ambitious, scope down the mechanism, not the goal: simplify how a
 thing gets built, never quietly shrink what is being built.
@@ -50,6 +51,7 @@ Every command sets `disable-model-invocation: true`, so I reach them and you do 
 | `/frontend-polish` | Apply focused frontend polish before handoff with verification and restraint | frontend-engineer |
 | `/agent-builder` | Create or modify an agent, skill, or command | — (inline) |
 | `/agent-review` | Review agents, skills, and commands for correctness and consistency | agent-reviewer |
+| `/eval-triage` | Turn an eval findings file into a fix brief: a section per suite target for `/agent-builder`, eval-case changes applied by hand | — (fork) |
 | `/spec` | Research a goal and produce a design spec with task checklist | — (inline) |
 | `/implement-spec` | Implement an approved spec: parallel implementers across its task graph, one integration branch, reviewed against the spec | implementers + code-reviewer (+ security-analyst) |
 | `/grill` | Stress-test a plan with relentless one-question-at-a-time interrogation, sharpening domain language and writing CONTEXT.md / ADRs as decisions crystallize | — (inline) |
@@ -82,6 +84,7 @@ Every command sets `disable-model-invocation: true`, so I reach them and you do 
 | Security-sensitive change | `/spec` or implementation command → `/full-review` → `/test` → `/commit` |
 | Documentation update | `/docs` → `/code-review` if the doc change affects technical accuracy significantly → `/commit` |
 | Agent/skill/command changes | `/agent-review` → `/agent-builder` → `/agent-review` → `/commit` |
+| Eval failures → fixes | `scripts/run-evals.py --findings <file>` → `/eval-triage <file>` → `/agent-builder` per brief section → `scripts/run-evals.py --only <glob>` → `/commit` |
 | Release preparation | `/code-review` or `/test` as needed → `/release` |
 | A session went sideways | `/retro` in that session → apply the picks → `/commit` |
 

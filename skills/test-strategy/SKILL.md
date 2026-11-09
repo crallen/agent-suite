@@ -63,10 +63,8 @@ code, and private helpers reached through their public callers.
 ## Naming
 
 Test names read like specifications: `test_expired_token_returns_401_unauthorized`,
-not `test_validate_token_3`. Name helpers and fixtures for the scenario they stand
-in for, not for the fact that they fail: `raise_access_denied`, not `_boom`.
-`doc-templates` holds the general naming and register rules. Tests run
-independently in any order.
+not `test_validate_token_3`. Helpers and fixtures follow the naming rules in
+`doc-templates`. Tests run independently in any order.
 
 ## Fixture Data
 

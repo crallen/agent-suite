@@ -1,6 +1,6 @@
 ---
 name: frontend-patterns
-description: Frontend router — the non-negotiables for UI work, when to infer from precedent versus ask versus escalate, and which reference to load for design direction, anti-patterns, component architecture, accessibility and responsiveness, or verification. Load first for any UI component, page, form, layout, styling, or state-management task.
+description: Frontend router — the non-negotiables for UI work, when to infer from precedent versus ask versus escalate, and which reference to load for design direction, anti-patterns, component architecture, accessibility and responsiveness, or verification. Load first for any UI component, page, form, layout, styling, or state-management task, including a single component pasted into the conversation, and for questions about where UI state belongs or how a component should be split.
 ---
 
 # Frontend Patterns

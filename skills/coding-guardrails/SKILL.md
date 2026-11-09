@@ -26,11 +26,10 @@ State assumptions; when several readings lead to different implementations, or s
 
 Understand the real constraint, then fight for the smallest model that makes the correct behavior unsurprising.
 
-- No features beyond what was asked.
-- No abstraction layer unless something real varies across it — a second implementation, or a seam a test genuinely needs.
-- No configurability or "future-proofing" nobody requested.
-- No ceremony without payoff: a builder for a one- or two-field struct, generics with a single caller, or dependencies and feature flags pulled in ahead of need.
-- No complex failure handling for scenarios with no evidence they matter.
+- Build exactly what was asked, configurable only where someone asked for it.
+- Add an abstraction layer when something real varies across it — a second implementation, or a seam a test genuinely needs.
+- Pull in builders, generics, dependencies, and feature flags when a present caller needs them, not ahead of need.
+- Handle the failures there is evidence for; skip elaborate handling for hypothetical ones.
 - If 200 lines could be 50 without losing clarity, simplify.
 
 Simplicity governs *ceremony*, not *architecture*. Build the system properly — reach for the seam, port, or layer when it earns its keep; abstraction with a payoff is not speculative. Strip only the indirection that buys nothing. When a seam's payoff is unclear, `architecture-review` holds the test: one adapter is a hypothetical seam, two is a real one.
@@ -43,8 +42,7 @@ Ask: **Would a strong senior engineer call this overcomplicated for the stated g
 
 Touch only what the request requires. Keep the diff narrow and local.
 
-- Do not refactor adjacent code just because you noticed it.
-- Do not reformat files, rename symbols, or rewrite comments unless your change requires it.
+- Leave adjacent code, formatting, symbol names, and comments as they are unless your change requires touching them.
 - Match the existing style and conventions, even if you would prefer a different style.
 - Clean up imports, variables, and functions only when **your** change made them unused.
 - If you notice unrelated issues, mention them separately instead of fixing them in the same change.
@@ -93,11 +91,8 @@ Defaults for how code is shaped — starting points, not straitjackets. Match th
 
 Both get read far more often than they get written, so a vague one charges every
 later reader. Prefer a name that makes the code self-explanatory over a comment
-that explains it. Where a comment earns its place, name the mechanism rather than
-a metaphor for it — "raises `SettingsError`", not "blows up".
-
-`doc-templates` holds the full register and naming rules. Load it when writing
-comments, docstrings, or identifiers a human will read.
+that explains it. `doc-templates` holds the register and naming rules; load it
+when writing comments, docstrings, or identifiers a human will read.
 
 ## Principle Deep-Dives
 

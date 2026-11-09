@@ -13,6 +13,7 @@ once against this working tree, uncommitted edits included.
     scripts/run-evals.py --base REF               compare against another ref
     scripts/run-evals.py --only 'behavior/*'      only the cases whose id matches
     scripts/run-evals.py --runs 5 --out r.md      more runs; report to a file
+    scripts/run-evals.py --findings f.json        also the runs of cases needing triage, as JSON
 
 Cases always come from this working tree's evals/; the base ref supplies only
 the suite under test. Case ids, for --only (an fnmatch glob):
@@ -55,6 +56,7 @@ from collections.abc import Iterable, Iterator, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
 from dataclasses import dataclass, replace
+from itertools import islice
 from pathlib import Path
 
 import yaml
@@ -1125,6 +1127,57 @@ def render_report(
     return "\n".join(lines)
 
 
+def findings_of(
+    cases: Sequence[Case], rows: Sequence[Row], outcomes: Sequence[Outcome], *,
+    base_sha: str, base_ref: str, head_sha: str, dirty: bool, model: str, runs: int,
+    plugins: Sequence[str],
+) -> dict:
+    """The --findings data: each case that needs triage (neither PASS nor
+    FIXED) with every run on both sides, base first then by run number,
+    confirmation runs included."""
+    by_id = {c.id: c for c in cases}
+    found = []
+    for row in rows:
+        if row.status in ("PASS", "FIXED"):
+            continue
+        case = by_id[row.case_id]
+        routing = isinstance(case, RoutingCase)
+        case_runs = sorted((o for o in outcomes if o.case_id == case.id),
+                           key=lambda o: (o.side != "base", o.n))
+        found.append({
+            "id": case.id,
+            "tier": case.id.split("/", 1)[0],
+            "status": row.status,
+            "base": str(row.base),
+            "head": str(row.head),
+            "prompt": case.prompt,
+            "targets": sorted(case.targets) if routing else None,
+            "asserts": None if routing else list(case.asserts),
+            "case_file": "evals/routing.yaml" if routing
+                         else f"evals/behavior/{case.id.removeprefix('behavior/')}/case.yaml",
+            "runs": [_run_finding(o) for o in case_runs],
+        })
+    return {
+        "base": {"ref": base_ref, "sha": base_sha},
+        "head": {"sha": head_sha, "dirty": dirty},
+        "model": model, "runs": runs, "plugins": list(plugins),
+        "cases": found,
+    }
+
+
+def _run_finding(outcome: Outcome) -> dict:
+    evidence = outcome.evidence
+    return {
+        "side": outcome.side, "n": outcome.n, "passed": outcome.verdict.passed,
+        "counted": outcome.verdict.counted, "detail": outcome.verdict.detail,
+        "plugins": list(outcome.plugins),
+        "evidence": None if evidence is None else {
+            "routes": list(evidence.routes), "calls": list(evidence.calls),
+            "final_text": evidence.final_text,
+        },
+    }
+
+
 def _confirmation(row: Row) -> str:
     if not row.rechecked:
         return ""
@@ -1136,16 +1189,47 @@ def _confirmation(row: Row) -> str:
 # --- Running the cases ------------------------------------------------------
 
 
+EVIDENCE_CALLS = 40
+SUBJECT_CHARS = 200  # a Write's subject is its whole input
+TEXT_CHARS = 2000
+
+
+@dataclass(frozen=True)
+class RunEvidence:
+    """What a run did, capped for a findings file: the routes, the first
+    EVIDENCE_CALLS tool calls as `name: subject`, and the final text. A routing
+    run keeps main-thread calls only; a behavior run keeps subagent and fork
+    calls too, tagged `[sub]`, since its assertions judge every call."""
+
+    routes: tuple[str, ...]
+    calls: tuple[str, ...]
+    final_text: str
+
+    @classmethod
+    def of(cls, result: RunResult, *, subagents: bool) -> RunEvidence:
+        kept = (c for c in result.tool_calls if subagents or c.parent_tool_use_id is None)
+        calls = tuple(f"{'[sub] ' if c.parent_tool_use_id else ''}{c.name}: "
+                      f"{_call_subject(c)[:SUBJECT_CHARS]}"
+                      for c in islice(kept, EVIDENCE_CALLS))
+        return cls(result.routes, calls, result.final_text[:TEXT_CHARS])
+
+
 @dataclass(frozen=True)
 class Outcome:
+    """One run's verdict. `n` numbers the run within its case and side;
+    `evidence` is None for an error run."""
+
     case_id: str
     side: str
     verdict: Verdict
     plugins: tuple[str, ...]
     model: str
+    n: int = 0
+    evidence: RunEvidence | None = None
 
 
-def run_one(case: Case, side: Side, auth: Mapping[str, str], model: str | None) -> Outcome:
+def run_one(case: Case, side: Side, auth: Mapping[str, str], model: str | None,
+            n: int) -> Outcome:
     """One run of `case` against `side` in a fresh scratch dir, judged and
     cleaned up. A routing run starts in its fixture's repo when it has one,
     else in an empty directory.
@@ -1167,12 +1251,14 @@ def run_one(case: Case, side: Side, auth: Mapping[str, str], model: str | None) 
             cmd = claude_command(case.prompt, model=model)
             result = run_claude(cmd, env, scratch, ROUTING_TIMEOUT, route_window=ROUTE_WINDOW)
         verdict = judge(case, result, scratch, assertion_env(side.config, side.home))
-        return Outcome(case.id, side.name, verdict, result.plugins, result.model)
+        evidence = (RunEvidence.of(result, subagents=isinstance(case, BehaviorCase))
+                    if verdict.counted else None)
+        return Outcome(case.id, side.name, verdict, result.plugins, result.model, n, evidence)
     except Interrupted:
         raise
     except Exception as err:
         verdict = Verdict(False, False, f"error: {type(err).__name__}: {str(err)[:200]}")
-        return Outcome(case.id, side.name, verdict, (), "")
+        return Outcome(case.id, side.name, verdict, (), "", n)
     finally:
         remove_tree(scratch)
 
@@ -1187,7 +1273,7 @@ def run_all(cases: Sequence[Case], sides: Sides, auth: Mapping[str, str], model:
     outcomes = []
     pool = ThreadPoolExecutor(max_workers=jobs)
     try:
-        futures = {pool.submit(run_one, case, side, auth, model): (case, side, n)
+        futures = {pool.submit(run_one, case, side, auth, model, n): (case, side, n)
                    for case, side, n in work}
         for done, future in enumerate(as_completed(futures), 1):
             case, side, n = futures[future]
@@ -1257,6 +1343,13 @@ def install_stop_handlers() -> None:
         signal.signal(signum, raise_interrupt)
 
 
+def write_output(path: Path, text: str) -> None:
+    """Write a result file, creating its directory: evals/triage/ is gitignored,
+    so it is absent on a fresh clone, and the runs behind it are already spent."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text)
+
+
 def run(args: argparse.Namespace) -> int:
     head = suite_root()
     try:
@@ -1270,16 +1363,21 @@ def run(args: argparse.Namespace) -> int:
           f"base {args.base} ({setup.base_sha[:12]})", file=sys.stderr)
     with eval_sides(head, setup.base_sha) as sides:
         rows, outcomes = evaluate(cases, sides, setup.auth, args.model, args.runs, args.jobs)
-    report = render_report(
-        rows, base_sha=setup.base_sha, base_ref=args.base, head_sha=head_sha, dirty=dirty,
+    header = dict(
+        base_sha=setup.base_sha, base_ref=args.base, head_sha=head_sha, dirty=dirty,
         model=next((o.model for o in outcomes if o.model), args.model or "unknown"),
         runs=args.runs, plugins=sorted({p for o in outcomes for p in o.plugins}),
     )
+    report = render_report(rows, **header)
     if args.out:
-        Path(args.out).write_text(report)
+        write_output(Path(args.out), report)
         print(f"run-evals: report written to {args.out}", file=sys.stderr)
     else:
         sys.stdout.write(report)
+    if args.findings:
+        findings = findings_of(cases, rows, outcomes, **header)
+        write_output(Path(args.findings), json.dumps(findings, indent=2))
+        print(f"run-evals: findings written to {args.findings}", file=sys.stderr)
     return exit_code(r.status for r in rows)
 
 
@@ -1304,6 +1402,8 @@ def main() -> int:
     parser.add_argument("--model", help="model for every run (default: the config's)")
     parser.add_argument("--only", metavar="GLOB", help="run only the case ids matching GLOB")
     parser.add_argument("--out", metavar="FILE", help="write the report here, not to stdout")
+    parser.add_argument("--findings", metavar="FILE",
+                        help="also write the runs and evidence of each case that is neither PASS nor FIXED here, as JSON (directory created if needed)")
     parser.add_argument("--env-file", type=Path, metavar="FILE",
                         help="dotenv file holding the auth variable (default: <suite root>/.env)")
     args = parser.parse_args()
