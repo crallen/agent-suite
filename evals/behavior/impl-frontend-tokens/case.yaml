@@ -15,6 +15,10 @@
 # that is extending the token set, not bypassing it. rgb() and hsl() literals
 # count as raw colors alongside hex. No unittest rule: nothing here runs, and the
 # assertions are greps.
+#
+# The fixture has no node_modules and the run may not install any, so spec.md
+# puts a test setup out of scope. Without that line the brief's "test-first"
+# clause sent 8 of 16 runs to stop and ask for an npm install, on both sides.
 prompt: >-
   Implement task 1 of docs/spec.md. Load the coding-guardrails, test-strategy,
   and frontend-patterns skills first, and build the task test-first where it has

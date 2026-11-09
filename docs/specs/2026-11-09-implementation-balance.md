@@ -279,14 +279,35 @@ One commit per skill or agent file, then a full `run-evals.py --base main
 
 | Case | Red proof | Red proof result | Ablation result (green of 5) | Verdict |
 |---|---|---|---|---|
-| `impl-test-first` | | | | |
-| `impl-fixture-placeholders` | | | | |
-| `impl-integration-timeout` | | | | |
-| `impl-expand-contract` | | | | |
-| `impl-frontend-tokens` | | | | |
-| `impl-trivial-no-ceremony` | | | n/a | |
-| `impl-clear-feature-finishes` | | | n/a | |
-| `impl-ambiguous-asks` | | | n/a | |
+| `impl-test-first` | Test-First from `test-strategy`, the bug-fix line from `coding-guardrails` §4, "build the task test-first" from the prompt | base 3/3, head 3/3, PASS: stays green | 0/5 (2/10 with confirmation; base 10/10) | guarded |
+| `impl-fixture-placeholders` | Fixture Data from `test-strategy` | base 3/3, head 3/3, PASS: stays green | 0/5 (0/10 with confirmation; base 10/10) | guarded |
+| `impl-integration-timeout` | Integrations and Dependency Direction from `backend-patterns` | base 3/3, head 3/3, PASS: stays green | 5/5 (base 5/5) | textbook, candidate cut |
+| `impl-expand-contract` | Migrations from `database-patterns` | base 0/3, head 0/3, FAIL | not run: base fails | base fails: rule not followed |
+| `impl-frontend-tokens` | "Reuse the existing visual system" from `frontend-patterns` | base 3/3, head 3/3, PASS: stays green | 5/5 (base 5/5) | textbook, candidate cut |
+| `impl-trivial-no-ceremony` | Add "Present a numbered plan with verify lines and confirm before any edit" to `coding-guardrails` | base 3/3, head 3/3, PASS: stays green (repeated: 3/3, 3/3) | n/a | red proof stays green |
+| `impl-clear-feature-finishes` | Add "Confirm the interface with the user before adding any method" to `coding-guardrails` | base 3/3, head 3/3, PASS: stays green | n/a | red proof stays green |
+| `impl-ambiguous-asks` | Delete `coding-guardrails` §1, then also "Surface assumptions and alternative readings" in `CLAUDE.md` | base 3/3, head 3/3, PASS, both steps: stays green | n/a | red proof stays green |
+
+Notes on the table:
+
+- In both guarded cases the red proof stayed green and the ablation went
+  red. The difference is what the red proof left in place: the skill
+  description ("reserved fixture placeholders", "test-first vertical
+  slices") and, for `impl-test-first`, the bug-fix row of Operating Loops.
+- `impl-test-first` reads one `case.yaml` on both sides, so dropping the
+  prompt clause dropped it on base too. Base passed 10/10 without it.
+- `impl-expand-contract`: every base run named the staged rename and chose
+  a one-step `RENAME COLUMN` instead, reasoning that the fixture is one
+  process that migrates its SQLite file at startup.
+- `impl-frontend-tokens` was rerun after `fix(evals)` put a test setup out
+  of scope. Before that, base 5/8 and head 3/8: runs stopped to ask for an
+  `npm install`.
+- In the repeated `impl-trivial-no-ceremony` red proof, 2 of 3 head runs
+  loaded `coding-guardrails` with the added plan rule and still made the
+  one-line fix. The skill opens with "a one-line typo fix does not need a
+  ceremony-heavy process", which likely outweighs the added rule. No
+  `impl-ambiguous-asks` run loaded `coding-guardrails`, so deleting §1 could
+  not reach it.
 
 ## Risks & Open Questions
 
