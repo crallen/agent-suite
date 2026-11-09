@@ -82,6 +82,11 @@ a commit boundary; the spec's checklist records where.
 |---|---|---|
 | [Routing and behavior evals](specs/2026-10-19-routing-and-behavior-evals.md) | 2 | `scripts/run-evals.py` reports base vs head for ~40 routing and 4 behavioral cases; CI requires a report or `evals: n/a` on suite PRs; red proofs recorded |
 | [Eval failure triage](specs/2026-11-08-eval-failure-triage.md) | 2 | `--findings` and `/eval-triage` turn failures into a fix brief; the routing known gaps it found are fixed with zero REGRESSION in a full-suite run |
+| [Implementation balance](specs/2026-11-09-implementation-balance.md) | 2 | Eight implementation evals with red proofs and ablations; Claude agents cut to four under ADR 0002; implementation skills cut by an owner-approved rule list with zero REGRESSION |
+| Migrate Claude commands to skills (spec not written) | 1–2 | Each `platforms/claude/commands/*.md` lives as a skill, as Claude Code now merges the two; the platform views and the validator follow |
 
 - [x] 5. Routing and behavior evals (merged 2026-10-19, PR #10; dotfiles f9b963a)
 - [x] 6. Eval failure triage and routing fixes (merged 2026-11-09, PR #19; dotfiles 4716393)
+- [ ] 7. Implementation balance, branch 1: evals and roster
+- [ ] 8. Implementation balance, branch 2: skill cut
+- [ ] 9. Migrate Claude commands to skills
