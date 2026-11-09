@@ -81,5 +81,7 @@ a commit boundary; the spec's checklist records where.
 | Spec | Sessions | Done when |
 |---|---|---|
 | [Routing and behavior evals](specs/2026-10-19-routing-and-behavior-evals.md) | 2 | `scripts/run-evals.py` reports base vs head for ~40 routing and 4 behavioral cases; CI requires a report or `evals: n/a` on suite PRs; red proofs recorded |
+| [Eval failure triage](specs/2026-11-08-eval-failure-triage.md) | 2 | `--findings` and `/eval-triage` turn failures into a fix brief; the routing known gaps it found are fixed with zero REGRESSION in a full-suite run |
 
-- [ ] 5. Routing and behavior evals
+- [x] 5. Routing and behavior evals (merged 2026-10-19, PR #10; dotfiles f9b963a)
+- [x] 6. Eval failure triage and routing fixes (merged 2026-11-09, PR #19; dotfiles 4716393)
