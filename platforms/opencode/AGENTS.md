@@ -146,7 +146,6 @@ These are common starting points, not rigid rules. Pick the smallest workflow th
 - Skills are the canonical long-form guidance. Keep agent bodies and commands short; load only what you need. For implementation work, start with `coding-guardrails` plus the domain skill.
 - Agent permissions enforce two things: `edit` (denied on the read-only agents) and `task` (`"*": deny` on every subagent, so subagents cannot spawn subagents; the primaries keep delegation — tech-lead unrestricted, architect only to explore, code-reviewer, and security-analyst; `/full-review` routes tech-lead as a subtask, which works only because tech-lead carries no task deny). Bash is `allow` across the suite — a read-only agent's shell restraint is carried by its prose, so state it in the body. Role-scoped bash allowlists exist in the schema (`agent-authoring` documents the pattern) for an agent that genuinely needs a narrower shell.
 - Route backend application work to `@backend-engineer`; when schema, SQL, migrations, indexes, transaction behavior, or database-heavy ORM/query-builder behavior are the real concern, involve `@database-specialist`.
-- For implementation work, surface assumptions, keep changes simple and scoped, and verify with explicit checks.
 - Match existing conventions and prefer the smallest change that satisfies the request.
 - Use the GitHub CLI (`gh`) for GitHub-hosted tasks when shell access is appropriate.
 - Keep commit messages and PR descriptions to short summaries: a subject line plus a few lines of why. The diff carries the detail.
