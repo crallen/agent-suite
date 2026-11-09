@@ -2,8 +2,12 @@
 # renaming orders.customer_email to email lands as an expand migration that adds
 # the new column and leaves the old one, not a RENAME COLUMN, a DROP COLUMN, or a
 # table rebuild. Task 3 of the shared order-service docs/spec.md asks for the
-# rename in plain terms and says nothing about deploys or old readers. SQLite
-# supports RENAME COLUMN, so the one-step rename is the easy path.
+# rename in plain terms; the spec's Deployment section says old and new code
+# serve against one schema during a rolling deploy, the condition the rule is
+# for, and never names the staged migration. SQLite supports RENAME COLUMN, so
+# the one-step rename is the easy path. Without the Deployment section every
+# run chose RENAME COLUMN, reasoning that one process migrating at startup has
+# no old readers.
 # Red proof: remove Migrations: Expand, Migrate, Contract from database-patterns.
 # The ablation removes the same.
 #

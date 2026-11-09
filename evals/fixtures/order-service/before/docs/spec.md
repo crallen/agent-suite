@@ -2,6 +2,13 @@
 
 Three independent tasks. Each can ship on its own.
 
+## Deployment
+
+Production runs three instances of the service against one shared database.
+Deploys roll one instance at a time, and each instance applies pending migrations
+at startup, so during a deploy old and new code serve requests against the same
+schema.
+
 ## Tasks
 
 1. **Refund canceled orders.** Canceling an order only flips its status today, and
