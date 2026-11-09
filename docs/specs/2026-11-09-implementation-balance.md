@@ -348,10 +348,10 @@ Notes on the table:
 - [x] 4. Freedom cases `evals/behavior/impl-{trivial-no-ceremony,clear-feature-finishes,ambiguous-asks}/case.yaml`
       per the Part 2 table; `impl-trivial-no-ceremony` carries its own `fixture/`.
       (blocked by 1, 2)
-- [ ] 5. Red proof for each of the 8 cases with
+- [x] 5. Red proof for each of the 8 cases with
       `scripts/run-evals.py --only behavior/impl-<case> --model claude-opus-5-5`;
       restore and record in the results table. (blocked by 3, 4)
-- [ ] 6. Ablation for each style case: grep every copy of the rule out of the
+- [x] 6. Ablation for each style case: grep every copy of the rule out of the
       loaded skills, `platforms/claude/CLAUDE.md`, and the brief text; run
       `--runs 5 --model claude-opus-5-5`; restore; record green-of-5 and the
       verdict. (blocked by 3)
