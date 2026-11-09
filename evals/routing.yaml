@@ -123,15 +123,6 @@
   fixture: fixtures/ttl-cache
   expect: debugging-methodology
 
-# The fixture's pricing.py skips the discount at exactly 10 units.
-- prompt: >-
-    A customer ordered exactly 10 widgets at $2.50 each and was charged $25.00;
-    orders of 10 or more are supposed to get 10% off. Investigate it on the side
-    so it doesn't clutter this conversation, and bring me back the root cause
-    and a fix.
-  expect: debugging-methodology
-  fixture: behavior/debugger-phase-0/fixture
-
 - prompt: |-
     Our ADR-0003 says: "Feature flags live in the flag service. Services never
     read flags from environment variables." A teammate's PR adds this to
@@ -154,15 +145,6 @@
     and paste it here; I'll commit it myself. It exposes New(rate, burst),
     Allow(key) bool, and Wait(ctx, key) error, keeps one token bucket per key in
     memory, and needs Go 1.22.
-  expect: doc-templates
-
-- prompt: |-
-    This is grunt work, so don't spend the expensive model on it. Write
-    docs/api.md for these endpoints:
-
-        GET    /invoices        list invoices, ?status=open|paid, paginated by ?cursor
-        POST   /invoices        body {customer_id, amount_cents, due_date}; 201 or 422
-        DELETE /invoices/:id    only while status is draft; 204, 404, or 409
   expect: doc-templates
 
 - prompt: >-
@@ -335,6 +317,27 @@
     We're about to open-source this repo. Do a security pass over the code,
     config, and dependencies first. Report only, don't fix anything.
   expect: security-analyst
+
+# Isolation without a dedicated agent: "on the side" is what a fork is for. The
+# fixture's pricing.py skips the discount at exactly 10 units.
+- prompt: >-
+    A customer ordered exactly 10 widgets at $2.50 each and was charged $25.00;
+    orders of 10 or more are supposed to get 10% off. Investigate it on the side
+    so it doesn't clutter this conversation, and bring me back the root cause
+    and a fix.
+  expect: fork
+  fixture: behavior/debugger-phase-0/fixture
+
+# A cheaper model without a pinned agent: the Agent call's model override does
+# it. The route is general-purpose; the model it picks is not asserted.
+- prompt: |-
+    This is grunt work, so don't spend the expensive model on it. Write
+    docs/api.md for these endpoints:
+
+        GET    /invoices        list invoices, ?status=open|paid, paginated by ?cursor
+        POST   /invoices        body {customer_id, amount_cents, due_date}; 201 or 422
+        DELETE /invoices/:id    only while status is draft; 204, 404, or 409
+  expect: general-purpose
 
 # --- negatives ---
 
