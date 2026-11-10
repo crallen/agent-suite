@@ -387,20 +387,20 @@ Notes on the table:
 
 **Branch 2: `refactor/impl-skills-balance`**
 
-- [ ] 13. Write `docs/specs/2026-11-09-implementation-balance-rules.md`: one
+- [x] 13. Write `docs/specs/2026-11-09-implementation-balance-rules.md`: one
       section per skill plus agent bodies and index documents, seeded with task
       6's candidate cuts; owner approves. (blocked by 12)
-- [ ] 14. `skills/coding-guardrails/SKILL.md` per the rule list. (blocked by 13)
-- [ ] 15. `skills/test-strategy/SKILL.md` per the rule list. (blocked by 13)
-- [ ] 16. `skills/backend-patterns/SKILL.md` per the rule list. (blocked by 13)
-- [ ] 17. `skills/database-patterns/SKILL.md` per the rule list. (blocked by 13)
-- [ ] 18. `skills/frontend-patterns/`: promote about ten lines into `SKILL.md`;
+- [x] 14. `skills/coding-guardrails/SKILL.md` per the rule list. (blocked by 13)
+- [x] 15. `skills/test-strategy/SKILL.md` per the rule list. (blocked by 13)
+- [x] 16. `skills/backend-patterns/SKILL.md` per the rule list. (blocked by 13)
+- [x] 17. `skills/database-patterns/SKILL.md` per the rule list. (blocked by 13)
+- [x] 18. `skills/frontend-patterns/`: promote about ten lines into `SKILL.md`;
       delete `reference/design-direction.md` and `reference/verification.md`; add
       a table of contents to `reference/component-architecture.md`; update the
       router table; grep `platforms/` for the two deleted paths and fix every hit;
       correct the description and its OpenCode and Codex rows only if it now
       advertises deleted content. (blocked by 13)
-- [ ] 19. Implementation bullet in `platforms/claude/CLAUDE.md` General Guidelines
+- [x] 19. Implementation bullet in `platforms/claude/CLAUDE.md` General Guidelines
       to its load instruction; same cut at `platforms/opencode/AGENTS.md:149` and
       in `platforms/codex/AGENTS.md`; agent bodies per the rule list:
       `frontend-engineer`, `security-analyst`, `code-reviewer`, `agent-reviewer`

@@ -13,13 +13,9 @@ color: blue
 ---
 Application UI that is context-aware, accessible, visually disciplined, and realistic to ship.
 
-## How You Work
+## Browser Verification
 
-1. **Understand the screen and product context** - Follow Context First in `frontend-patterns` before changing anything.
-2. **Route through the preloaded guidance** - The `frontend-patterns` router skill and `coding-guardrails` are preloaded. Read only the `frontend-patterns/reference/*` files that match the task.
-3. **Clarify or infer design direction** - Use the situation table in `frontend-patterns` to implement, infer from precedent, ask, or recommend a spec.
-4. **Implement the narrowest viable change** - Cover meaningful states, semantic structure, keyboard behavior, responsive layout, and reduced-motion expectations within the constraints of the current codebase.
-5. **Verify explicitly** - Targeted tests, lint/build, state-by-state review, responsiveness, and accessibility expectations. You have Playwright browser tools via the `playwright` MCP server: when the app can run locally, load the changed screen, exercise the key states, take screenshots, and check narrow and wide viewports instead of reasoning from code alone.
+You have Playwright browser tools via the `playwright` MCP server. When the app can run locally, load the changed screen, exercise the key states, take screenshots, and check narrow and wide viewports instead of reasoning from code alone.
 
 When the task says report only, browse and report in the format it gives, with no edits to repository files.
 
