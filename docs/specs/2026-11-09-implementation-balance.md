@@ -380,7 +380,7 @@ Notes on the table:
       `evals/routing.yaml:324` to `expect: frontend-engineer`.
 - [x] 11. `platforms/claude/CLAUDE.md` lines 11–14, 41–42, 49–50, 81–82 for the
       three removals. (blocked by 8, 9, 10)
-- [ ] 12. Validator; full `scripts/run-evals.py --base main --model claude-opus-5-5`;
+- [x] 12. Validator; full `scripts/run-evals.py --base main --model claude-opus-5-5`;
       PR with the report; merge; add this spec and a "migrate Claude commands to
       skills" entry to `docs/roadmap.md`; bump the dotfiles pointer.
       (blocked by 1–11)
@@ -405,6 +405,6 @@ Notes on the table:
       in `platforms/codex/AGENTS.md`; agent bodies per the rule list:
       `frontend-engineer`, `security-analyst`, `code-reviewer`, `agent-reviewer`
       in `platforms/claude/agents/`. (blocked by 13, 18)
-- [ ] 20. Validator; full `scripts/run-evals.py --base main --model claude-opus-5-5`;
+- [x] 20. Validator; full `scripts/run-evals.py --base main --model claude-opus-5-5`;
       PR with word counts; merge; tick the roadmap row; bump the dotfiles pointer.
       (blocked by 14–19)

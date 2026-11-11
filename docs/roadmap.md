@@ -87,6 +87,6 @@ a commit boundary; the spec's checklist records where.
 
 - [x] 5. Routing and behavior evals (merged 2026-10-19, PR #10; dotfiles f9b963a)
 - [x] 6. Eval failure triage and routing fixes (merged 2026-11-09, PR #19; dotfiles 4716393)
-- [ ] 7. Implementation balance, branch 1: evals and roster
-- [ ] 8. Implementation balance, branch 2: skill cut
+- [x] 7. Implementation balance, branch 1: evals and roster (merged 2026-11-09, PR #21)
+- [x] 8. Implementation balance, branch 2: skill cut (merged 2026-11-10, PR #22)
 - [ ] 9. Migrate Claude commands to skills
