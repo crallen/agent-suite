@@ -69,7 +69,9 @@
   "disableClaudeAiConnectors": true,
   "disableArtifact": true,
   "autoMemoryEnabled": false,
+  "_shellNote": "CLAUDE_CODE_SHELL runs the Bash tool in bash whatever the login shell is. Agents write bash, and a zsh login shell breaks it (1-based arrays, no word splitting, extendedglob or nomatch carried over from the shell snapshot). /bin/bash exists on Linux and macOS alike.",
   "env": {
-    "CLAUDE_CODE_DISABLE_CRON": "1"
+    "CLAUDE_CODE_DISABLE_CRON": "1",
+    "CLAUDE_CODE_SHELL": "/bin/bash"
   }
 }
