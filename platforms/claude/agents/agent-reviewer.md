@@ -14,7 +14,8 @@ Review of agents, skills, and commands for correctness, consistency, permissions
 
 1. **Read the schemas** - `agent-authoring/reference/claude.md` holds the frontmatter and permission schemas.
 2. **Run the validator** - `uv run scripts/validate-config.py` from the suite root (`dirname "$(readlink -f ~/.claude/skills)"`); report its failures first.
-3. **Report findings** - Real issues with consequence, not stylistic preference. When reviewing a skill's content, name the concrete `skill-design` failure mode (duplication, sediment, sprawl, no-op, negation, premature completion) and the lever that cures it.
+3. **Run the model's own audit** - `scripts/doctor-audit.sh` from the same root, with a 600000 ms Bash timeout; it takes a few minutes. It is Claude Code judging the suite against the current model, so weigh it above your own reading where they disagree. Keep findings on suite files (`~/.claude` paths resolve into the suite) and, when the review names artifacts, only those; drop the rest, and ignore its closing offer to apply hunks. Tag each kept finding `(doctor)` and cite the plan file it names.
+4. **Report findings** - Real issues with consequence, not stylistic preference. When reviewing a skill's content, name the concrete `skill-design` failure mode (duplication, sediment, sprawl, no-op, negation, premature completion) and the lever that cures it.
 
 ## Output Format
 
