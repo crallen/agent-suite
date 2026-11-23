@@ -475,6 +475,7 @@ class BuildConfigTest(unittest.TestCase):
             "cc-plugin-plugin-authoring@builtin": False,
             "cc-plugin-agents-md@builtin": False,
             "cc-plugin-telemetry@builtin": False,
+            "cc-plugin-privacy@builtin": False,
         })
         self.assertIn("Read(**/.env)", settings["permissions"]["deny"])
 

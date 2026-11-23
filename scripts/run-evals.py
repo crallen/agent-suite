@@ -64,12 +64,14 @@ import yaml
 AUTH_VARS = ("CLAUDE_CODE_OAUTH_TOKEN", "ANTHROPIC_API_KEY")
 
 # Builtin plugins the CLI enables by default. cc-plugin-plugin-authoring adds a
-# model-invocable skill that would compete in routing; all three are disabled
-# so the model sees the suite under test and nothing else.
+# model-invocable skill that would compete in routing; all of them are disabled
+# so the model sees the suite under test and nothing else. They ship inside the
+# CLI, so an upgrade can add one: the report's isolation warning names it.
 BUILTIN_PLUGINS = (
     "cc-plugin-plugin-authoring@builtin",
     "cc-plugin-agents-md@builtin",
     "cc-plugin-telemetry@builtin",
+    "cc-plugin-privacy@builtin",
 )
 
 # The tool that spawns a subagent: `Task` in the init event's tool list,
@@ -1123,7 +1125,8 @@ def render_report(
               for r in notable] or ["No regressions, fixes, or inconclusive cases."]
     if plugins:
         lines += ["", f"> Isolation warning: init listed plugins ({', '.join(plugins)}); "
-                      "they may have competed with the suite."]
+                      "they may have competed with the suite. Add a builtin one to "
+                      "BUILTIN_PLUGINS in scripts/run-evals.py."]
     for prefix, title in TIERS:
         tier = [r for r in rows if r.case_id.startswith(prefix)]
         if not tier:

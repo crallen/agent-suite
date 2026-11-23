@@ -163,8 +163,12 @@ The report shows the combined rates (such as `3/8`) and says whether
 confirmation held; a case it reverses takes its rescored status, and the exit
 code follows. Only flagged cases pay for the extra runs. For any other close
 call, re-run that case with `--only <id> --runs 5`. `--runs 1` is a smoke check
-only: every case comes out INCONCLUSIVE. An isolation warning means a plugin
-loaded alongside the suite and may have competed for routes.
+only: every case comes out INCONCLUSIVE.
+
+An isolation warning means a plugin loaded alongside the suite and may have
+competed for routes. The config turns off the CLI's builtin plugins by name, so a
+Claude Code upgrade that ships a new one brings the warning back: add it to
+`BUILTIN_PLUGINS` in the runner.
 
 To triage failures, add `--findings evals/triage/findings.json` to a run. The
 runner writes the runs of every case that is neither PASS nor FIXED, on both
