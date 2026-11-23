@@ -101,9 +101,9 @@
     when I add print statements. How should I go about narrowing it down?
   expect: debugging-methodology
 
-# known gap: work request with the code pasted in; loads in 60-90% of runs since
-# 2026-11 (0/10 before), so it can read PASS, FAIL, or UNSTABLE. Failing runs
-# load nothing.
+# known gap: work request with the code pasted in; loads in 60-100% of runs since
+# 2026-11 (0/10 before), 10 runs at a time, so it can read PASS, FAIL, or
+# UNSTABLE. Failing runs load nothing.
 - prompt: |-
     This test fails about 1 run in 20 on CI and has never failed on my laptop.
     Find out why and fix it.
@@ -338,8 +338,8 @@
 
 # A cheaper model without a pinned agent: the Agent call's model override does
 # it. The route is general-purpose; the model it picks is not asserted.
-# known gap: names no model; delegates in about half of runs. Failing runs load
-# doc-templates and no agent.
+# known gap: names no model; delegates in 10-50% of runs. Failing runs load
+# doc-templates and most write the file themselves.
 - prompt: |-
     This is grunt work, so don't spend the expensive model on it. Write
     docs/api.md for these endpoints:
