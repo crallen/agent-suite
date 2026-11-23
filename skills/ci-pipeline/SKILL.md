@@ -143,7 +143,7 @@ curl -s "https://go.dev/dl/?mode=json"           # stable releases, newest first
 curl -s https://endoflife.date/api/python.json   # also postgresql, node, and most others
 ```
 
-Pin the major in templates (`node:24-slim`, `go-version: '1.26'`) so patch releases arrive without an edit, and pin further — to a digest — in a production image where reproducibility outweighs convenience. Let Renovate or Dependabot raise the major bump as a reviewable PR instead of discovering it years later.
+Pin the major in templates (`node:<major>-slim`, `go-version: '<major>.<minor>'`, filled in from the checks above) so patch releases arrive without an edit, and pin further — to a digest — in a production image where reproducibility outweighs convenience. Let Renovate or Dependabot raise the major bump as a reviewable PR instead of discovering it years later.
 
 ## Security in CI
 
