@@ -543,7 +543,7 @@ class CaseLoadingTest(unittest.TestCase):
         ids = [c.id for c in cases]
         self.assertEqual(len(ids), len(set(ids)))
         routing = {c.id: c for c in cases if isinstance(c, run_evals.RoutingCase)}
-        self.assertEqual(len(routing), 52)
+        self.assertEqual(len(routing), 54)
         self.assertEqual(routing["routing/why"].targets, frozenset({"why"}))
         self.assertEqual(routing["routing/code-reviewer"].targets, frozenset({"code-reviewer"}))
         self.assertEqual(routing["routing/none-6"].targets, frozenset())
@@ -556,6 +556,7 @@ class CaseLoadingTest(unittest.TestCase):
             {"routing/agent-reviewer": "fixtures/mini-suite",
              "routing/code-reviewer": "behavior/reviewer-planted-bug/fixture",
              "routing/debugging-methodology-2": "fixtures/ttl-cache",
+             "routing/debugging-methodology-3": "fixtures/ttl-cache",
              "routing/fork": "behavior/debugger-phase-0/fixture",
              "routing/frontend-engineer-2": "fixtures/react-app"})
         behavior = {c.id: c for c in cases if isinstance(c, run_evals.BehaviorCase)}
