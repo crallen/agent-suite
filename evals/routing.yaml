@@ -101,8 +101,9 @@
     when I add print statements. How should I go about narrowing it down?
   expect: debugging-methodology
 
-# known gap: work request; loads in about 2 runs of 3 since 2026-11 (0/10 before),
-# short of the pass rate. Failing runs edit cache.py before reproducing.
+# known gap: work request with the code pasted in; loads in 60-100% of runs since
+# 2026-11 (0/10 before), 10 runs at a time, so it can read PASS, FAIL, or
+# UNSTABLE. Failing runs load nothing.
 - prompt: |-
     This test fails about 1 run in 20 on CI and has never failed on my laptop.
     Find out why and fix it.
@@ -120,6 +121,13 @@
             if time.time() - stored_at > self.ttl:
                 return None
             return value
+  fixture: fixtures/ttl-cache
+  expect: debugging-methodology
+
+# the same request naming the test instead of pasting it
+- prompt: >-
+    test_entry_expires_after_ttl in test_cache.py fails about 1 run in 20 on CI
+    and has never failed on my laptop. Find out why and fix it.
   fixture: fixtures/ttl-cache
   expect: debugging-methodology
 
@@ -330,9 +338,21 @@
 
 # A cheaper model without a pinned agent: the Agent call's model override does
 # it. The route is general-purpose; the model it picks is not asserted.
+# known gap: names no model; delegates in 10-50% of runs. Failing runs load
+# doc-templates and most write the file themselves.
 - prompt: |-
     This is grunt work, so don't spend the expensive model on it. Write
     docs/api.md for these endpoints:
+
+        GET    /invoices        list invoices, ?status=open|paid, paginated by ?cursor
+        POST   /invoices        body {customer_id, amount_cents, due_date}; 201 or 422
+        DELETE /invoices/:id    only while status is draft; 204, 404, or 409
+  expect: general-purpose
+
+# the same request naming the model
+- prompt: |-
+    This is grunt work, so have Haiku do it. Write docs/api.md for these
+    endpoints:
 
         GET    /invoices        list invoices, ?status=open|paid, paginated by ?cursor
         POST   /invoices        body {customer_id, amount_cents, due_date}; 201 or 422
