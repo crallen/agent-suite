@@ -101,25 +101,11 @@
     when I add print statements. How should I go about narrowing it down?
   expect: debugging-methodology
 
-# known gap: work request; loads in about 2 runs of 3 since 2026-11 (0/10 before),
-# short of the pass rate. Failing runs edit cache.py before reproducing.
-- prompt: |-
-    This test fails about 1 run in 20 on CI and has never failed on my laptop.
-    Find out why and fix it.
-
-        # test_cache.py
-        def test_entry_expires_after_ttl():
-            cache = TTLCache(ttl=0.05)
-            cache.set("k", 1)
-            time.sleep(0.05)
-            assert cache.get("k") is None
-
-        # cache.py
-        def get(self, key):
-            value, stored_at = self._data.get(key, (None, 0.0))
-            if time.time() - stored_at > self.ttl:
-                return None
-            return value
+# work request. With the test and cache.py pasted in, it loaded only 60-90% of
+# the time: the cause shows in the paste, and failing runs went straight to a fix.
+- prompt: >-
+    test_entry_expires_after_ttl in test_cache.py fails about 1 run in 20 on CI
+    and has never failed on my laptop. Find out why and fix it.
   fixture: fixtures/ttl-cache
   expect: debugging-methodology
 
@@ -329,10 +315,11 @@
   fixture: behavior/debugger-phase-0/fixture
 
 # A cheaper model without a pinned agent: the Agent call's model override does
-# it. The route is general-purpose; the model it picks is not asserted.
+# it. The route is general-purpose; the model it picks is not asserted. Told only
+# not to spend the expensive model, about half the runs wrote it inline.
 - prompt: |-
-    This is grunt work, so don't spend the expensive model on it. Write
-    docs/api.md for these endpoints:
+    This is grunt work, so have Haiku do it. Write docs/api.md for these
+    endpoints:
 
         GET    /invoices        list invoices, ?status=open|paid, paginated by ?cursor
         POST   /invoices        body {customer_id, amount_cents, due_date}; 201 or 422
