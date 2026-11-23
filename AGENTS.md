@@ -18,7 +18,7 @@ evals/
   routing.yaml          routing cases: a prompt and the skill or agent it should load
   behavior/<case>/      behavior cases: case.yaml plus a fixture repo
   recordings/           captured CLI streams the eval tests parse
-scripts/                validate-config.py, run-evals.py, check-eval-report.py, test_evals.py
+scripts/                validate-config.py, run-evals.py, check-eval-report.py, test_evals.py, doctor-audit.sh
 ```
 
 The top level is canonical. A platform directory holds that harness's **view**: an
@@ -102,6 +102,18 @@ at `.githooks` (the dotfiles `make install` sets that).
 For the schemas and file layout of agents, skills, and commands, use the
 `agent-authoring` skill — it is the source of truth for frontmatter keys and
 conventions.
+
+### The model's own audit
+
+`scripts/doctor-audit.sh` asks Claude Code to judge the suite: `claude plugin
+validate --strict` on `skills/` and the Claude agents and commands, then
+`/doctor prompt-audit`, the harness's check for instructions that are outdated,
+conflicting, or redundant for the current model. The audit takes no path. It
+reads `~/.claude`, so it sees the installed checkout rather than a worktree, and
+it starts in an empty directory so no project config joins in. It runs read-only
+in plan mode, re-enables the bundled skills the suite's settings turn off, makes
+model calls, and takes a few minutes, so it stays out of CI. `/agent-review` runs
+it every time.
 
 ### Evals
 

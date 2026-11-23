@@ -22,6 +22,7 @@ agent-suite/
     ├── validate-config.py  # Reference integrity, index accuracy, shared-skill links
     ├── run-evals.py        # Runs the evals against a base ref and the working tree
     ├── check-eval-report.py # CI: a PR body carries an eval report or an opt-out
+    ├── doctor-audit.sh     # Claude Code's own judgment: plugin validate + /doctor prompt-audit
     └── test_evals.py       # Eval runner tests, no model calls
 ```
 
@@ -54,6 +55,11 @@ The validator cannot see behavior: whether a prompt still loads the right skill,
 command still follows its workflow. `scripts/run-evals.py` checks that, and a PR
 touching `skills/` or `platforms/` carries its report or an `evals: n/a` line. See
 "Evals" in [AGENTS.md](AGENTS.md#evals) for running and adding cases.
+
+Neither can say whether an instruction still suits the current model.
+`scripts/doctor-audit.sh` asks Claude Code itself: `claude plugin validate --strict`
+on the Claude trees, then `/doctor prompt-audit` against the installed suite. It makes
+model calls, takes a few minutes, and runs as part of every `/agent-review`.
 
 Sharing is opt-in by existence — a platform gets a skill only if someone creates the symlink.
 
