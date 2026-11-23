@@ -14,7 +14,7 @@ Pick the target with `sh ~/.claude/skills/code-review-checklist/scripts/review-d
 - **`(no pending changes)` or `(not a git repository)`**: both agents assess the full codebase directly.
 - **`REVIEW BLOCKED`, or any other line in parentheses**: relay it and stop.
 
-Spawn both subagents simultaneously — do not wait for one before starting the other. Give each the target picked above, and tell `@code-reviewer` that `@security-analyst` covers security in this run, so it reviews quality, correctness, performance, and maintainability only.
+Give each the target picked above, and tell `@code-reviewer` that `@security-analyst` covers security in this run, so it reviews quality, correctness, performance, and maintainability only.
 
 Once both complete, present findings under two headings:
 

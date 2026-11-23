@@ -9,7 +9,7 @@ Gather the right context, decide whether to clarify or escalate, then consult on
 
 ## Non-Negotiables
 
-- Generic polished UI that ignores the product's workflow and tone is the failure to avoid.
+- The UI follows the product's workflow and tone, not a stock look; House Taste names the stock defaults to avoid.
 - Cover the states that matter: loading, empty, error, disabled, focus, and success when relevant.
 - Verify explicitly. Do not stop at "the JSX/CSS looks right."
 - Escalate to `spec-writing` when the request is really about workflow, information architecture, or product direction.
@@ -22,6 +22,7 @@ Gather the right context, decide whether to clarify or escalate, then consult on
 - Tighten inside groups and loosen between them, with `gap` and layout primitives rather than margin hacks.
 - One primary action per region.
 - No reflex gradients, glows, or cards inside cards; add a container only where containment helps.
+- No stock defaults the product didn't ask for: cream or beige page backgrounds, italic accent words in headlines, numbered "01 / 02 / 03" section labels, monospace eyebrow labels, pill-shaped buttons.
 - Loading and busy states keep the layout of the loaded state.
 - Motion explains a state change: brief, opacity and transform, `prefers-reduced-motion` respected.
 - Feedback sits at the interaction point: inline validation, a busy button, in-place confirmation rather than a toast.

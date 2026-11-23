@@ -13,6 +13,6 @@ Pick the target with `sh ~/.config/opencode/skills/code-review-checklist/scripts
 - **`(no pending changes)` or `(not a git repository)`**: assess the full codebase.
 - **`REVIEW BLOCKED`, or any other line in parentheses**: relay it and stop.
 
-Start by identifying the tech stack and mapping the attack surface, then analyze for vulnerabilities systematically. If dependency manifests are present, run available audit commands (npm audit, pip audit, etc.).
+Start by identifying the tech stack and mapping the attack surface, then analyze for vulnerabilities systematically. If dependency manifests are present, run available audit commands (npm audit, pip-audit, etc.).
 
 $ARGUMENTS
