@@ -155,15 +155,21 @@ counted; timeouts count as failures.
 | FAIL | Both sides fail, so the failure predates this change |
 | REGRESSION | Base passes, head fails; the runner exits 1 |
 | FIXED | Base fails, head passes |
+| UNSTABLE | A flagged case whose sides still disagree after confirmation, by a gap noise can produce; not evidence of a change |
 | INCONCLUSIVE | A side has fewer than 2 counted runs; re-run the case |
 
 Three runs are coarse, so the runner confirms what they flag: a case scored
-REGRESSION or FIXED runs 5 more times per side and is rescored on all its runs.
-The report shows the combined rates (such as `3/8`) and says whether
-confirmation held; a case it reverses takes its rescored status, and the exit
-code follows. Only flagged cases pay for the extra runs. For any other close
-call, re-run that case with `--only <id> --runs 5`. `--runs 1` is a smoke check
-only: every case comes out INCONCLUSIVE.
+REGRESSION or FIXED runs 10 more times per side and is rescored on all its runs.
+It keeps the flag only if the sides still disagree and Fisher's exact test puts
+the gap below p = 0.01, as 13/13 vs 6/13 does and 12/13 vs 8/13 does not.
+Identical sides clear that bar about 0.2% of the time at worst. A drop smaller
+than about half the runs can go unconfirmed, so re-run an UNSTABLE case that
+matters with more `--runs`, and reword a routing prompt that keeps coming back
+UNSTABLE. The report shows the combined rates, the p-value, and whether
+confirmation held, and the exit code follows the rescored status. Only flagged
+cases pay for the extra runs. For any other close call, re-run that case with
+`--only <id> --runs 10`. `--runs 1` is a smoke check only: every case comes out
+INCONCLUSIVE.
 
 An isolation warning means a plugin loaded alongside the suite and may have
 competed for routes. The config turns off the CLI's builtin plugins by name, so a

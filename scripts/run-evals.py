@@ -27,10 +27,12 @@ the suite under test. Case ids, for --only (an fnmatch glob):
 A routing entry runs in an empty directory, or, when it names a `fixture`
 under evals/, in a repo built from it the way a behavior fixture is.
 
-A case the main pass scores REGRESSION or FIXED is confirmed: 5 more runs per
-side, then rescored on all of them. The report (markdown, stdout unless --out)
-shows the combined rates and ends with the marker that
-scripts/check-eval-report.py looks for. Exit status: 2 on a setup problem, 1
+A case the main pass scores REGRESSION or FIXED is confirmed: 10 more runs per
+side, then rescored on all of them. It keeps that status only when the gap is
+too wide for noise (Fisher's exact test); otherwise it is UNSTABLE, or PASS or
+FAIL when the sides now agree. The report (markdown, stdout unless --out) shows
+the combined rates and ends with the marker that scripts/check-eval-report.py
+looks for. Exit status: 2 on a setup problem, 1
 when any case is a REGRESSION after confirmation, 0 otherwise.
 
 Auth comes from CLAUDE_CODE_OAUTH_TOKEN or ANTHROPIC_API_KEY in the
@@ -57,6 +59,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from itertools import islice
+from math import comb
 from pathlib import Path
 
 import yaml
@@ -1059,6 +1062,26 @@ def status(base: Rate, head: Rate) -> str:
     return "REGRESSION" if base.passing else "FIXED"
 
 
+def gap_p_value(a: Rate, b: Rate) -> float:
+    """Two-sided Fisher's exact test: how likely two sides with one true pass
+    rate are to land at least this far apart."""
+    passes = a.passes + b.passes
+    # Ways to spread the passes with x of them on side a, as exact integers.
+    ways = {x: comb(a.counted, x) * comb(b.counted, passes - x)
+            for x in range(max(0, passes - b.counted), min(passes, a.counted) + 1)}
+    observed = ways[a.passes]
+    return sum(w for w in ways.values() if w <= observed) / sum(ways.values())
+
+
+def confirmed_status(base: Rate, head: Rate) -> str:
+    """status() over a confirmed case's combined runs, with a REGRESSION or
+    FIXED whose gap noise could produce scored UNSTABLE instead."""
+    scored = status(base, head)
+    if scored in CONFIRM_STATUSES and gap_p_value(base, head) >= CONFIRM_ALPHA:
+        return "UNSTABLE"
+    return scored
+
+
 def exit_code(statuses: Iterable[str]) -> int:
     return 1 if "REGRESSION" in statuses else 0
 
@@ -1075,7 +1098,7 @@ class Row:
 
     @property
     def status(self) -> str:
-        return status(self.base, self.head)
+        return (confirmed_status if self.rechecked else status)(self.base, self.head)
 
     @property
     def rechecked(self) -> bool:
@@ -1084,15 +1107,18 @@ class Row:
 
 
 # A case the main pass scores REGRESSION or FIXED gets this many more runs
-# per side and is rescored on all of them: at 3 runs, a case near a 50% pass
-# rate flips on noise.
+# per side and is rescored on all of them: at 3 runs, a case near the pass line
+# flips on noise. Crossing the line again is not enough, since identical sides
+# do that too; the gap must also reach this p-value. With 3 + 10 runs, identical
+# sides end up REGRESSION or FIXED about 0.2% of the time at worst.
 CONFIRM_STATUSES = ("REGRESSION", "FIXED")
-CONFIRM_RUNS = 5
+CONFIRM_RUNS = 10
+CONFIRM_ALPHA = 0.01
 
 
 # --- Report -----------------------------------------------------------------
 
-NOTABLE = ("REGRESSION", "FIXED", "INCONCLUSIVE")
+NOTABLE = ("REGRESSION", "FIXED", "UNSTABLE", "INCONCLUSIVE")
 STATUSES = (*NOTABLE, "PASS", "FAIL")
 TIERS = (("routing/", "Routing"), ("behavior/", "Behavior"))
 
@@ -1103,8 +1129,8 @@ def render_report(
 ) -> str:
     """The markdown report: summary, notable cases, a table per tier, marker.
 
-    Notable cases are the REGRESSION, FIXED, and INCONCLUSIVE ones, then any
-    confirmed case whose extra runs scored it something else.
+    Notable cases are the REGRESSION, FIXED, UNSTABLE, and INCONCLUSIVE ones,
+    then any confirmed case whose extra runs scored it something else.
     """
     head = head_sha[:12] + ("-dirty" if dirty else "")
     counts = {s: sum(r.status == s for r in rows) for s in STATUSES}
@@ -1122,7 +1148,7 @@ def render_report(
     notable = [r for s in NOTABLE for r in rows if r.status == s]
     notable += [r for r in rows if r.rechecked and r.status not in NOTABLE]
     lines += [f"- {r.status} `{r.case_id}`: base {r.base}; head {r.head}{_confirmation(r)}"
-              for r in notable] or ["No regressions, fixes, or inconclusive cases."]
+              for r in notable] or ["No regressions, fixes, unstable, or inconclusive cases."]
     if plugins:
         lines += ["", f"> Isolation warning: init listed plugins ({', '.join(plugins)}); "
                       "they may have competed with the suite. Add a builtin one to "
@@ -1192,7 +1218,10 @@ def _confirmation(row: Row) -> str:
     if not row.rechecked:
         return ""
     if row.status == row.initial:
-        return f" (confirmed by {CONFIRM_RUNS} more runs per side)"
+        return f" (p={gap_p_value(row.base, row.head):.2g}; confirmed by {CONFIRM_RUNS} more runs per side)"
+    if row.status == "UNSTABLE":
+        return (f" (first scored {row.initial}; p={gap_p_value(row.base, row.head):.2g} after "
+                f"{CONFIRM_RUNS} more runs per side, a gap noise can produce)")
     return f" (first scored {row.initial}; {CONFIRM_RUNS} more runs per side did not confirm it)"
 
 

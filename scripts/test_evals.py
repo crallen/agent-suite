@@ -1121,8 +1121,35 @@ class StatusTest(unittest.TestCase):
                     run_evals.Verdict(False, False, "error")]
         self.assertEqual(run_evals.Rate.of(verdicts), self.rate(1, 2, 1))
 
+    def test_gap_p_value_is_fishers_exact_test_two_sided(self):
+        # Published worked examples: the tea tasting (3/4 vs 1/4) and the
+        # dieting table (1/12 vs 9/12).
+        self.assertAlmostEqual(run_evals.gap_p_value(self.rate(3, 4), self.rate(1, 4)), 34 / 70)
+        self.assertAlmostEqual(run_evals.gap_p_value(self.rate(1, 12), self.rate(9, 12)),
+                               0.002759, places=6)
+        self.assertEqual(run_evals.gap_p_value(self.rate(5, 5), self.rate(5, 5)), 1.0)
+        self.assertEqual(run_evals.gap_p_value(self.rate(0, 5), self.rate(0, 5)), 1.0)
+
+    def test_confirmed_gap_must_be_wider_than_noise(self):
+        # Splits identical configs produced in practice are UNSTABLE either way round.
+        for low, high in ((self.rate(9, 15), self.rate(14, 15)),
+                          (self.rate(6, 10), self.rate(9, 10)),
+                          (self.rate(3, 8), self.rate(8, 8))):
+            self.assertEqual(run_evals.confirmed_status(low, high), "UNSTABLE")
+            self.assertEqual(run_evals.confirmed_status(high, low), "UNSTABLE")
+        self.assertEqual(run_evals.confirmed_status(self.rate(13, 13), self.rate(6, 13)),
+                         "REGRESSION")
+        self.assertEqual(run_evals.confirmed_status(self.rate(6, 13), self.rate(13, 13)), "FIXED")
+
+    def test_a_confirmed_case_on_one_side_of_the_line_keeps_its_plain_status(self):
+        self.assertEqual(run_evals.confirmed_status(self.rate(13, 13), self.rate(9, 13)), "PASS")
+        self.assertEqual(run_evals.confirmed_status(self.rate(8, 13), self.rate(0, 13)), "FAIL")
+        self.assertEqual(run_evals.confirmed_status(self.rate(13, 13), self.rate(0, 1, 12)),
+                         "INCONCLUSIVE")
+
     def test_exit_code_is_one_only_with_a_regression(self):
-        self.assertEqual(run_evals.exit_code(["PASS", "FIXED", "INCONCLUSIVE", "FAIL"]), 0)
+        self.assertEqual(
+            run_evals.exit_code(["PASS", "FIXED", "UNSTABLE", "INCONCLUSIVE", "FAIL"]), 0)
         self.assertEqual(run_evals.exit_code(["PASS", "REGRESSION"]), 1)
 
 
@@ -1168,7 +1195,7 @@ class ReportTest(unittest.TestCase):
 
 
 class ConfirmationTest(unittest.TestCase):
-    """The main pass, then 5 more runs per side for each REGRESSION or FIXED
+    """The main pass, then 10 more runs per side for each REGRESSION or FIXED
     case. run_one is stubbed: each (case, side) replays a script of passes."""
 
     SIDES = run_evals.Sides(
@@ -1199,46 +1226,55 @@ class ConfirmationTest(unittest.TestCase):
 
     def test_each_outcome_carries_its_run_number_confirmation_runs_numbered_on(self):
         self.evaluate({"routing/pass": ("ppp", "ppp"),
-                       "routing/fixed": ("fff" + "fffff", "ppp" + "ppppp")})
+                       "routing/fixed": ("fff" + "f" * 10, "ppp" + "p" * 10)})
         numbers = {}
         for o in self.outcomes:
             numbers.setdefault((o.case_id, o.side), []).append(o.n)
         self.assertEqual({k: sorted(v) for k, v in numbers.items()}, {
             ("routing/pass", "base"): [1, 2, 3], ("routing/pass", "head"): [1, 2, 3],
-            ("routing/fixed", "base"): [1, 2, 3, 4, 5, 6, 7, 8],
-            ("routing/fixed", "head"): [1, 2, 3, 4, 5, 6, 7, 8],
+            ("routing/fixed", "base"): list(range(1, 14)),
+            ("routing/fixed", "head"): list(range(1, 14)),
         })
 
-    def test_only_flagged_cases_get_five_more_runs_per_side(self):
+    def test_only_flagged_cases_get_ten_more_runs_per_side(self):
         rows = self.evaluate({
             "routing/pass": ("ppp", "ppp"),
             "routing/fail": ("fff", "fpf"),
-            "routing/regression": ("ppp" + "ppppp", "fff" + "fffff"),
-            "routing/fixed": ("fff" + "fffff", "ppp" + "ppppp"),
+            "routing/regression": ("ppp" + "p" * 10, "fff" + "f" * 10),
+            "routing/fixed": ("fff" + "f" * 10, "ppp" + "p" * 10),
         })
         self.assertEqual(self.calls, {
             ("routing/pass", "base"): 3, ("routing/pass", "head"): 3,
             ("routing/fail", "base"): 3, ("routing/fail", "head"): 3,
-            ("routing/regression", "base"): 8, ("routing/regression", "head"): 8,
-            ("routing/fixed", "base"): 8, ("routing/fixed", "head"): 8,
+            ("routing/regression", "base"): 13, ("routing/regression", "head"): 13,
+            ("routing/fixed", "base"): 13, ("routing/fixed", "head"): 13,
         })
         self.assertEqual({i: (str(r.base), str(r.head), r.status, r.initial)
                           for i, r in rows.items()}, {
             "routing/pass": ("3/3", "3/3", "PASS", None),
             "routing/fail": ("0/3", "1/3", "FAIL", None),
-            "routing/regression": ("8/8", "0/8", "REGRESSION", "REGRESSION"),
-            "routing/fixed": ("0/8", "8/8", "FIXED", "FIXED"),
+            "routing/regression": ("13/13", "0/13", "REGRESSION", "REGRESSION"),
+            "routing/fixed": ("0/13", "13/13", "FIXED", "FIXED"),
         })
         self.assertEqual(run_evals.exit_code(r.status for r in rows.values()), 1)
         # Confirmation runs are numbered on from the main pass's.
-        self.assertIn("head routing/fixed #8:", self.progress.getvalue())
-        self.assertNotIn("#9:", self.progress.getvalue())
+        self.assertIn("head routing/fixed #13:", self.progress.getvalue())
+        self.assertNotIn("#14:", self.progress.getvalue())
 
     def test_a_flagged_case_is_rescored_on_all_its_runs_and_may_flip_back(self):
-        # base 3/3 then 1/5 is 4/8, under two thirds; head 1/3 then 1/5 is 2/8.
-        row = self.evaluate({"routing/noisy": ("ppp" + "fpfff", "fpf" + "ffpff")})["routing/noisy"]
-        self.assertEqual((str(row.base), str(row.head)), ("4/8", "2/8"))
+        # base 3/3 then 5/10 is 8/13, under two thirds; head 1/3 then 3/10 is 4/13.
+        row = self.evaluate({"routing/noisy": ("ppp" + "pfpfpfpfpf", "fpf" + "pffpffpfff")})[
+            "routing/noisy"]
+        self.assertEqual((str(row.base), str(row.head)), ("8/13", "4/13"))
         self.assertEqual((row.status, row.initial, row.rechecked), ("FAIL", "REGRESSION", True))
+        self.assertEqual(run_evals.exit_code([row.status]), 0)
+
+    def test_a_flagged_case_still_across_the_line_by_a_noisy_gap_is_unstable(self):
+        # base 12/13 passes and head 8/13 fails, but p is 0.16.
+        row = self.evaluate({"routing/noisy": ("ppp" + "p" * 9 + "f", "fpf" + "pppppppfff")})[
+            "routing/noisy"]
+        self.assertEqual((str(row.base), str(row.head)), ("12/13", "8/13"))
+        self.assertEqual((row.status, row.initial), ("UNSTABLE", "REGRESSION"))
         self.assertEqual(run_evals.exit_code([row.status]), 0)
 
     def test_stop_signal_during_confirmation_unwinds_like_the_main_pass(self):
@@ -1254,7 +1290,7 @@ class ConfirmationTest(unittest.TestCase):
                 self.assertTrue(run_evals._stopping.wait(5))
 
         with self.assertRaises(KeyboardInterrupt):
-            self.evaluate({"routing/regression": ("ppp" + "ppppp", "fff" + "fffff")},
+            self.evaluate({"routing/regression": ("ppp" + "p" * 10, "fff" + "f" * 10)},
                           on_run=stop_at_the_first_confirmation_run)
         self.assertTrue(run_evals._stopping.is_set())
         # The queued confirmation runs were canceled while the first slept.
@@ -1264,21 +1300,26 @@ class ConfirmationTest(unittest.TestCase):
     def test_report_shows_combined_rates_and_marks_confirmed_cases(self):
         r = run_evals.Rate
         rows = [
-            run_evals.Row("routing/why", r(8, 8, 0), r(2, 8, 0), initial="REGRESSION"),
-            run_evals.Row("routing/noisy", r(4, 8, 0), r(2, 8, 0), initial="REGRESSION"),
+            run_evals.Row("routing/why", r(13, 13, 0), r(2, 13, 0), initial="REGRESSION"),
+            run_evals.Row("routing/noisy", r(8, 13, 0), r(4, 13, 0), initial="REGRESSION"),
+            run_evals.Row("routing/unstable", r(8, 13, 0), r(12, 13, 0), initial="FIXED"),
             run_evals.Row("routing/none-1", r(3, 3, 0), r(3, 3, 0)),
         ]
         report = run_evals.render_report(
             rows, base_sha="0123456789abcdef0123456789abcdef01234567", base_ref="main",
             head_sha="fedcba9876543210fedcba9876543210fedcba98", dirty=False,
             model="claude-sonnet-5-5", runs=3)
-        self.assertIn("2 flagged cases re-run 5 more times per side", report)
-        self.assertIn("- REGRESSION `routing/why`: base 8/8; head 2/8 "
-                      "(confirmed by 5 more runs per side)", report)
-        self.assertIn("- FAIL `routing/noisy`: base 4/8; head 2/8 "
-                      "(first scored REGRESSION; 5 more runs per side did not confirm it)", report)
-        self.assertIn("| `routing/why` | 8/8 | 2/8 | REGRESSION |", report)
-        self.assertIn("| `routing/noisy` | 4/8 | 2/8 | FAIL |", report)
+        self.assertIn("3 flagged cases re-run 10 more times per side", report)
+        self.assertIn("- REGRESSION `routing/why`: base 13/13; head 2/13 "
+                      "(p=2e-05; confirmed by 10 more runs per side)", report)
+        self.assertIn("- FAIL `routing/noisy`: base 8/13; head 4/13 "
+                      "(first scored REGRESSION; 10 more runs per side did not confirm it)", report)
+        self.assertIn("- UNSTABLE `routing/unstable`: base 8/13; head 12/13 "
+                      "(first scored FIXED; p=0.16 after 10 more runs per side, "
+                      "a gap noise can produce)", report)
+        self.assertIn("1 REGRESSION · 0 FIXED · 1 UNSTABLE", report)
+        self.assertIn("| `routing/why` | 13/13 | 2/13 | REGRESSION |", report)
+        self.assertIn("| `routing/noisy` | 8/13 | 4/13 | FAIL |", report)
         self.assertNotIn("routing/none-1`:", report)
         self.assertTrue(report.rstrip().endswith("runs=3 -->"))
 
