@@ -43,7 +43,7 @@ End the report with a **Top recommendation**: which candidate you'd tackle first
 
 **ADR conflicts:** if a candidate contradicts an existing ADR, only surface it when the friction is real enough to warrant revisiting. Mark it clearly: *"contradicts ADR-0007 — but worth reopening because…"* Don't list every theoretical refactor an ADR forbids.
 
-Do NOT propose interfaces yet. After presenting, ask: "Which of these would you like to explore?"
+Hold interface proposals until the user picks a candidate; the grilling loop designs them. After presenting, ask: "Which of these would you like to explore?"
 
 ### 4. Grilling Loop
 
