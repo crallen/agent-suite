@@ -29,11 +29,11 @@ jobs:
 ## Caching
 
 ```yaml
-# versions checked 2026-09-22; re-verify before pinning
+# versions checked 2026-11-26; re-verify before pinning
 # Node.js - cache node_modules via setup-node
 - uses: actions/setup-node@v7
   with:
-    node-version: 24
+    node-version: 26
     cache: npm
 
 # Go - cache module downloads and build cache
@@ -59,13 +59,13 @@ For a stack not listed, cache the ecosystem's download directory keyed on the lo
 Test across multiple versions or platforms:
 
 ```yaml
-# versions checked 2026-09-22; re-verify before pinning
+# versions checked 2026-11-26; re-verify before pinning
 jobs:
   test:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        node-version: [22, 24]
+        node-version: [24, 26]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7

@@ -24,9 +24,21 @@ The templates below are mostly how-to and reference; ADRs and design docs are ex
 
 Sections, in order: one-sentence description of what it does and who it is for;
 Quick Start (prerequisites with versions, then clone, install, run); Usage (the
-most common call, then a table or short list of options); Project Structure (only
-when the layout is non-obvious); Development (test, lint, build commands);
-Contributing; License. Every command shown must run as written.
+most common call, then a table or short list of options); Development (test, lint,
+build commands); Contributing; License. Every command shown must run as written.
+
+## Directory Roles
+
+Describe a layout by what it cannot show on its own: which directory owns which
+concern, where a new handler or migration goes, why two similar directories both
+exist. A sentence or a short table of directory roles does that. Leave file trees
+and directory listings out, in code blocks and nested lists alike: anyone reading
+the repo, human or agent, gets them from `ls` or `tree`, and a copy goes stale on
+the next rename.
+
+The exception is a layout the reader must create, such as a plugin or skill
+directory a tool requires. There the paths are the specification, so name them
+inline: `plugins/<name>/manifest.json`.
 
 ## API Documentation
 

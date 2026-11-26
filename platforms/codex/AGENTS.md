@@ -65,6 +65,10 @@ plus the one domain skill that fits; adding more crowds out the actual task.
 
 - Write US English in code, comments, docs, and commits, unless the project already
   uses another locale.
+- Describe a repo's layout in docs by what each directory owns and where new work
+  goes, never as a file tree or directory listing: a reader or agent gets those from
+  `ls`, and they go stale on the next rename. A layout the reader must create is the
+  one exception.
 - Read the project's config and nearby code before changing anything. If `CONTEXT.md`
   exists at the repo root (or `CONTEXT-MAP.md` for multi-context repos), read it — it
   defines that project's canonical domain language and outranks general terminology.

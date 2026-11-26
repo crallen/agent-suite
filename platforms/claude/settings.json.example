@@ -55,6 +55,20 @@
     ],
     "defaultMode": "auto"
   },
+  "_hooksNote": "The PostToolUse hook asks the agent to remove any file tree it writes into a Markdown file; doc-templates holds the rule. It needs jq.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r 'select(.tool_input.file_path // \"\" | test(\"\\\\.(md|mdx|markdown)$\"; \"i\")) | [.tool_input.content, .tool_input.new_string, .tool_input.edits[]?.new_string] | map(strings) | join(\"\\n\")' | grep -qE '(├|└)──' && { echo 'This Markdown file now holds a file tree. Remove it unless the reader must create that layout: readers and agents get the layout from ls, and a copy goes stale. Describe directory roles instead: what each owns, where new work goes.' >&2; exit 2; } || exit 0"
+          }
+        ]
+      }
+    ]
+  },
   "enabledPlugins": {
     "frontend-design@claude-plugins-official": true,
     "rust-analyzer-lsp@claude-plugins-official": true

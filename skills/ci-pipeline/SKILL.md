@@ -147,4 +147,4 @@ Pin the major in templates (`node:<major>-slim`, `go-version: '<major>.<minor>'`
 
 ## Security in CI
 
-Masked variables, never echoed. Full SHA pinning for third-party actions; major tags for official ones only as a deliberate tradeoff. OIDC for cloud deploys instead of long-lived credentials. `permissions: { contents: read }` per job, widened only where a job needs more.
+Masked variables, never echoed. Pin every action, official or third-party, to its major version tag (`@v4`): a workflow reads at a glance, and minor and patch releases arrive without an edit. Pin an action to a full commit SHA only after a tag move breaks the pipeline, with the tag it replaced in a trailing comment (`@<sha> # v4`). OIDC for cloud deploys instead of long-lived credentials. `permissions: { contents: read }` per job, widened only where a job needs more.
