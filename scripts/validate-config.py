@@ -341,8 +341,15 @@ def check_file_trees() -> str:
     exempt because they are sample repos, not the suite's own docs.
     """
     pat = re.compile("[\u251c\u2514]\u2500\u2500")
+    # A parent repo's commit hook exports GIT_INDEX_FILE and friends, which point
+    # at the wrong index from inside this submodule; let git find its own.
+    local_vars = subprocess.run(
+        ["git", "rev-parse", "--local-env-vars"], capture_output=True, text=True, check=True,
+    ).stdout.split()
+    env = {k: v for k, v in os.environ.items() if k not in local_vars}
     files = subprocess.run(
-        ["git", "ls-files", "*.md"], cwd=ROOT, capture_output=True, text=True, check=True,
+        ["git", "ls-files", "*.md"], cwd=ROOT, env=env,
+        capture_output=True, text=True, check=True,
     ).stdout.split()
     n = 0
     for name in files:
