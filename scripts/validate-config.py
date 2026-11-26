@@ -333,6 +333,32 @@ def check_skill_placeholders() -> str:
     return f"{n} SKILL.md files carry no argument placeholders"
 
 
+def check_file_trees() -> str:
+    """No tracked doc outside evals/ draws a file tree.
+
+    A tree copies what `ls` already shows and goes stale on the next rename;
+    doc-templates says to describe directory roles instead. Eval fixtures are
+    exempt because they are sample repos, not the suite's own docs.
+    """
+    pat = re.compile("[\u251c\u2514]\u2500\u2500")
+    files = subprocess.run(
+        ["git", "ls-files", "*.md"], cwd=ROOT, capture_output=True, text=True, check=True,
+    ).stdout.split()
+    n = 0
+    for name in files:
+        if name.startswith("evals/"):
+            continue
+        f = ROOT / name
+        if not f.is_file():
+            continue
+        n += 1
+        for i, line in enumerate(f.read_text().splitlines(), 1):
+            if pat.search(line):
+                fail(f"{name}:{i}: file tree; describe directory roles instead")
+                break
+    return f"{n} docs carry no file trees"
+
+
 def check_reference_pointers() -> str:
     n_files = n_ptr = n_link = 0
     pat_scoped = re.compile(r"\b([a-z][a-z0-9-]*)/reference/([a-z0-9-]+\.md)\b")
@@ -528,6 +554,7 @@ def main() -> int:
         ("injection lines", check_injection_lines),
         ("skill placeholders", check_skill_placeholders),
         ("reference pointers", check_reference_pointers),
+        ("file trees", check_file_trees),
         ("claude index", lambda: check_index(CLAUDE / "CLAUDE.md", C_SKILLS, C_AGENTS, C_COMMANDS,
                                              require_mentions=False)),
         ("opencode index", lambda: check_index(OPENCODE / "AGENTS.md", O_SKILLS, O_AGENTS, O_COMMANDS)),

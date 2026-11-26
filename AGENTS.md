@@ -8,18 +8,12 @@ operating instructions; those live in `platforms/<harness>/`.
 
 ## How this repo is structured
 
-```text
-skills/                 canonical skills — the single source of truth
-platforms/
-  claude/               Claude Code's index, its agents, and its commands
-  codex/                Codex's index, plus its skill links
-  opencode/             OpenCode's index, its own agents and commands, plus skill links
-evals/
-  routing.yaml          routing cases: a prompt and the skill or agent it should load
-  behavior/<case>/      behavior cases: case.yaml plus a fixture repo
-  recordings/           captured CLI streams the eval tests parse
-scripts/                validate-config.py, run-evals.py, check-eval-report.py, test_evals.py, doctor-audit.sh
-```
+| Directory | Owns |
+|---|---|
+| `skills/` | The canonical skills, the single source of truth |
+| `platforms/<harness>/` | Each harness's view of the suite, described below |
+| `evals/` | Routing cases, behavior cases with their fixture repos, and the CLI recordings the eval tests parse |
+| `scripts/` | The validator, the eval runner and its tests, the eval-report check, and the doctor audit |
 
 The top level is canonical. A platform directory holds that harness's **view**: an
 index document, skill directories symlinked back to `skills/`, and anything the
@@ -93,7 +87,8 @@ scripts/validate-config.py -q     # only failures and the summary
 It covers reference integrity (agent → skill, command → agent, skill → reference
 file), index accuracy in both directions, frontmatter validity and known keys, tool
 names, color uniqueness, bare injection lines, description parity across indexes,
-and that every platform skill directory is a live symlink into `skills/`. It runs
+that every platform skill directory is a live symlink into `skills/`, and that no doc
+outside `evals/` draws a file tree. It runs
 under `uv`, the one prerequisite, which supplies PyYAML from the script's inline
 metadata. CI runs it on every push, and `.githooks/pre-commit` runs it before any
 commit touching `skills/`, `platforms/`, or `scripts/` once `core.hooksPath` points
