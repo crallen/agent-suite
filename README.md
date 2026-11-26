@@ -8,28 +8,13 @@ half of `opencode/.config/opencode/`, with its history intact.
 
 ## Repo Layout
 
-```text
-agent-suite/
-├── AGENTS.md               # How to work on this repo (not any harness's instructions)
-├── .env.example            # Template for the eval runner's auth token
-├── evals/                  # Routing and behavior eval cases, plus parser recordings
-├── skills/                 # Canonical skills, the one shared tree
-├── platforms/
-│   ├── claude/             # Claude Code's view: CLAUDE.md, agents/, commands/, settings.json.example
-│   ├── codex/              # Codex's view: AGENTS.md + skills/ (symlinks into skills/)
-│   └── opencode/           # OpenCode's view: AGENTS.md, agent/, commands/, skills/ (symlinks)
-└── scripts/
-    ├── validate-config.py  # Reference integrity, index accuracy, shared-skill links
-    ├── run-evals.py        # Runs the evals against a base ref and the working tree
-    ├── check-eval-report.py # CI: a PR body carries an eval report or an opt-out
-    ├── doctor-audit.sh     # Claude Code's own judgment: plugin validate + /doctor prompt-audit
-    └── test_evals.py       # Eval runner tests, no model calls
-```
-
 `skills/` is the canonical tree. `platforms/` holds each harness's view of it: an
 index document written for that harness, its own agents and commands where it has
 them, and skill directories symlinked back into `skills/`. Claude Code consumes
 `skills/` whole, so its view has no skill directory.
+
+`evals/` holds the routing and behavior eval cases, and `scripts/` the validator and
+eval runner described below. [AGENTS.md](AGENTS.md) covers how to work on the repo.
 
 ## Working here
 
@@ -77,7 +62,8 @@ stowed directly.
 
 `platforms/claude/settings.json.example` is the starting point for
 `~/.claude/settings.json` — the deny list that keeps agents out of `.env` files and
-private keys, the plugin set, and the runtime preferences.
+private keys, a hook that flags file trees written into Markdown, the plugin set,
+and the runtime preferences.
 
 The live file is **not** tracked. It is machine-local on purpose: which plugins and
 marketplaces a machine enables is a property of that machine, and a work laptop

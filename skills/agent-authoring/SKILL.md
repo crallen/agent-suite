@@ -76,14 +76,9 @@ than a list of prohibitions.
 
 Keep `SKILL.md` lean, since an agent that preloads it pays for every line on
 every run. When the domain is too large for one file, `SKILL.md` becomes a router
-and the depth moves to `reference/*.md` files loaded on demand:
-
-```
-skills/<name>/
-├── SKILL.md         # trigger, non-obvious rules, and a map of the references
-└── reference/
-    └── topic.md
-```
+and the depth moves to reference files loaded on demand:
+`skills/<name>/SKILL.md` holds the trigger, the non-obvious rules, and a map of
+the references, and each topic lives at `skills/<name>/reference/<topic>.md`.
 
 Pointers to a reference use the form `<skill>/reference/<file>.md`; the validator
 checks they resolve.
